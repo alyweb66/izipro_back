@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "DEBUG=izi:* npx nodemon index.js"
+    "dev": "DEBUG=izi:* npx nodemon index.js",
+    "resetdb": "sqitch revert -y && sqitch deploy"
   },
   "keywords": [],
   "author": "",
