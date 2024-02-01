@@ -3,8 +3,10 @@ import Debug from 'debug';
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:message`);
 
 const Message = {
-  Message({ id, firstname, lastname }, _, { dataSources }) {
-    debug(`get all restaurants of manager: ${firstname} ${lastname}`);
+  Message({
+    id, content, userId, userId1,
+  }, _, { dataSources }) {
+    debug(`get all message of a user: ${content} ${userId} ${userId1}`);
     return dataSources.restoDB.restaurant.findByManager(id);
   },
 };

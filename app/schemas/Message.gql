@@ -1,3 +1,6 @@
 type Message {
-    texte: String
+    id: Int!
+    content: Text!
+    user_id: Int!
+    user_id_1: Int!
 }
