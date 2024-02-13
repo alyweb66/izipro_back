@@ -11,6 +11,7 @@ pool.connect().then(() => {
   debug('database client connected');
 });
 
+let queryCount = 0;
 // Method: query allows executing SQL queries on the database.
 // It logs the query parameters using the debug function and
 // delegates the query to the original database client.
@@ -29,8 +30,10 @@ export default {
    * @returns {Promise} A Promise that resolves with the result of the query.
    */
   async query(...params) {
-    // https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Functions/rest_parameters
-    debug(...params); // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax
+    debug(...params);
+    queryCount += 1;
+    debug(`Req n°${queryCount}`);
+
     return this.originalClient.query(...params);
   },
 };
