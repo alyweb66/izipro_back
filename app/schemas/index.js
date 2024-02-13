@@ -2,13 +2,16 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import url from 'url';
 
+// __dirname not on module, this is the way to use it.
 const filename = url.fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
 const Message = readFileSync(path.join(dirname, './Message.gql'), 'utf8');
+const Query = readFileSync(path.join(dirname, './Query.gql'), 'utf8');
 
 const schema = `#graphql
     ${Message}
+    ${Query}
 `;
 
 export default schema;

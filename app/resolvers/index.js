@@ -1,5 +1,6 @@
-import Message from './message.js';
+import Query from './query.js';
 
 export default {
-  Message,
+  Query,
+
 };
