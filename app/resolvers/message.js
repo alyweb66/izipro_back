@@ -5,5 +5,5 @@ const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:message`);
 const MessageResolver = {
 
 };
-
+debug('MessageResolver');
 export default MessageResolver;
