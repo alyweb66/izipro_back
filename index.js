@@ -13,6 +13,9 @@ import { InMemoryLRUCache } from '@apollo/utils.keyvaluecache';
 import typeDefs from './app/schemas/index.js';
 import resolvers from './app/resolvers/index.js';
 
+// dataSources
+import DataDB from './app/datasources/data/index.js';
+
 const debug = Debug(`${process.env.DEBUG_MODULE}:httpserver`);
 
 // The ApolloServer constructor requires two parameters: schema
@@ -30,6 +33,14 @@ const server = new ApolloServer({
 //  2. installs ApolloServer instance as middleware
 //  3. prepares app to handle incoming requests
 const { url } = await startStandaloneServer(server, {
+  context: async () => {
+    const { cache } = server;
+    return {
+      dataSources: {
+        dataDB: new DataDB({ cache }),
+      },
+    };
+  },
   listen: { port: process.env.PORT ?? 3000 },
 });
 
