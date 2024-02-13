@@ -1,0 +1,13 @@
+type User {
+    id: Int!
+    first_name: String!
+    last_name: String!
+    email: String!
+    postal_code: Int!
+    city: String!
+    password: String!
+    remember_token: String!
+    siret: Int!
+    denomination: String!
+    role: String!
+}

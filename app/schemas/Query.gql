@@ -1,3 +1,4 @@
 type Query {
-    message: [Message!]!
+    messages: [Message!]!
+    users: [User!]!
 }
