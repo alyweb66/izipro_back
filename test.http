@@ -1,1 +1,40 @@
-@endpoint = http://localhost:3001/graphql
+@endpoint = http://localhost:3001
+
+### Request to find all messages
+POST {{endpoint}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+query Query {
+  messages {
+    content
+  }
+}
+
+### Request to find all users
+POST {{endpoint}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+query Query {
+  users {
+    first_name
+  }
+}
+
+### Request to find user by id
+POST {{endpoint}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+query Query($id: Int!) {
+  user(id: $id) {
+    id,
+    first_name,
+    last_name
+  }
+}
+
+{
+  "id": 3
+}
