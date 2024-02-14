@@ -1,0 +1,8 @@
+type Request {
+    id: Int!
+    urgent: String!
+    message: String!
+    localization: String!
+    user_id: Int!
+    job_id: Int!
+}

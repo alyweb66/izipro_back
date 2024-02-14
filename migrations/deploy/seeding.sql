@@ -34,5 +34,41 @@ INSERT INTO "message" (
     ('Not yet, maybe some relaxation.', 1, 3, '2023-01-02 11:00:00', '2023-01-02 11:00:00'),
     ('Meeting at 2 PM today.', 2, 3, '2023-01-03 13:45:00', '2023-01-03 13:45:00');
 
+INSERT INTO "category" (
+    "name", 
+    "updated_at"
+) VALUES
+    ('Category 1', '2024-02-14T12:00:00Z'),
+    ('Category 2', '2024-02-13T15:30:00Z'),
+    ('Category 3', '2024-02-15T10:45:00Z'),
+    ('Category 4', '2024-02-16T08:20:00Z'),
+    ('Category 5', '2024-02-17T14:10:00Z');
+
+INSERT INTO "job" (
+    "name", 
+    "description", 
+    "category_id", 
+    "updated_at"
+) VALUES
+    ('Job 1', 'Description du job 1', 1, '2024-02-14T12:00:00Z'),
+    ('Job 2', 'Description du job 2', 2, '2024-02-13T15:30:00Z'),
+    ('Job 3', 'Description du job 3', 1, '2024-02-15T10:45:00Z'),
+    ('Job 4', 'Description du job 4', 3, '2024-02-16T08:20:00Z'),
+    ('Job 5', 'Description du job 5', 2, '2024-02-17T14:10:00Z');
+
+
+INSERT INTO "request"(
+    "urgent",
+    "message",
+    "localization",
+    "user_id",
+    "job_id",
+    "updated_at"
+) VALUES
+    (true, 'Demande urgente 1', 'Paris', 1, 3, '2024-02-14T12:00:00Z'),
+    (false, 'Demande non urgente 1', 'Lyon', 2, 5, '2024-02-13T15:30:00Z'),
+    (true, 'Demande urgente 2', 'Marseille', 3, 2, '2024-02-15T10:45:00Z'),
+    (false, 'Demande non urgente 2', 'Nice', 2, 1, '2024-02-16T08:20:00Z'),
+    (true, 'Demande urgente 3', 'Bordeaux', 3, 4, '2024-02-17T14:10:00Z');
 
 COMMIT;

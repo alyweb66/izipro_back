@@ -9,11 +9,13 @@ const dirname = path.dirname(filename);
 const Message = readFileSync(path.join(dirname, './Message.gql'), 'utf8');
 const Query = readFileSync(path.join(dirname, './Query.gql'), 'utf8');
 const User = readFileSync(path.join(dirname, './User.gql'), 'utf8');
+const Request = readFileSync(path.join(dirname, './Request.gql'), 'utf8');
 
 const schema = `#graphql
     ${Message}
     ${Query}
     ${User}
+    ${Request}
 `;
 
 export default schema;
