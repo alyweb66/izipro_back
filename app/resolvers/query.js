@@ -19,4 +19,12 @@ export default {
     debug(`get user with id ${id}`);
     return dataSources.dataDB.user.findByPk(id);
   },
+  requests(_, { offset, limit }, { dataSources }) {
+    debug('get all requests');
+    return dataSources.dataDB.request.findAll(offset, limit);
+  },
+  request(_, { id }, { dataSources }) {
+    debug(`get request with id ${id}`);
+    return dataSources.dataDB.request.findByPk(id);
+  },
 };
