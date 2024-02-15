@@ -2,8 +2,11 @@ import Debug from 'debug';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:message`);
 
-const MessageResolver = {
-
+const UserResolver = {
+  user({ name, user_id: id }, _, { dataSources }) {
+    debug(`get user from: ${name}`);
+    return dataSources.dataDB.user.findByPk(id);
+  },
 };
-debug('MessageResolver');
-export default MessageResolver;
+
+export default UserResolver;

@@ -62,11 +62,15 @@ class CoreDatamapper {
    * @returns the created entity
    */
   async create(inputData) {
+    // contain column
     const fields = [];
+    // contain $1 $2 etc
     const placeholders = [];
+    // contain values
     const values = [];
     let indexPlaceholder = 1;
-
+    // allows you to create a dynamically prepared query by
+    // creating arrays of values to insert them into the query
     Object.entries(inputData).forEach(([prop, value]) => {
       fields.push(`"${prop}"`);
       placeholders.push(`$${indexPlaceholder}`);

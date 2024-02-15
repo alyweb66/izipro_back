@@ -10,4 +10,5 @@ type User {
     siret: Int!
     denomination: String!
     role: String!
+    messages: [Message]!
 }
