@@ -27,4 +27,12 @@ export default {
     debug(`get request with id ${id}`);
     return dataSources.dataDB.request.findByPk(id);
   },
+  medias(_, { offset, limit }, { dataSources }) {
+    debug('get all medias');
+    return dataSources.dataDB.media.findAll(offset, limit);
+  },
+  media(_, { id }, { dataSources }) {
+    debug(`get media with id ${id}`);
+    return dataSources.dataDB.media.findByPk(id);
+  },
 };
