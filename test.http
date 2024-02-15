@@ -11,6 +11,22 @@ query Query {
   }
 }
 
+### Request to find message by id
+POST {{endpoint}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+query Query($id: Int!) {
+  message(id: $id) {
+    id,
+    content,
+  }
+}
+
+{
+  "id": 3
+}
+
 ### Request to find all users
 POST {{endpoint}}
 Content-Type: application/json
@@ -32,6 +48,63 @@ query Query($id: Int!) {
     id,
     first_name,
     last_name
+  }
+}
+
+{
+  "id": 3
+}
+
+### Request to find all request
+POST {{endpoint}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+query Query {
+  requests {
+    id,
+    message
+  }
+}
+
+### Request to find a request by id
+POST {{endpoint}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+query Query($id: Int!) {
+  request(id: $id) {
+    id,
+    message
+  }
+}
+
+{
+  "id": 3
+}
+
+### Request to find all media
+POST {{endpoint}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+query Query {
+  medias {
+    id,
+    url
+  }
+}
+
+
+### Request to find a media by id
+POST {{endpoint}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+query Query($id: Int!) {
+  media(id: $id) {
+    id,
+    url
   }
 }
 
