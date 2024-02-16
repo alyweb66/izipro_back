@@ -4,7 +4,7 @@ const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:query`);
 
 export default {
   messages(_, { offset, limit }, { dataSources }) {
-    debug('get all message');
+    debug('get all messages');
     return dataSources.dataDB.message.findAll(offset, limit);
   },
   message(_, { id }, { dataSources }) {
@@ -12,7 +12,7 @@ export default {
     return dataSources.dataDB.message.findByPk(id);
   },
   users(_, { offset, limit }, { dataSources }) {
-    debug('get all user');
+    debug('get all users');
     return dataSources.dataDB.user.findAll(offset, limit);
   },
   user(_, { id }, { dataSources }) {

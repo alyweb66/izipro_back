@@ -55,6 +55,26 @@ query Query($id: Int!) {
   "id": 3
 }
 
+### Request to find messages to user by id
+POST {{endpoint}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+query Query($userId: Int!) {
+  user(id: $userId) {
+    id,
+    first_name,
+    last_name
+    messages {
+      content
+    }
+  }
+}
+
+{
+  "userId": 1
+}
+
 ### Request to find all request
 POST {{endpoint}}
 Content-Type: application/json
