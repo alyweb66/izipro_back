@@ -14,10 +14,10 @@ const Media = readFileSync(path.join(dirname, './Media.gql'), 'utf8');
 
 const schema = `#graphql
     ${Message}
-    ${Query}
     ${User}
     ${Request}
     ${Media}
+    ${Query}
 `;
 
 export default schema;
