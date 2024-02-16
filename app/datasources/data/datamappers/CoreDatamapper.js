@@ -20,7 +20,7 @@ class CoreDatamapper {
         values: [ids],
       };
       const records = await this.cacheQuery(preparedQuery);
-      // sert a mettre au format demandé par dataLoader
+      // used to put in the format requested by dataLoader
       const sortedRecords = ids.map(
         (id) => records.find(
           (record) => record.id === id,
