@@ -5,6 +5,8 @@ import UserDataMapper from './datamappers/User.js';
 import RequestDataMapper from './datamappers/Request.js';
 import MediaDataMapper from './datamappers/Media.js';
 
+// allows you to instantiate the datamappers
+// to put it in context
 class DataDB {
   constructor(options) {
     const newOptions = { ...options };
