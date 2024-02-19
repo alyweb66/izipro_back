@@ -10,6 +10,8 @@ class CoreDatamapper {
   constructor(options) {
     this.client = options.client;
     this.cache = options.cache;
+    // the function makes a query with an array of ids
+    // to avoid being called several times for the same request with different ids at the same time
     this.findByPkLoader = new DataLoader(async (ids) => {
       const preparedQuery = {
         text: `
@@ -19,6 +21,7 @@ class CoreDatamapper {
         `,
         values: [ids],
       };
+      // and record result in cache "cacheQuery"
       const records = await this.cacheQuery(preparedQuery);
       // used to put in the format requested by dataLoader
       const sortedRecords = ids.map(
@@ -28,25 +31,57 @@ class CoreDatamapper {
       );
       return sortedRecords;
     });
+
+    this.findByUserIdsLoader = new DataLoader(async (users) => {
+      const preparedQuery = {
+        text: `
+            SELECT *
+            FROM "${this.tableName}"
+            WHERE "user_id" = ANY($1)
+            `,
+        values: [users],
+      };
+      const records = await this.cacheQuery(preparedQuery);
+      // transforms the array that contains all the results into an array of arrays [[],[]...]
+      const sortedRecords = users.map(
+        (userId) => records.filter(
+          (record) => record.user_id === userId,
+        ),
+      );
+      return sortedRecords;
+    });
   }
 
   /**
    * returns a single entity according to its id
-   *
-   * @param {number} id - id of the entity
-   * @returns an entity
-   */
+  *
+  * @param {number} id - id of the entity
+  * @returns an entity
+  */
   async findByPk(id) {
     debug('add new entity to dataLoader');
+    // "load" allows you to add the value to the query table
     const record = await this.findByPkLoader.load(id);
     return record || null;
   }
 
   /**
-   * returns all entities from a table
+   * returns all entities according to its user_id
    *
-   * @returns an array of entities
+   * @param {number} userId - id of the entity
+   * @returns an entity
    */
+  async findByUser(userId) {
+    debug('add new entities to dataLoader');
+    const record = await this.findByUserIdsLoader.load(userId);
+    return record || null;
+  }
+
+  /**
+   * returns all entities from a table
+  *
+  * @returns an array of entities
+  */
   async findAll(offset = 0, limit = 10) {
     const preparedQuery = {
       text: `SELECT * FROM "${this.tableName}" ORDER BY id OFFSET ${offset} LIMIT ${limit}`,
@@ -142,23 +177,24 @@ class CoreDatamapper {
     return !!result.rowCount;
   }
 
+  // function to create a cache key and configure cache
   cacheQuery(preparedQuery, ttl) {
     const cacheKey = createHash('sha1').update(JSON.stringify(preparedQuery)).digest('base64');
     debug(`cacheKey: ${cacheKey}`);
     return this.cache.get(cacheKey).then((entry) => {
       if (entry) {
-        debug('La clef existe dans la cache');
-        debug('on renvoit les données contenues par la cache');
+        debug('The key exists in the cache');
+        debug('we return the data contained by the cache');
         return Promise.resolve(JSON.parse(entry));
       }
-      debug('La clef n\'existe pas dans la cache');
+      debug('The key does not exist in the cache');
       return this.client.query(preparedQuery).then((results) => {
-        debug('on récupére les données depuis la db');
+        debug('we retrieve the data from the db');
         if (results.rows) {
-          debug('on ajoute ces données à la cache');
+          debug('we add this data to the cache');
           this.cache.set(cacheKey, JSON.stringify(results.rows), { ttl });
         }
-        debug('on renvoit les données reçues de la db');
+        debug('we return the data received from the db');
         return Promise.resolve(results.rows);
       });
     });
