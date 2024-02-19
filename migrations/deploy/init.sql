@@ -7,6 +7,7 @@ CHECK(
     value ~ '(?:[a-z0-9!#$%&''*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&''*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])'
 );
 
+-- Creating a domain to validate FRANCE postal code
 CREATE DOMAIN "postal_code_domain" AS TEXT
 CHECK (
     value ~ '^0[1-9]\d{3}$'-- 01-09 Métropole
@@ -18,15 +19,15 @@ CHECK (
 
 CREATE TABLE "user"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "first_name" TEXT NOT NULL CHECK (LENGTH("first_name") <= 50),
-   "last_name" TEXT NOT NULL CHECK (LENGTH("last_name") <= 50),
+   "first_name" TEXT CHECK (LENGTH("first_name") <= 50),
+   "last_name" TEXT CHECK (LENGTH("last_name") <= 50),
    "email" email NOT NULL UNIQUE CHECK (LENGTH("email") <= 50),
-   "postal_code" postal_code_domain NOT NULL,
-   "city" TEXT NOT NULL CHECK (LENGTH("city") <= 50),
+   "postal_code" postal_code_domain,
+   "city" TEXT CHECK (LENGTH("city") <= 50),
    "password" TEXT NOT NULL UNIQUE,
    "remember_token" TEXT,
    "siret" BIGINT UNIQUE CHECK (LENGTH("siret"::TEXT) = 14),
-   "denomination" TEXT NOT NULL CHECK (LENGTH("last_name") <= 50),
+   "denomination" TEXT CHECK (LENGTH("last_name") <= 50),
    "role" TEXT NOT NULL,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
