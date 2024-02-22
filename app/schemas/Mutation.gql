@@ -1,0 +1,6 @@
+type Mutation {
+# User mutations
+    createUser(input: CreateUserInput!): User
+    createProUser(input: CreateProUserInput!): User
+    updateUser(id: Int!, input: UpdateUserInput!): User
+}

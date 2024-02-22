@@ -1,3 +1,4 @@
+
 type User {
     id: Int!
     first_name: String!
@@ -5,10 +6,30 @@ type User {
     email: String!
     postal_code: Int!
     city: String!
-    password: String!
-    remember_token: String!
-    siret: Int!
+    siret: String!
     denomination: String!
     role: String!
     messages: [Message]!
+}
+
+
+input CreateUserInput {
+    email: validateEmail!
+    password: validatePassword!
+}
+
+input CreateProUserInput {
+    email: validateEmail!
+    password: validatePassword!
+    siret: validateSiret!
+}
+
+input UpdateUserInput {
+    first_name: String
+    last_name: String
+    company_name: String
+    email: validateEmail
+    postal_code: validatePostalCode
+    city: String
+    siret: validateSiret
 }

@@ -3,9 +3,18 @@ import Message from './message.js';
 import User from './user.js';
 import Request from './request.js';
 import Media from './media.js';
+import Mutation from './mutation.js';
+import {
+  validateEmail, validatePassword, validatePostalCode, validateSiret,
+} from '../validations/scalars.js';
 
 export default {
+  validateEmail,
+  validatePassword,
+  validatePostalCode,
+  validateSiret,
   Query,
+  Mutation,
   Message,
   User,
   Request,
