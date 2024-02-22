@@ -1,5 +1,6 @@
 import Debug from 'debug';
 import bcrypt from 'bcrypt';
+import { GraphQLError } from 'graphql';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:mutation`);
 
@@ -22,7 +23,7 @@ async function createUserFunction(_, { input }, { dataSources }) {
   // Check if user exists
   const existingUser = await dataSources.dataDB.user.findUserByEmail(input.email);
   if (existingUser) {
-    throw new Error('Email ou mot de passe incorrect');
+    throw new GraphQLError('Email ou mot de passe incorrect');
   }
   // Hash the password using bcrypt
   const hashedPassword = await bcrypt.hash(input.password, 10);
@@ -39,7 +40,19 @@ async function createUserFunction(_, { input }, { dataSources }) {
   return dataSources.dataDB.user.create(userInputWithHashedPassword);
 }
 
+async function deleteUser(_, { id }, { dataSources }) {
+  const user = await dataSources.dataDB.user.findByPk(id);
+  if (!user) {
+    throw new GraphQLError('User not found');
+  }
+  if (user.id !== id) {
+    throw new GraphQLError('Not authorized');
+  }
+  return dataSources.dataDB.user.delete(id);
+}
+
 export default {
   createUser: createUserFunction,
   createProUser: createUserFunction,
+  deleteUser,
 };
