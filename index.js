@@ -24,8 +24,10 @@ const debug = Debug(`${process.env.DEBUG_MODULE}:httpserver`);
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  debug: process.env.NODE_ENV !== 'production',
   cache: new InMemoryLRUCache({
     maxSize: 2 ** 20 * 100,
+    clearOnMutation: true,
   }),
 });
 
