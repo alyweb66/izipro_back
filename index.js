@@ -2,8 +2,10 @@
 // Environment
 import 'dotenv/config.js';
 import Debug from 'debug';
+import jwt from 'jsonwebtoken';
 // Modules import
 import { ApolloServer } from '@apollo/server';
+
 // eslint-disable-next-line import/extensions
 import { startStandaloneServer } from '@apollo/server/standalone';
 // module to use cache
@@ -18,7 +20,11 @@ import resolvers from './app/resolvers/index.js';
 import DataDB from './app/datasources/data/index.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:httpserver`);
-
+function debugInDevelopment(message) {
+  if (process.env.NODE_ENV === 'development') {
+    debug(message);
+  }
+}
 // The ApolloServer constructor requires two parameters: schema
 // definition and set of resolvers.
 const server = new ApolloServer({
@@ -37,9 +43,21 @@ const server = new ApolloServer({
 //  3. prepares app to handle incoming requests
 const { url } = await startStandaloneServer(server, {
   // Context declaration
-  context: async () => {
+  context: async ({ req }) => {
+    // Get the user token from the headers.
+    const token = req.headers.authorization || '';
+    let userData = null;
+    try {
+      if (token) {
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        userData = decodedToken;
+      }
+    } catch (err) {
+      debugInDevelopment('Failed to verify token', err);
+    }
     const { cache } = server;
     return {
+      userData,
       dataSources: {
         dataDB: new DataDB({ cache }),
       },
@@ -47,5 +65,5 @@ const { url } = await startStandaloneServer(server, {
   },
   listen: { port: process.env.PORT ?? 3000 },
 });
-
+debugInDevelopment('⚠️   Warning:  DEVELOPMENT MODE ON');
 debug(`🚀  Server ready at: ${url}`);
