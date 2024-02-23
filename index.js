@@ -2,8 +2,10 @@
 // Environment
 import 'dotenv/config.js';
 import Debug from 'debug';
+import jwt from 'jsonwebtoken';
 // Modules import
 import { ApolloServer } from '@apollo/server';
+
 // eslint-disable-next-line import/extensions
 import { startStandaloneServer } from '@apollo/server/standalone';
 // module to use cache
@@ -37,9 +39,20 @@ const server = new ApolloServer({
 //  3. prepares app to handle incoming requests
 const { url } = await startStandaloneServer(server, {
   // Context declaration
-  context: async () => {
+  context: async ({ req }) => {
+    const token = req.headers.authorization || '';
+    let userId = null;
+    try {
+      if (token) {
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        userId = decodedToken.id;
+      }
+    } catch (err) {
+      debug('Failed to verify token', err);
+    }
     const { cache } = server;
     return {
+      userId,
       dataSources: {
         dataDB: new DataDB({ cache }),
       },

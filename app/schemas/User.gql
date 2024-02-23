@@ -1,15 +1,31 @@
 
 type User {
     id: Int!
-    first_name: String!
-    last_name: String!
+    first_name: String
+    last_name: String
     email: String!
-    postal_code: Int!
-    city: String!
-    siret: String!
+    postal_code: Int
+    city: String
+    siret: String
     denomination: String!
     role: String!
-    messages: [Message]!
+    messages: [Message]
+}
+
+# type UserAuthPayload {
+#     id: Int!
+#     first_name: String!
+#     last_name: String!
+#     email: String!
+#     postal_code: Int!
+#     city: String!
+#     siret: String!
+#     denomination: String!
+#     role: String!
+# }
+
+type AuthPayload {
+    token: String!
 }
 
 
