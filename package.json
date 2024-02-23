@@ -15,10 +15,12 @@
   "dependencies": {
     "@apollo/server": "^4.10.0",
     "@apollo/utils.keyvaluecache": "^3.1.0",
+    "apollo-server-core": "^3.13.0",
     "bcrypt": "^5.1.1",
     "dataloader": "^2.2.2",
     "debug": "^4.3.4",
     "dotenv": "^16.3.1",
+    "errors": "link:@apollo/server/errors",
     "graphql": "^16.8.1",
     "graphql-tag": "^2.12.6",
     "joi": "^17.12.1",

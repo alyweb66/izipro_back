@@ -12,22 +12,25 @@ type User {
     messages: [Message]
 }
 
-# type UserAuthPayload {
-#     id: Int!
-#     first_name: String!
-#     last_name: String!
-#     email: String!
-#     postal_code: Int!
-#     city: String!
-#     siret: String!
-#     denomination: String!
-#     role: String!
-# }
 
 type AuthPayload {
     token: String!
+    refreshToken: String!
 }
 
+
+type AccessToken {
+    token: String!
+}
+
+input loginInput {
+    email: String!
+    password: String!
+}
+
+input refreshUserTokenInput {
+    refreshToken: String!
+}
 
 input CreateUserInput {
     email: validateEmail!

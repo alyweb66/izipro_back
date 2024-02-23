@@ -6,7 +6,7 @@ import Media from './media.js';
 import Mutation from './mutation.js';
 import {
   validateEmail, validatePassword, validatePostalCode, validateSiret,
-} from '../validations/scalars.js';
+} from '../validations/validationScalars.js';
 
 export default {
   validateEmail,

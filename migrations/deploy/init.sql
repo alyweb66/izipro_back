@@ -28,6 +28,7 @@ CREATE TABLE "user"(
    "city" TEXT CHECK (LENGTH("city") <= 50),
    "password" TEXT NOT NULL UNIQUE,
    "remember_token" TEXT,
+   "refresh_token" TEXT,
    "siret" BIGINT UNIQUE CHECK (LENGTH("siret"::TEXT) = 14),
    "denomination" TEXT CHECK (LENGTH("last_name") <= 50),
    "role" TEXT NOT NULL,

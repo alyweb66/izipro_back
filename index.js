@@ -20,7 +20,11 @@ import resolvers from './app/resolvers/index.js';
 import DataDB from './app/datasources/data/index.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:httpserver`);
-
+function debugInDevelopment(message) {
+  if (process.env.NODE_ENV === 'development') {
+    debug(message);
+  }
+}
 // The ApolloServer constructor requires two parameters: schema
 // definition and set of resolvers.
 const server = new ApolloServer({
@@ -40,19 +44,20 @@ const server = new ApolloServer({
 const { url } = await startStandaloneServer(server, {
   // Context declaration
   context: async ({ req }) => {
+    // Get the user token from the headers.
     const token = req.headers.authorization || '';
-    let userId = null;
+    let userData = null;
     try {
       if (token) {
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-        userId = decodedToken.id;
+        userData = decodedToken;
       }
     } catch (err) {
-      debug('Failed to verify token', err);
+      debugInDevelopment('Failed to verify token', err);
     }
     const { cache } = server;
     return {
-      userId,
+      userData,
       dataSources: {
         dataDB: new DataDB({ cache }),
       },
@@ -60,5 +65,5 @@ const { url } = await startStandaloneServer(server, {
   },
   listen: { port: process.env.PORT ?? 3000 },
 });
-
+debugInDevelopment('⚠️   Warning:  DEVELOPMENT MODE ON');
 debug(`🚀  Server ready at: ${url}`);
