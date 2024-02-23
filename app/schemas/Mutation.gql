@@ -4,4 +4,6 @@ type Mutation {
     createProUser(input: CreateProUserInput!): User
     updateUser(id: Int!, input: UpdateUserInput!): User
     deleteUser(id: Int!): Boolean
+    login(input: loginInput!): AuthPayload
+    refreshUserToken(input: refreshUserTokenInput!): AccessToken
 }

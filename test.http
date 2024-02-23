@@ -1,4 +1,4 @@
-@endpoint = http://localhost:3001
+@endpoint = http://localhost:3003
 
 ### Request to find all messages
 POST {{endpoint}}
@@ -55,27 +55,74 @@ query Query($id: Int!) {
   "id": 3
 }
 
-### Request to add user
+### Request to create user
 POST {{endpoint}}
 Content-Type: application/json
 X-REQUEST-TYPE: GraphQL
 
 mutation Mutation($input: CreateUserInput!) {
-  user(input: $input) {
-    # we specify here the information that will be returned
-    id
-    email
-    password
+  createUser(input: $input) {
+    id,
+    email,
     role
   }
 }
 
 {
   "input": {
-    "email": "toto@gmail.com",
-    "password": "Toto345*",
-    "siret":12345678912345,
+    "email": "tutu@gmail.com",
+    "password": "Tutu12345*"
   }
+}
+
+### Request to login user
+POST {{endpoint}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+mutation Mutation($input: loginInput!) {
+  login(input: $input) {
+    # we specify here the information that will be returned
+    token,
+    refreshToken
+  }
+}
+
+{
+  "input": {
+    "email": "tutu@gmail.com",
+    "password": "Tutu12345*"
+  }
+}
+
+### Request refresh token
+POST {{endpoint}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+mutation Mutation($input: refreshUserTokenInput!) {
+  refreshUserToken(input: $input) {
+    newToken
+  }
+}
+
+{
+  "input": {
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Nywicm9sZSI6InVzZXIiLCJpYXQiOjE3MDg2OTM3MTcsImV4cCI6MTcwOTkwMzMxN30.pVurza9qK0c1sTEehAkQI-xamomK4nHhMstqoQuHVSM"
+  }
+}
+
+### Delete user
+POST {{endpoint}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+mutation Mutation($id: Int!) {
+  deleteUser(id: $id)
+}
+
+{
+  "id": 9
 }
 
 ### Request to find messages to user by id
