@@ -70,7 +70,7 @@ mutation Mutation($input: CreateUserInput!) {
 
 {
   "input": {
-    "email": "tutu@gmail.com",
+    "email": "alemany.pierrick@gmail.com",
     "password": "Tutu12345*"
   }
 }
@@ -104,8 +104,8 @@ mutation Mutation($input: refreshUserTokenInput!) {
   refreshUserToken(input: $input) {
     newToken
   }
-}
 
+}
 {
   "input": {
     "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Nywicm9sZSI6InVzZXIiLCJpYXQiOjE3MDg2OTM3MTcsImV4cCI6MTcwOTkwMzMxN30.pVurza9qK0c1sTEehAkQI-xamomK4nHhMstqoQuHVSM"
