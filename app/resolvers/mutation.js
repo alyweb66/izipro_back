@@ -2,6 +2,7 @@ import Debug from 'debug';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { AuthenticationError, ApolloError, ForbiddenError } from 'apollo-server-core';
+import sendPasswordResetEmail from '../middleware/sendEmail.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:mutation`);
 
@@ -97,10 +98,31 @@ async function refreshUserToken(_, { input }, { dataSources }) {
     throw new AuthenticationError('Invalid refresh token');
   }
 }
+
+async function forgotPassword(_, { input }, { dataSources }) {
+  try {
+    const user = await dataSources.dataDB.user.findUserByEmail(input.email);
+    if (!user) {
+      throw new ApolloError('User not found', 'BAD_REQUEST');
+    }
+    debug('Token is generated');
+    const resetToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    await dataSources.dataDB.user.update(user.id, { remember_token: resetToken });
+
+    await sendPasswordResetEmail(input.email, resetToken);
+    debug('Email sent');
+    return true;
+  } catch (err) {
+    debug(err);
+    throw new ApolloError('Error', 'BAD_REQUEST');
+  }
+}
+
 export default {
   createUser: createUserFunction,
   createProUser: createUserFunction,
   deleteUser,
   login,
   refreshUserToken,
+  forgotPassword,
 };
