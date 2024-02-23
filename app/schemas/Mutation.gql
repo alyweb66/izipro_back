@@ -6,4 +6,5 @@ type Mutation {
     deleteUser(id: Int!): Boolean
     login(input: loginInput!): AuthPayload
     refreshUserToken(input: refreshUserTokenInput!): AccessToken
+    forgotPassword(input: forgotPasswordInput!): Boolean
 }

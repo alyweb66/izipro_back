@@ -52,3 +52,7 @@ input UpdateUserInput {
     city: String
     siret: validateSiret
 }
+
+input forgotPasswordInput {
+    email: String!
+}
