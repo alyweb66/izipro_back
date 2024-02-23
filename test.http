@@ -61,21 +61,32 @@ Content-Type: application/json
 X-REQUEST-TYPE: GraphQL
 
 mutation Mutation($input: CreateUserInput!) {
-  user(input: $input) {
+  createUser(input: $input) {
     # we specify here the information that will be returned
     id
     email
-    password
     role
   }
 }
 
 {
   "input": {
-    "email": "toto@gmail.com",
-    "password": "Toto345*",
-    "siret":12345678912345,
+    "email": "tutu@gmail.com",
+    "password": "Toto345*"
   }
+}
+
+### Delete user
+POST {{endpoint}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+mutation Mutation($id: Int!) {
+  deleteUser(id: $id)
+}
+
+{
+  "id": 9
 }
 
 ### Request to find messages to user by id
