@@ -1,5 +1,6 @@
 import Debug from 'debug';
-import { GraphQLScalarType, GraphQLError } from 'graphql';
+import { GraphQLScalarType } from 'graphql';
+import { UserInputError } from 'apollo-server-core';
 import validator from 'validator';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:scalars:validations`);
@@ -17,7 +18,7 @@ const validateEmail = new GraphQLScalarType({
     // Validation during serialization
     if (!validator.isEmail(value)) {
       debugInDevelopment('ERROR: Invalid email address');
-      throw new GraphQLError('Invalid email address');
+      throw new UserInputError('Invalid email address');
     }
     return value;
   },
@@ -25,7 +26,7 @@ const validateEmail = new GraphQLScalarType({
     // Validation during value analysis
     if (!validator.isEmail(value)) {
       debugInDevelopment('ERROR: Invalid email address');
-      throw new GraphQLError('Invalid email address');
+      throw new UserInputError('Invalid email address');
     }
     return value;
   },
@@ -33,7 +34,7 @@ const validateEmail = new GraphQLScalarType({
     // Validation during AST analysis
     if (!validator.isEmail(ast.value)) {
       debugInDevelopment('ERROR: Invalid email address');
-      throw new GraphQLError('Invalid email address');
+      throw new UserInputError('Invalid email address');
     }
     return ast.value;
   },
@@ -51,7 +52,7 @@ const validatePassword = new GraphQLScalarType({
     // Validation during serialization
     if (!validator.isStrongPassword(value)) {
       debugInDevelopment('ERROR: Invalid password');
-      throw new GraphQLError('Invalid password');
+      throw new UserInputError('Invalid password');
     }
     return value;
   },
@@ -59,7 +60,7 @@ const validatePassword = new GraphQLScalarType({
     // Validation during value analysis
     if (!validator.isStrongPassword(value)) {
       debugInDevelopment('ERROR: Invalid password');
-      throw new GraphQLError('Invalid password');
+      throw new UserInputError('Invalid password');
     }
     return value;
   },
@@ -67,7 +68,7 @@ const validatePassword = new GraphQLScalarType({
     // Validation during AST analysis
     if (!validator.isStrongPassword(ast.value)) {
       debugInDevelopment('ERROR: Invalid password');
-      throw new GraphQLError('Invalid password');
+      throw new UserInputError('Invalid password');
     }
     return ast.value;
   },
@@ -80,7 +81,7 @@ const validatePostalCode = new GraphQLScalarType({
     // Validation during serialization
     if (!validator.isPostalCode(value, 'FR')) {
       debugInDevelopment('ERROR: Invalid postal code');
-      throw new GraphQLError('Invalid postal code');
+      throw new UserInputError('Invalid postal code');
     }
     return value;
   },
@@ -88,7 +89,7 @@ const validatePostalCode = new GraphQLScalarType({
     // Validation during value analysis
     if (!validator.isPostalCode(value)) {
       debugInDevelopment('ERROR: Invalid postal code');
-      throw new GraphQLError('Invalid postal code');
+      throw new UserInputError('Invalid postal code');
     }
     return value;
   },
@@ -96,7 +97,7 @@ const validatePostalCode = new GraphQLScalarType({
     // Validation during AST analysis
     if (!validator.isPostalCode(ast.value)) {
       debugInDevelopment('ERROR: Invalid postal code');
-      throw new GraphQLError('Invalid postal code');
+      throw new UserInputError('Invalid postal code');
     }
     return ast.value;
   },
@@ -110,7 +111,7 @@ const validateSiret = new GraphQLScalarType({
     const siretString = value.toString();
     if (siretString.length !== 14) {
       debugInDevelopment('ERROR: Invalid SIRET');
-      throw new GraphQLError('Invalid SIRET');
+      throw new UserInputError('Invalid SIRET');
     }
     return value;
   },
@@ -119,7 +120,7 @@ const validateSiret = new GraphQLScalarType({
     const siretString = value.toString();
     if (siretString.length !== 14) {
       debugInDevelopment('ERROR: Invalid SIRET');
-      throw new GraphQLError('Invalid SIRET');
+      throw new UserInputError('Invalid SIRET');
     }
     return value;
   },
@@ -128,7 +129,7 @@ const validateSiret = new GraphQLScalarType({
     const siretString = ast.value.toString();
     if (siretString.length !== 14) {
       debugInDevelopment('ERROR: Invalid SIRET');
-      throw new GraphQLError('Invalid SIRET');
+      throw new UserInputError('Invalid SIRET');
     }
     return ast.value;
   },
