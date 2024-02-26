@@ -11,7 +11,7 @@ function debugInDevelopment(message = '', value = '') {
   }
 }
 
-export default function getUserByToken(req) {
+export default function getUserByToken(req, res) {
   debug('starting get user by token');
 
   try {
@@ -27,7 +27,10 @@ export default function getUserByToken(req) {
       return userData;
     }
   } catch (err) {
-    debugInDevelopment('Failed to verify token', err);
+    debug('Failed to verify token', err);
+    if (err instanceof jwt.TokenExpiredError) {
+      return null;
+    }
     throw new ApolloError('Failed to verify token', 'BAD_REQUEST');
   }
   return null;

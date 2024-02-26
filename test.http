@@ -92,6 +92,15 @@ mutation Mutation($input: loginInput!) {
   }
 }
 
+### Request to logout user
+POST {{endpoint}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+mutation Mutation {
+  logout
+}
+
 ### Request refresh token
 POST {{endpoint}}
 Content-Type: application/json
