@@ -2,7 +2,6 @@
 // Environment
 import 'dotenv/config.js';
 import Debug from 'debug';
-import jwt from 'jsonwebtoken';
 // Modules import
 import { ApolloServer } from '@apollo/server';
 
@@ -15,14 +14,15 @@ import { InMemoryLRUCache } from '@apollo/utils.keyvaluecache';
 // your data.
 import typeDefs from './app/schemas/index.js';
 import resolvers from './app/resolvers/index.js';
+import getUserByToken from './app/middleware/getUserByToken.js';
 
 // class DataDB from dataSources
 import DataDB from './app/datasources/data/index.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:httpserver`);
-function debugInDevelopment(message) {
+function debugInDevelopment(message = '', value = '') {
   if (process.env.NODE_ENV === 'development') {
-    debug(message);
+    debug('⚠️', message, value);
   }
 }
 // The ApolloServer constructor requires two parameters: schema
@@ -43,20 +43,19 @@ const server = new ApolloServer({
 //  3. prepares app to handle incoming requests
 const { url } = await startStandaloneServer(server, {
   // Context declaration
-  context: async ({ req }) => {
+  context: async ({ req, res }) => {
     // Get the user token from the headers.
-    const token = req.headers.authorization || '';
     let userData = null;
-    try {
-      if (token) {
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-        userData = decodedToken;
-      }
-    } catch (err) {
-      debugInDevelopment('Failed to verify token', err);
+
+    if (req.headers.cookie) {
+      debugInDevelopment('cookie', req.headers.cookie);
+      userData = getUserByToken(req);
     }
+
     const { cache } = server;
     return {
+      res,
+      req,
       userData,
       dataSources: {
         dataDB: new DataDB({ cache }),
