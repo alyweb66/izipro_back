@@ -28,10 +28,6 @@ input loginInput {
     password: String!
 }
 
-input refreshUserTokenInput {
-    refreshToken: String!
-}
-
 input CreateUserInput {
     email: validateEmail!
     password: validatePassword!
