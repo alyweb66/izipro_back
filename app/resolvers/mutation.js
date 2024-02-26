@@ -66,7 +66,7 @@ async function deleteUser(_, { id }, { dataSources }) {
   return dataSources.dataDB.user.delete(id);
 }
 
-async function login(_, { input }, { dataSources, req, res }) {
+async function login(_, { input }, { dataSources, res }) {
   debugInDevelopment(input);
 
   const user = await dataSources.dataDB.user.findUserByEmail(input.email);
@@ -86,10 +86,9 @@ async function login(_, { input }, { dataSources, req, res }) {
     user.id,
     { refresh_token: refreshToken },
   );
-  debugInDevelopment(saveRefreshToken);
+  debugInDevelopment('saveRefreshToken', saveRefreshToken);
 
   // Set the token as a cookie
-
   const TokenCookie = cookie.serialize(
     'auth-token',
     token,
@@ -99,6 +98,26 @@ async function login(_, { input }, { dataSources, req, res }) {
     'refresh-token',
     refreshToken,
     { httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv() },
+  );
+
+  res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
+  return true;
+}
+
+async function logout(_, __, { res }) {
+  const TokenCookie = cookie.serialize(
+    'auth-token',
+    '',
+    {
+      httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv(), maxAge: 0,
+    },
+  );
+  const refreshTokenCookie = cookie.serialize(
+    'refresh-token',
+    '',
+    {
+      httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv(), maxAge: 0,
+    },
   );
 
   res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
@@ -124,6 +143,7 @@ async function refreshUserToken(_, __, { dataSources, req, res }) {
     // Make a new token
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
 
+    // Add the new token to the cookies
     const TokenCookie = cookie.serialize(
       'auth-token',
       token,
@@ -167,6 +187,7 @@ export default {
   createProUser: createUserFunction,
   deleteUser,
   login,
+  logout,
   refreshUserToken,
   forgotPassword,
 };
