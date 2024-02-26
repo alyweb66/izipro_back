@@ -1,15 +1,28 @@
 import Debug from 'debug';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import cookie from 'cookie';
 import { AuthenticationError, ApolloError, ForbiddenError } from 'apollo-server-core';
 import sendPasswordResetEmail from '../middleware/sendEmail.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:mutation`);
 
-function debugInDevelopment(message) {
+function debugInDevelopment(message = '', value = '') {
   if (process.env.NODE_ENV === 'development') {
-    debug(message);
+    debug('⚠️', message, value);
   }
+}
+function sameSiteEnv() {
+  if (process.env.NODE_ENV === 'development') {
+    return 'none';
+  }
+  return 'strict';
+}
+function secureEnv() {
+  if (process.env.NODE_ENV === 'development') {
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -53,8 +66,9 @@ async function deleteUser(_, { id }, { dataSources }) {
   return dataSources.dataDB.user.delete(id);
 }
 
-async function login(_, { input }, { dataSources }) {
+async function login(_, { input }, { dataSources, req, res }) {
   debugInDevelopment(input);
+
   const user = await dataSources.dataDB.user.findUserByEmail(input.email);
   if (!user) {
     debugInDevelopment('login:user failed', user);
@@ -65,6 +79,7 @@ async function login(_, { input }, { dataSources }) {
     debugInDevelopment('login:validPassword failed', validPassword);
     throw new ApolloError('Email ou mot de passe incorrect', 'BAD_REQUEST');
   }
+  // Create a token
   const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
   const refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '14d' });
   const saveRefreshToken = await dataSources.dataDB.user.update(
@@ -72,11 +87,27 @@ async function login(_, { input }, { dataSources }) {
     { refresh_token: refreshToken },
   );
   debugInDevelopment(saveRefreshToken);
-  return { token, refreshToken };
+
+  // Set the token as a cookie
+
+  const TokenCookie = cookie.serialize(
+    'auth-token',
+    token,
+    { httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv() },
+  );
+  const refreshTokenCookie = cookie.serialize(
+    'refresh-token',
+    refreshToken,
+    { httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv() },
+  );
+
+  res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
+  return true;
 }
 
-async function refreshUserToken(_, { input }, { dataSources }) {
-  const { refreshToken } = input;
+async function refreshUserToken(_, __, { dataSources, req, res }) {
+  const cookies = cookie.parse(req.headers.cookie || '');
+  const refreshToken = cookies['refresh-token'] || '';
   debugInDevelopment('refreshToken', refreshToken);
 
   try {
@@ -92,7 +123,20 @@ async function refreshUserToken(_, { input }, { dataSources }) {
     }
     // Make a new token
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
-    return { token };
+
+    const TokenCookie = cookie.serialize(
+      'auth-token',
+      token,
+      { httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv() },
+    );
+    const refreshTokenCookie = cookie.serialize(
+      'refresh-token',
+      refreshToken,
+      { httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv() },
+    );
+
+    res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
+    return true;
   } catch (err) {
     debug('Error', err);
     throw new AuthenticationError('Invalid refresh token');
