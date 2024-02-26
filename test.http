@@ -81,16 +81,13 @@ Content-Type: application/json
 X-REQUEST-TYPE: GraphQL
 
 mutation Mutation($input: loginInput!) {
-  login(input: $input) {
+  login(input: $input) 
     # we specify here the information that will be returned
-    token,
-    refreshToken
-  }
 }
 
 {
   "input": {
-    "email": "tutu@gmail.com",
+    "email": "alemany.pierrick@gmail.com",
     "password": "Tutu12345*"
   }
 }
@@ -99,18 +96,14 @@ mutation Mutation($input: loginInput!) {
 POST {{endpoint}}
 Content-Type: application/json
 X-REQUEST-TYPE: GraphQL
+Cookie: auth-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Niwicm9sZSI6InVzZXIiLCJpYXQiOjE3MDg5NTY1OTIsImV4cCI6MTcwODk1NzQ5Mn0.euhsoGko2rXr1qLc6nR_eGbpLZ5w1EiUs99WiNvuPag;refresh-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Niwicm9sZSI6InVzZXIiLCJpYXQiOjE3MDg5NTY1OTIsImV4cCI6MTcxMDE2NjE5Mn0.7FRvczlvbJYD6ORualVkjUt6MpOFXVgZEY7XRNQIXtE;
 
-mutation Mutation($input: refreshUserTokenInput!) {
-  refreshUserToken(input: $input) {
-    newToken
-  }
+mutation Mutation {
+  refreshUserToken
+}
 
-}
-{
-  "input": {
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Nywicm9sZSI6InVzZXIiLCJpYXQiOjE3MDg2OTM3MTcsImV4cCI6MTcwOTkwMzMxN30.pVurza9qK0c1sTEehAkQI-xamomK4nHhMstqoQuHVSM"
-  }
-}
+
+
 
 ### Delete user
 POST {{endpoint}}
