@@ -76,7 +76,7 @@ async function confirmRegisterEmail(_, { input }, { dataSources }) {
     if (user.remember_token !== token) {
       throw new UserInputError('Error token');
     }
-    await dataSources.dataDB.user.update(user.id, { verified_email: true });
+    await dataSources.dataDB.user.update(user.id, { remember_token: null, verified_email: true });
     return true;
   } catch (err) {
     debug(err);
@@ -85,13 +85,16 @@ async function confirmRegisterEmail(_, { input }, { dataSources }) {
 }
 
 async function deleteUser(_, { id }, { dataSources }) {
+  if (dataSources.userData.id !== id) {
+    throw new ForbiddenError('Not authorized');
+  }
+
   const user = await dataSources.dataDB.user.findByPk(id);
+
   if (!user) {
     throw new ApolloError('User not found', 'NOT_FOUND');
   }
-  if (user.id !== id) {
-    throw new ForbiddenError('Not authorized');
-  }
+
   return dataSources.dataDB.user.delete(id);
 }
 
@@ -219,6 +222,25 @@ async function forgotPassword(_, { input }, { dataSources }) {
   }
 }
 
+async function updateUser(_, { id, input }, { dataSources }) {
+  if (dataSources.userData.id !== id) {
+    throw new ForbiddenError('Not authorized');
+  }
+  const updateInput = { ...input };
+  if (dataSources.userData.role === 'user') {
+    delete updateInput.siret;
+    delete updateInput.company_name;
+  }
+
+  const user = await dataSources.dataDB.user.findByPk(id);
+
+  if (!user) {
+    throw new ApolloError('User not found', 'NOT_FOUND');
+  }
+
+  return dataSources.dataDB.user.update(id, updateInput);
+}
+
 export default {
   createUser: createUserFunction,
   createProUser: createUserFunction,
@@ -228,4 +250,5 @@ export default {
   refreshUserToken,
   forgotPassword,
   confirmRegisterEmail,
+  updateUser,
 };

@@ -52,7 +52,7 @@ query Query($id: Int!) {
 }
 
 {
-  "id": 3
+  "id": 7
 }
 
 ### Request to create user
@@ -103,7 +103,7 @@ mutation Mutation($input: confirmRegisterEmailInput!) {
 
 {
   "input": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFsZW1hbnkucGllcnJpY2tAZ21haWwuY29tIiwiaWF0IjoxNzA5MDI3ODI4LCJleHAiOjE3MDkwMzE0Mjh9.PLH_pbAcWpWRAX1wT2Lp0DhijXopeupSCihSS4b5YTY"
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFsZW1hbnkucGllcnJpY2tAZ21haWwuY29tIiwiaWF0IjoxNzA5MDM4NzMwLCJleHAiOjE3MDkwNDIzMzB9.7Xl0yStwC5nIaDm2c-EezU8XTEGoiOwS_wvHUSdobCM"
   }
 }
 
@@ -115,6 +115,38 @@ X-REQUEST-TYPE: GraphQL
 
 mutation Mutation {
   logout
+}
+
+### Request to update user
+POST {{endpoint}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+mutation Mutation($id: Int!, $input: UpdateUserInput!) {
+  updateUser(id: $id, input: $input) {
+    id,
+    first_name,
+    last_name,
+    email,
+    adress,
+    postal_code,
+    city,
+    company_name,
+    siret,
+    role
+  }
+}
+
+{
+  "id": 6,
+  "input": {
+    "first_name": "Pierrick",
+    "last_name": "Alemany",
+    "postal_code": "75000",
+    "city": "Paris",
+    "company_name": "Alemany",
+    "siret": 12345678912345
+  }
 }
 
 ### Request refresh token
@@ -140,7 +172,7 @@ mutation Mutation($id: Int!) {
 }
 
 {
-  "id": 9
+  "id": 6
 }
 
 ### Request to find messages to user by id
@@ -160,7 +192,7 @@ query Query($id: Int!) {
 }
 
 {
-  "id": 1
+  "id": 7
 }
 
 ### Request to find all request
