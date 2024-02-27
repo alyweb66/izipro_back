@@ -1,4 +1,4 @@
-@endpoint = http://localhost:3003
+@endpoint = http://localhost:{{$dotenv PORT}}
 
 ### Request to find all messages
 POST {{endpoint}}
@@ -91,6 +91,7 @@ mutation Mutation($input: loginInput!) {
     "password": "Tutu12345*"
   }
 }
+
 
 ### Request to logout user
 POST {{endpoint}}

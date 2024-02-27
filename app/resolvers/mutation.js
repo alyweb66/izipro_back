@@ -105,18 +105,19 @@ async function login(_, { input }, { dataSources, res }) {
 }
 
 async function logout(_, __, { res }) {
+  const pastDate = new Date(0);
   const TokenCookie = cookie.serialize(
     'auth-token',
     '',
     {
-      httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv(), maxAge: 0,
+      httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv(), expires: pastDate,
     },
   );
   const refreshTokenCookie = cookie.serialize(
     'refresh-token',
     '',
     {
-      httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv(), maxAge: 0,
+      httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv(), expires: pastDate,
     },
   );
 
