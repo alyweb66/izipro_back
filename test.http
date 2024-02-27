@@ -1,4 +1,4 @@
-@endpoint = http://localhost:3003
+@endpoint = http://localhost:{{$dotenv PORT}}
 
 ### Request to find all messages
 POST {{endpoint}}
@@ -90,6 +90,16 @@ mutation Mutation($input: loginInput!) {
     "email": "alemany.pierrick@gmail.com",
     "password": "Tutu12345*"
   }
+}
+
+
+### Request to logout user
+POST {{endpoint}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+mutation Mutation {
+  logout
 }
 
 ### Request refresh token
