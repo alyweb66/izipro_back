@@ -92,6 +92,21 @@ mutation Mutation($input: loginInput!) {
   }
 }
 
+### Request to verify user mail
+POST {{endpoint}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+mutation Mutation($input: confirmRegisterEmailInput!) {
+  confirmRegisterEmail(input: $input)
+}
+
+{
+  "input": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFsZW1hbnkucGllcnJpY2tAZ21haWwuY29tIiwiaWF0IjoxNzA5MDI3ODI4LCJleHAiOjE3MDkwMzE0Mjh9.PLH_pbAcWpWRAX1wT2Lp0DhijXopeupSCihSS4b5YTY"
+  }
+}
+
 
 ### Request to logout user
 POST {{endpoint}}

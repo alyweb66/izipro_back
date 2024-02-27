@@ -2,8 +2,10 @@ import Debug from 'debug';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import cookie from 'cookie';
-import { AuthenticationError, ApolloError, ForbiddenError } from 'apollo-server-core';
-import sendPasswordResetEmail from '../middleware/sendEmail.js';
+import {
+  AuthenticationError, ApolloError, ForbiddenError, UserInputError,
+} from 'apollo-server-core';
+import * as sendEmail from '../middleware/sendEmail.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:mutation`);
 
@@ -46,13 +48,40 @@ async function createUserFunction(_, { input }, { dataSources }) {
   // Determine role based on the email address
   const addRole = input.siret ? 'pro' : 'user';
 
+  // Create a token and send an email to confirm the email address
+  const token = jwt.sign({ email: input.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  debugInDevelopment('Token is generated', token);
+  await sendEmail.confirmEmail(input.email, token);
+  debug('confirmEmail sent');
+
   // Update the input object with the hashed password
   const userInputWithHashedPassword = {
     ...input,
     password: hashedPassword,
     role: addRole,
+    remember_token: token,
   };
+
   return dataSources.dataDB.user.create(userInputWithHashedPassword);
+}
+
+async function confirmRegisterEmail(_, { input }, { dataSources }) {
+  try {
+    const { token } = input;
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await dataSources.dataDB.user.findUserByEmail(decodedToken.email);
+    if (!user) {
+      throw new ApolloError('User not found', 'BAD_REQUEST');
+    }
+    if (user.remember_token !== token) {
+      throw new UserInputError('Error token');
+    }
+    await dataSources.dataDB.user.update(user.id, { verified_email: true });
+    return true;
+  } catch (err) {
+    debug(err);
+    throw new ApolloError('Error');
+  }
 }
 
 async function deleteUser(_, { id }, { dataSources }) {
@@ -70,14 +99,21 @@ async function login(_, { input }, { dataSources, res }) {
   debugInDevelopment(input);
 
   const user = await dataSources.dataDB.user.findUserByEmail(input.email);
+
   if (!user) {
     debugInDevelopment('login:user failed', user);
-    throw new ApolloError('Email ou mot de passe incorrect', 'BAD_REQUEST');
+    throw new ApolloError('Incorrect email or password', 'BAD_REQUEST');
   }
+  if (user.verified_email === false) {
+    debugInDevelopment('login:verified_email false');
+    throw new ApolloError('Unverified email', 'BAD_REQUEST');
+  }
+
   const validPassword = await bcrypt.compare(input.password, user.password);
+
   if (!validPassword) {
     debugInDevelopment('login:validPassword failed', validPassword);
-    throw new ApolloError('Email ou mot de passe incorrect', 'BAD_REQUEST');
+    throw new ApolloError('EIncorrect email or password', 'BAD_REQUEST');
   }
   // Create a token
   const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
@@ -174,7 +210,7 @@ async function forgotPassword(_, { input }, { dataSources }) {
     const resetToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     await dataSources.dataDB.user.update(user.id, { remember_token: resetToken });
 
-    await sendPasswordResetEmail(input.email, resetToken);
+    await sendEmail.sendPasswordResetEmail(input.email, resetToken);
     debug('Email sent');
     return true;
   } catch (err) {
@@ -191,4 +227,5 @@ export default {
   logout,
   refreshUserToken,
   forgotPassword,
+  confirmRegisterEmail,
 };

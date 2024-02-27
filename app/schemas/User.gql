@@ -33,6 +33,10 @@ input CreateUserInput {
     password: validatePassword!
 }
 
+input confirmRegisterEmailInput {
+    token: String!
+}
+
 input CreateProUserInput {
     email: validateEmail!
     password: validatePassword!

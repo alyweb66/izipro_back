@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-async function sendPasswordResetEmail(email, resetToken) {
+export async function sendPasswordResetEmail(email, resetToken) {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: `${email}`,
@@ -33,4 +33,22 @@ async function sendPasswordResetEmail(email, resetToken) {
   await transporter.sendMail(mailOptions);
 }
 
-export default sendPasswordResetEmail;
+export async function confirmEmail(email, confirmToken) {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: `${email}`,
+    subject: 'Confirmation de compte',
+    html: `
+      <h1>Confirmation de compte</h1>
+
+      <p>Bonjour,</p>
+      <p>Vous avez demandé une confirmation de compte. Cliquez sur le bouton ci-dessous pour confirmer votre compte. :</p>
+      <a href="${process.env.SERVER_URL}/token=${confirmToken}" style="background-color: #F79323; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Confirmer le compte</a>
+      <p>Si vous n'avez pas demandé de confirmation de compte, ignorez simplement cet e-mail.</p>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
+
+export default { sendPasswordResetEmail, confirmEmail };
