@@ -11,7 +11,7 @@ function debugInDevelopment(message = '', value = '') {
   }
 }
 
-export default function getUserByToken(req, res) {
+export default function getUserByToken(req) {
   debug('starting get user by token');
 
   try {

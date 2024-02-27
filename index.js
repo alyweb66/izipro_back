@@ -56,9 +56,9 @@ const { url } = await startStandaloneServer(server, {
     return {
       res,
       req,
-      userData,
       dataSources: {
         dataDB: new DataDB({ cache }),
+        userData,
       },
     };
   },
