@@ -23,6 +23,7 @@ CREATE TABLE "user"(
    "last_name" TEXT CHECK (LENGTH("last_name") <= 50),
    "company_name" TEXT CHECK (LENGTH("last_name") <= 50),
    "email" email NOT NULL UNIQUE CHECK (LENGTH("email") <= 50),
+   "verified_email" BOOLEAN NOT NULL DEFAULT FALSE,
    "adress" TEXT CHECK (LENGTH("adress") <= 100),
    "postal_code" postal_code_domain,
    "city" TEXT CHECK (LENGTH("city") <= 50),

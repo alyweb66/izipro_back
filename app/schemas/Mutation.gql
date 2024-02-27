@@ -8,4 +8,5 @@ type Mutation {
     logout: Boolean
     refreshUserToken: Boolean
     forgotPassword(input: forgotPasswordInput!): Boolean
+    confirmRegisterEmail(input: confirmRegisterEmailInput!): Boolean
 }
