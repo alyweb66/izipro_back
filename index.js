@@ -48,8 +48,8 @@ const { url } = await startStandaloneServer(server, {
     let userData = null;
 
     if (req.headers.cookie) {
-      debugInDevelopment('cookie', req.headers.cookie);
-      userData = getUserByToken(req);
+      debug('cookie in headers');
+      userData = getUserByToken(req, res);
     }
 
     const { cache } = server;
