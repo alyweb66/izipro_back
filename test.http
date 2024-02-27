@@ -64,7 +64,6 @@ mutation Mutation($input: CreateUserInput!) {
   createUser(input: $input) {
     id,
     email,
-    role
   }
 }
 
@@ -103,7 +102,7 @@ mutation Mutation($input: confirmRegisterEmailInput!) {
 
 {
   "input": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFsZW1hbnkucGllcnJpY2tAZ21haWwuY29tIiwiaWF0IjoxNzA5MDM4NzMwLCJleHAiOjE3MDkwNDIzMzB9.7Xl0yStwC5nIaDm2c-EezU8XTEGoiOwS_wvHUSdobCM"
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNlYXNleGFuZHN1bjg3QGxpdmUuZnIiLCJ1c2VySWQiOjYsImlhdCI6MTcwOTA0NDk4MiwiZXhwIjoxNzA5MDQ4NTgyfQ.oe8rVh_MKnTBHJlv_tFx4wmRY1UMNl2R9jhUY-84_zg"
   }
 }
 
@@ -132,8 +131,7 @@ mutation Mutation($id: Int!, $input: UpdateUserInput!) {
     postal_code,
     city,
     company_name,
-    siret,
-    role
+    siret
   }
 }
 
@@ -143,6 +141,7 @@ mutation Mutation($id: Int!, $input: UpdateUserInput!) {
     "first_name": "Pierrick",
     "last_name": "Alemany",
     "postal_code": "75000",
+    "email": "seasexandsun87@live.fr",
     "city": "Paris",
     "company_name": "Alemany",
     "siret": 12345678912345
@@ -172,7 +171,7 @@ mutation Mutation($id: Int!) {
 }
 
 {
-  "id": 6
+  "id": 7
 }
 
 ### Request to find messages to user by id

@@ -67,16 +67,29 @@ async function createUserFunction(_, { input }, { dataSources }) {
 
 async function confirmRegisterEmail(_, { input }, { dataSources }) {
   try {
+    await dataSources.dataDB.clearCache();
     const { token } = input;
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await dataSources.dataDB.user.findUserByEmail(decodedToken.email);
+    console.log('decodedToken', decodedToken);
+    let user;
+    console.log('user', user);
+    // check if id in the token is present that mean user is changing his email
+    if (decodedToken.userId) {
+      user = await dataSources.dataDB.user.findByPk(decodedToken.userId);
+    } else {
+      user = await dataSources.dataDB.user.findUserByEmail(decodedToken.email);
+    }
     if (!user) {
       throw new ApolloError('User not found', 'BAD_REQUEST');
     }
     if (user.remember_token !== token) {
       throw new UserInputError('Error token');
     }
-    await dataSources.dataDB.user.update(user.id, { remember_token: null, verified_email: true });
+    await dataSources.dataDB.user.update(user.id, {
+      email: decodedToken.email,
+      remember_token: null,
+      verified_email: true,
+    });
     return true;
   } catch (err) {
     debug(err);
@@ -85,6 +98,8 @@ async function confirmRegisterEmail(_, { input }, { dataSources }) {
 }
 
 async function deleteUser(_, { id }, { dataSources }) {
+  console.log('id', id);
+  console.log('dataSources.userData.id', dataSources.userData.id);
   if (dataSources.userData.id !== id) {
     throw new ForbiddenError('Not authorized');
   }
@@ -226,6 +241,7 @@ async function updateUser(_, { id, input }, { dataSources }) {
   if (dataSources.userData.id !== id) {
     throw new ForbiddenError('Not authorized');
   }
+  // Remove siret and company_name if the user is not a pro
   const updateInput = { ...input };
   if (dataSources.userData.role === 'user') {
     delete updateInput.siret;
@@ -233,7 +249,16 @@ async function updateUser(_, { id, input }, { dataSources }) {
   }
 
   const user = await dataSources.dataDB.user.findByPk(id);
-
+  // Check if the email has changed to send a new confirmation email
+  if (input.email !== user.email) {
+    const token = jwt.sign({ email: input.email, userId: id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    console.log(decodedToken);
+    await dataSources.dataDB.user.update(id, { remember_token: token });
+    await sendEmail.confirmEmail(input.email, token);
+    debug('Email has changed');
+    delete updateInput.email;
+  }
   if (!user) {
     throw new ApolloError('User not found', 'NOT_FOUND');
   }
