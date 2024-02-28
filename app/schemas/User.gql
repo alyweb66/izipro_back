@@ -4,11 +4,12 @@ type User {
     first_name: String
     last_name: String
     email: String!
-    postal_code: Int
+    adress: String
+    postal_code: String
     city: String
+    company_name: String
     siret: String
     denomination: String!
-    role: String!
     messages: [Message]
 }
 
@@ -46,10 +47,11 @@ input CreateProUserInput {
 input UpdateUserInput {
     first_name: String
     last_name: String
-    company_name: String
     email: validateEmail
+    adress: String
     postal_code: validatePostalCode
     city: String
+    company_name: String
     siret: validateSiret
 }
 

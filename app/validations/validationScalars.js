@@ -79,7 +79,7 @@ const validatePostalCode = new GraphQLScalarType({
   description: 'PostalCode custom scalar type',
   serialize(value) {
     // Validation during serialization
-    if (!validator.isPostalCode(value, 'FR')) {
+    if (!validator.isPostalCode(value, 'any')) {
       debugInDevelopment('ERROR: Invalid postal code');
       throw new UserInputError('Invalid postal code');
     }
@@ -87,7 +87,7 @@ const validatePostalCode = new GraphQLScalarType({
   },
   parseValue(value) {
     // Validation during value analysis
-    if (!validator.isPostalCode(value)) {
+    if (!validator.isPostalCode(value, 'any')) {
       debugInDevelopment('ERROR: Invalid postal code');
       throw new UserInputError('Invalid postal code');
     }
@@ -95,7 +95,7 @@ const validatePostalCode = new GraphQLScalarType({
   },
   parseLiteral(ast) {
     // Validation during AST analysis
-    if (!validator.isPostalCode(ast.value)) {
+    if (!validator.isPostalCode(ast.value, 'any')) {
       debugInDevelopment('ERROR: Invalid postal code');
       throw new UserInputError('Invalid postal code');
     }
