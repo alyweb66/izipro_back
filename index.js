@@ -36,7 +36,6 @@ const server = new ApolloServer({
     clearOnMutation: true,
   }),
 });
-
 // Passing an ApolloServer instance to the `startStandaloneServer` function:
 //  1. creates an Express app
 //  2. installs ApolloServer instance as middleware
