@@ -36,7 +36,6 @@ const server = new ApolloServer({
     clearOnMutation: true,
   }),
 });
-
 // Passing an ApolloServer instance to the `startStandaloneServer` function:
 //  1. creates an Express app
 //  2. installs ApolloServer instance as middleware
@@ -56,9 +55,9 @@ const { url } = await startStandaloneServer(server, {
     return {
       res,
       req,
-      userData,
       dataSources: {
         dataDB: new DataDB({ cache }),
+        userData,
       },
     };
   },

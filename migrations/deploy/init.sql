@@ -31,7 +31,7 @@ CREATE TABLE "user"(
    "remember_token" TEXT,
    "refresh_token" TEXT,
    "siret" BIGINT UNIQUE CHECK (LENGTH("siret"::TEXT) = 14),
-   "denomination" TEXT CHECK (LENGTH("last_name") <= 50),
+   "campany-name" TEXT CHECK (LENGTH("last_name") <= 50),
    "role" TEXT NOT NULL,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz

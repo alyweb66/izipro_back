@@ -1,4 +1,5 @@
 import Debug from 'debug';
+import { ForbiddenError } from 'apollo-server-core';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:query`);
 
@@ -11,11 +12,10 @@ export default {
     debug(`get message with id ${id}`);
     return dataSources.dataDB.message.findByPk(id);
   },
-  users(_, { offset, limit }, { dataSources }) {
-    debug('get all users');
-    return dataSources.dataDB.user.findAll(offset, limit);
-  },
   user(_, { id }, { dataSources }) {
+    if (dataSources.userData.id !== id) {
+      throw new ForbiddenError('Not authorized');
+    }
     debug(`get user with id ${id}`);
     return dataSources.dataDB.user.findByPk(id);
   },
