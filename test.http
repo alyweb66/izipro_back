@@ -102,7 +102,7 @@ mutation Mutation($input: confirmRegisterEmailInput!) {
 
 {
   "input": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNlYXNleGFuZHN1bjg3QGxpdmUuZnIiLCJ1c2VySWQiOjYsImlhdCI6MTcwOTA0NDk4MiwiZXhwIjoxNzA5MDQ4NTgyfQ.oe8rVh_MKnTBHJlv_tFx4wmRY1UMNl2R9jhUY-84_zg"
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFsZW1hbnkucGllcnJpY2tAZ21haWwuY29tIiwiaWF0IjoxNzA5MTEzMjQyLCJleHAiOjE3MDkxMTY4NDJ9.MC1voDHvvRQKdUvzxu2aWUcCx3tWT_3OzBrNDux8dvU"
   }
 }
 
@@ -152,7 +152,6 @@ mutation Mutation($id: Int!, $input: UpdateUserInput!) {
 POST {{endpoint}}
 Content-Type: application/json
 X-REQUEST-TYPE: GraphQL
-Cookie: auth-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Niwicm9sZSI6InVzZXIiLCJpYXQiOjE3MDg5NTY1OTIsImV4cCI6MTcwODk1NzQ5Mn0.euhsoGko2rXr1qLc6nR_eGbpLZ5w1EiUs99WiNvuPag;refresh-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Niwicm9sZSI6InVzZXIiLCJpYXQiOjE3MDg5NTY1OTIsImV4cCI6MTcxMDE2NjE5Mn0.7FRvczlvbJYD6ORualVkjUt6MpOFXVgZEY7XRNQIXtE;
 
 mutation Mutation {
   refreshUserToken

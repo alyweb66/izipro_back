@@ -67,18 +67,19 @@ async function createUserFunction(_, { input }, { dataSources }) {
 
 async function confirmRegisterEmail(_, { input }, { dataSources }) {
   try {
-    await dataSources.dataDB.clearCache();
     const { token } = input;
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-    console.log('decodedToken', decodedToken);
+
     let user;
-    console.log('user', user);
+    // Clear the user cache
+    dataSources.dataDB.user.cache.clear();
     // check if id in the token is present that mean user is changing his email
     if (decodedToken.userId) {
       user = await dataSources.dataDB.user.findByPk(decodedToken.userId);
     } else {
       user = await dataSources.dataDB.user.findUserByEmail(decodedToken.email);
     }
+
     if (!user) {
       throw new ApolloError('User not found', 'BAD_REQUEST');
     }
