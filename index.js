@@ -65,12 +65,13 @@ const { url } = await startStandaloneServer(server, {
       // After refreshing the token, get the user data again
       // userData = getUserByToken(req, res, dataSources);
       // }
+      dataSources.userData = userData;
     } else {
       debug('no cookie in headers');
+      dataSources.userData = null;
     }
 
     // Update userData in dataSources
-    dataSources.userData = userData;
 
     return {
       res,
