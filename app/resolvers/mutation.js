@@ -135,8 +135,9 @@ async function login(_, { input }, { dataSources, res }) {
     throw new ApolloError('EIncorrect email or password', 'BAD_REQUEST');
   }
   // Create a token
-  const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
-  const refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '14d' });
+  const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1m' });
+  console.log('token', token);
+  const refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '5m' });
   const saveRefreshToken = await dataSources.dataDB.user.update(
     user.id,
     { refresh_token: refreshToken },
@@ -251,14 +252,14 @@ async function updateUser(_, { id, input }, { dataSources }) {
 
   const user = await dataSources.dataDB.user.findByPk(id);
   // Check if the email has changed to send a new confirmation email
-  if (input.email !== user.email) {
-    const token = jwt.sign({ email: input.email, userId: id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-    console.log(decodedToken);
-    await dataSources.dataDB.user.update(id, { remember_token: token });
-    await sendEmail.confirmEmail(input.email, token);
-    debug('Email has changed');
-    delete updateInput.email;
+  if (input.email) {
+    if (input.email !== user.email) {
+      const token = jwt.sign({ email: input.email, userId: id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      await dataSources.dataDB.user.update(id, { remember_token: token });
+      await sendEmail.confirmEmail(input.email, token);
+      debug('Email has changed');
+      delete updateInput.email;
+    }
   }
   if (!user) {
     throw new ApolloError('User not found', 'NOT_FOUND');
