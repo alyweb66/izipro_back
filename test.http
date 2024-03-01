@@ -139,9 +139,9 @@ mutation Mutation($id: Int!, $input: UpdateUserInput!) {
   "id": 6,
   "input": {
     "first_name": "Pierrick",
-    "last_name": "Alemany",
+    "last_name": "Ahkjiiuuy",
     "postal_code": "75000",
-    "email": "seasexandsun87@live.fr",
+    //"email": "alemany.pierrick@gmail.com",
     "city": "Paris",
     "company_name": "Alemany",
     "siret": 12345678912345
@@ -190,7 +190,7 @@ query Query($id: Int!) {
 }
 
 {
-  "id": 7
+  "id": 6
 }
 
 ### Request to find all request
