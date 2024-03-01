@@ -199,7 +199,8 @@ async function deleteUser(_, { id }, { dataSources, res }) {
 //       throw new ApolloError('Error token', 'BAD_REQUEST');
 //     }
 //     // Make a new token
-//     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
+//     const token = jwt.sign({ id: user.id, role: user.role },
+// process.env.JWT_SECRET, { expiresIn: '15m' });
 
 //     // Add the new token to the cookies
 //     const TokenCookie = cookie.serialize(
@@ -269,6 +270,34 @@ async function updateUser(_, { id, input }, { dataSources }) {
   return dataSources.dataDB.user.update(id, updateInput);
 }
 
+async function changePassword(_, { id, input }, { dataSources }) {
+  debug('changePassword is starting');
+  const { oldPassword, newPassword } = input;
+  try {
+    if (dataSources.userData.id !== id) {
+      throw new AuthenticationError();
+    }
+    const user = await dataSources.dataDB.user.findByPk(id);
+    if (!user) {
+      throw new ApolloError('User not found', 'BAD_REQUEST');
+    }
+    const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
+    if (!isOldPasswordValid) {
+      throw new ApolloError('Incorrect password', 'BAD_REQUEST');
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    await dataSources.dataDB.user.update(
+      dataSources.userData.id,
+      { password: hashedNewPassword },
+    );
+    return true;
+  } catch (err) {
+    debug(err);
+    throw new ApolloError('Error', 'BAD_REQUEST');
+  }
+}
+
 export default {
   createUser: createUserFunction,
   createProUser: createUserFunction,
@@ -279,4 +308,5 @@ export default {
   forgotPassword,
   confirmRegisterEmail,
   updateUser,
+  changePassword,
 };
