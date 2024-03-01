@@ -242,40 +242,49 @@ async function forgotPassword(_, { input }, { dataSources }) {
 }
 
 async function updateUser(_, { id, input }, { dataSources }) {
-  if (dataSources.userData.id !== id) {
-    throw new ForbiddenError('Not authorized');
-  }
-  // Remove siret and company_name if the user is not a pro
-  const updateInput = { ...input };
-  if (dataSources.userData.role === 'user') {
-    delete updateInput.siret;
-    delete updateInput.company_name;
-  }
-
-  const user = await dataSources.dataDB.user.findByPk(id);
-  // Check if the email has changed to send a new confirmation email
-  if (input.email) {
-    if (input.email !== user.email) {
-      const token = jwt.sign({ email: input.email, userId: id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-      await dataSources.dataDB.user.update(id, { remember_token: token });
-      await sendEmail.confirmEmail(input.email, token);
-      debug('Email has changed');
-      delete updateInput.email;
+  debug('updateUser is starting');
+  try {
+    if (dataSources.userData === null || dataSources.userData.id !== id) {
+      throw new AuthenticationError('Unauthorized');
     }
-  }
-  if (!user) {
-    throw new ApolloError('User not found', 'NOT_FOUND');
-  }
+    // Remove siret and company_name if the user is not a pro
+    const updateInput = { ...input };
+    if (dataSources.userData.role === 'user') {
+      delete updateInput.siret;
+      delete updateInput.company_name;
+    }
 
-  return dataSources.dataDB.user.update(id, updateInput);
+    const user = await dataSources.dataDB.user.findByPk(id);
+    // Check if the email has changed to send a new confirmation email
+    if (input.email) {
+      if (input.email !== user.email) {
+        const token = jwt.sign({ email: input.email, userId: id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        await dataSources.dataDB.user.update(id, { remember_token: token });
+        await sendEmail.confirmEmail(input.email, token);
+        debug('Email has changed');
+        delete updateInput.email;
+      }
+    }
+    if (!user) {
+      throw new ApolloError('User not found', 'NOT_FOUND');
+    }
+
+    return dataSources.dataDB.user.update(id, updateInput);
+  } catch (err) {
+    if (err instanceof AuthenticationError) {
+      throw err;
+    }
+    throw new ApolloError('Error');
+  }
 }
 
 async function changePassword(_, { id, input }, { dataSources }) {
   debug('changePassword is starting');
   const { oldPassword, newPassword } = input;
   try {
-    if (dataSources.userData.id !== id) {
-      throw new AuthenticationError();
+    // Check if the user is logged in
+    if (dataSources.userData === null || dataSources.userData.id !== id) {
+      throw new AuthenticationError('Unauthorized');
     }
     const user = await dataSources.dataDB.user.findByPk(id);
     if (!user) {
@@ -294,6 +303,9 @@ async function changePassword(_, { id, input }, { dataSources }) {
     return true;
   } catch (err) {
     debug(err);
+    if (err instanceof AuthenticationError) {
+      throw err;
+    }
     throw new ApolloError('Error', 'BAD_REQUEST');
   }
 }
