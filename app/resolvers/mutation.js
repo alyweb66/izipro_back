@@ -98,22 +98,6 @@ async function confirmRegisterEmail(_, { input }, { dataSources }) {
   }
 }
 
-async function deleteUser(_, { id }, { dataSources }) {
-  console.log('id', id);
-  console.log('dataSources.userData.id', dataSources.userData.id);
-  if (dataSources.userData.id !== id) {
-    throw new ForbiddenError('Not authorized');
-  }
-
-  const user = await dataSources.dataDB.user.findByPk(id);
-
-  if (!user) {
-    throw new ApolloError('User not found', 'NOT_FOUND');
-  }
-
-  return dataSources.dataDB.user.delete(id);
-}
-
 async function login(_, { input }, { dataSources, res }) {
   debugInDevelopment(input);
 
@@ -135,8 +119,9 @@ async function login(_, { input }, { dataSources, res }) {
     throw new ApolloError('EIncorrect email or password', 'BAD_REQUEST');
   }
   // Create a token
-  const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
-  const refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '14d' });
+  const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1m' });
+
+  const refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '2m' });
   const saveRefreshToken = await dataSources.dataDB.user.update(
     user.id,
     { refresh_token: refreshToken },
@@ -160,6 +145,7 @@ async function login(_, { input }, { dataSources, res }) {
 }
 
 async function logout(_, __, { res }) {
+  debug('logout is starting');
   const pastDate = new Date(0);
   const TokenCookie = cookie.serialize(
     'auth-token',
@@ -180,44 +166,60 @@ async function logout(_, __, { res }) {
   return true;
 }
 
-async function refreshUserToken(_, __, { dataSources, req, res }) {
-  const cookies = cookie.parse(req.headers.cookie || '');
-  const refreshToken = cookies['refresh-token'] || '';
-  debugInDevelopment('refreshToken', refreshToken);
-
-  try {
-    const { id } = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-    const user = await dataSources.dataDB.user.findByPk(id);
-    if (!user) {
-      debugInDevelopment('refreshToken:user failed');
-      throw new ApolloError('User not found', 'BAD_REQUEST');
-    }
-    if (user.refresh_token !== refreshToken) {
-      debugInDevelopment('refreshToken:refresh_token failed', refreshToken);
-      throw new ApolloError('Error token', 'BAD_REQUEST');
-    }
-    // Make a new token
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
-
-    // Add the new token to the cookies
-    const TokenCookie = cookie.serialize(
-      'auth-token',
-      token,
-      { httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv() },
-    );
-    const refreshTokenCookie = cookie.serialize(
-      'refresh-token',
-      refreshToken,
-      { httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv() },
-    );
-
-    res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
-    return true;
-  } catch (err) {
-    debug('Error', err);
-    throw new AuthenticationError('Invalid refresh token');
+async function deleteUser(_, { id }, { dataSources, res }) {
+  debug('delete user is starting', id);
+  if (dataSources.userData.id !== id) {
+    throw new ForbiddenError('Not authorized');
   }
+
+  const user = await dataSources.dataDB.user.findByPk(id);
+
+  if (!user) {
+    throw new ApolloError('User not found', 'NOT_FOUND');
+  }
+  dataSources.dataDB.user.delete(id);
+  logout(null, null, { res });
+  return true;
 }
+
+// async function refreshUserToken(_, __, { dataSources, req, res }) {
+//   const cookies = cookie.parse(req.headers.cookie || '');
+//   const refreshToken = cookies['refresh-token'] || '';
+//   debugInDevelopment('refreshToken', refreshToken);
+
+//   try {
+//     const { id } = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+//     const user = await dataSources.dataDB.user.findByPk(id);
+//     if (!user) {
+//       debugInDevelopment('refreshToken:user failed');
+//       throw new ApolloError('User not found', 'BAD_REQUEST');
+//     }
+//     if (user.refresh_token !== refreshToken) {
+//       debugInDevelopment('refreshToken:refresh_token failed', refreshToken);
+//       throw new ApolloError('Error token', 'BAD_REQUEST');
+//     }
+//     // Make a new token
+//     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
+
+//     // Add the new token to the cookies
+//     const TokenCookie = cookie.serialize(
+//       'auth-token',
+//       token,
+//       { httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv() },
+//     );
+//     const refreshTokenCookie = cookie.serialize(
+//       'refresh-token',
+//       refreshToken,
+//       { httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv() },
+//     );
+
+//     res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
+//     return true;
+//   } catch (err) {
+//     debug('Error', err);
+//     throw new AuthenticationError('Invalid refresh token');
+//   }
+// }
 
 async function forgotPassword(_, { input }, { dataSources }) {
   try {
@@ -251,14 +253,14 @@ async function updateUser(_, { id, input }, { dataSources }) {
 
   const user = await dataSources.dataDB.user.findByPk(id);
   // Check if the email has changed to send a new confirmation email
-  if (input.email !== user.email) {
-    const token = jwt.sign({ email: input.email, userId: id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-    console.log(decodedToken);
-    await dataSources.dataDB.user.update(id, { remember_token: token });
-    await sendEmail.confirmEmail(input.email, token);
-    debug('Email has changed');
-    delete updateInput.email;
+  if (input.email) {
+    if (input.email !== user.email) {
+      const token = jwt.sign({ email: input.email, userId: id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      await dataSources.dataDB.user.update(id, { remember_token: token });
+      await sendEmail.confirmEmail(input.email, token);
+      debug('Email has changed');
+      delete updateInput.email;
+    }
   }
   if (!user) {
     throw new ApolloError('User not found', 'NOT_FOUND');
@@ -273,7 +275,7 @@ export default {
   deleteUser,
   login,
   logout,
-  refreshUserToken,
+  // refreshUserToken,
   forgotPassword,
   confirmRegisterEmail,
   updateUser,

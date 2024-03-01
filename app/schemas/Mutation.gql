@@ -6,7 +6,7 @@ type Mutation {
     deleteUser(id: Int!): Boolean
     login(input: loginInput!): Boolean
     logout: Boolean
-    refreshUserToken: Boolean
+    # refreshUserToken: Boolean
     forgotPassword(input: forgotPasswordInput!): Boolean
     confirmRegisterEmail(input: confirmRegisterEmailInput!): Boolean
 }
