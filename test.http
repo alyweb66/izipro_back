@@ -102,7 +102,7 @@ mutation Mutation($input: confirmRegisterEmailInput!) {
 
 {
   "input": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFsZW1hbnkucGllcnJpY2tAZ21haWwuY29tIiwiaWF0IjoxNzA5MTEzMjQyLCJleHAiOjE3MDkxMTY4NDJ9.MC1voDHvvRQKdUvzxu2aWUcCx3tWT_3OzBrNDux8dvU"
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFsZW1hbnkucGllcnJpY2tAZ21haWwuY29tIiwiaWF0IjoxNzA5MzAwODQxLCJleHAiOjE3MDkzMDQ0NDF9.e_ElEasfSoEjlQknoHB-4l_Nvj6flfoLgc6vl3wUKRI"
   }
 }
 
@@ -136,12 +136,12 @@ mutation Mutation($id: Int!, $input: UpdateUserInput!) {
 }
 
 {
-  "id": 6,
+  "id": 12,
   "input": {
     "first_name": "Pierrick",
-    "last_name": "Alemany",
+    "last_name": "Ahkjiiuuy",
     "postal_code": "75000",
-    "email": "seasexandsun87@live.fr",
+    //"email": "alemany.pierrick@gmail.com",
     "city": "Paris",
     "company_name": "Alemany",
     "siret": 12345678912345
@@ -170,7 +170,7 @@ mutation Mutation($id: Int!) {
 }
 
 {
-  "id": 7
+  "id": 11
 }
 
 ### Request to find messages to user by id
@@ -190,7 +190,7 @@ query Query($id: Int!) {
 }
 
 {
-  "id": 7
+  "id": 6
 }
 
 ### Request to find all request
