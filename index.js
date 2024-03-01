@@ -15,7 +15,7 @@ import { InMemoryLRUCache } from '@apollo/utils.keyvaluecache';
 import typeDefs from './app/schemas/index.js';
 import resolvers from './app/resolvers/index.js';
 import getUserByToken from './app/middleware/getUserByToken.js';
-import refreshToken from './app/middleware/refreshToken.js';
+
 // class DataDB from dataSources
 import DataDB from './app/datasources/data/index.js';
 
@@ -68,7 +68,6 @@ const { url } = await startStandaloneServer(server, {
     } else {
       debug('no cookie in headers');
     }
-    console.log('serveur userdata', userData);
 
     // Update userData in dataSources
     dataSources.userData = userData;

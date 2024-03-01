@@ -102,7 +102,7 @@ mutation Mutation($input: confirmRegisterEmailInput!) {
 
 {
   "input": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFsZW1hbnkucGllcnJpY2tAZ21haWwuY29tIiwiaWF0IjoxNzA5MTEzMjQyLCJleHAiOjE3MDkxMTY4NDJ9.MC1voDHvvRQKdUvzxu2aWUcCx3tWT_3OzBrNDux8dvU"
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFsZW1hbnkucGllcnJpY2tAZ21haWwuY29tIiwiaWF0IjoxNzA5MzAwODQxLCJleHAiOjE3MDkzMDQ0NDF9.e_ElEasfSoEjlQknoHB-4l_Nvj6flfoLgc6vl3wUKRI"
   }
 }
 
@@ -136,7 +136,7 @@ mutation Mutation($id: Int!, $input: UpdateUserInput!) {
 }
 
 {
-  "id": 6,
+  "id": 12,
   "input": {
     "first_name": "Pierrick",
     "last_name": "Ahkjiiuuy",
@@ -170,7 +170,7 @@ mutation Mutation($id: Int!) {
 }
 
 {
-  "id": 7
+  "id": 11
 }
 
 ### Request to find messages to user by id
