@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import cookie from 'cookie';
 import Debug from 'debug';
 import { ApolloError, AuthenticationError } from 'apollo-server-core';
+import mutationLogout from '../resolvers/mutation.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:getUserByToken`);
 
@@ -30,10 +31,10 @@ export default async function getUserByToken(req, res, dataSources) {
   debugInDevelopment('cookies', cookies);
 
   const token = cookies['auth-token'] || '';
-  console.log('token', token);
   const refreshToken = cookies['refresh-token'] || '';
 
   try {
+    // If the token is valid, i return the user data
     if (token) {
       const userData = jwt.verify(token, process.env.JWT_SECRET);
 
@@ -42,13 +43,14 @@ export default async function getUserByToken(req, res, dataSources) {
     }
   } catch (tokenError) {
     debug('Failed to verify token', tokenError);
+
     if (tokenError instanceof jwt.TokenExpiredError) {
       // If the error is token expired, i refresh the token
       debug('refreshToken is starting');
       try {
         const verifyRefreshToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
         if (!verifyRefreshToken) {
-          debugInDevelopment('refreshToken:verifyRefreshToken failed');
+          debugInDevelopment('refreshToken: verifyRefreshToken failed');
           throw new ApolloError('Error token', 'BAD_REQUEST');
         }
 
@@ -56,13 +58,15 @@ export default async function getUserByToken(req, res, dataSources) {
         dataSources.dataDB.user.cache.clear();
 
         const user = await dataSources.dataDB.user.findByPk(verifyRefreshToken.id);
-        console.log('user', user);
+
         if (!user) {
-          debugInDevelopment('refreshToken:user failed');
+          debugInDevelopment('refreshToken: user failed');
+          mutationLogout.logout(null, null, { res });
           throw new ApolloError('User not found', 'BAD_REQUEST');
         }
         if (user.refresh_token !== refreshToken) {
-          debugInDevelopment('refreshToken:refresh_token failed', verifyRefreshToken);
+          debugInDevelopment('refreshToken: refresh_token failed', verifyRefreshToken);
+          mutationLogout.logout(null, null, { res });
           throw new ApolloError('Error token', 'BAD_REQUEST');
         }
         const newToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1m' });
@@ -82,30 +86,13 @@ export default async function getUserByToken(req, res, dataSources) {
         const userData = { id: user.id, role: user.role };
         return userData;
       } catch (refreshTokenError) {
-        // If the error is token expired, i clear the cookies
+        // If the error is token expired or user not found, i clear the cookies
         if (refreshTokenError instanceof jwt.TokenExpiredError) {
-          debug('user is logged out ');
-          const pastDate = new Date(0);
-          const TokenCookie = cookie.serialize(
-            'auth-token',
-            '',
-            {
-              httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv(), expires: pastDate,
-            },
-          );
-          const refreshTokenCookie = cookie.serialize(
-            'refresh-token',
-            '',
-            {
-              httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv(), expires: pastDate,
-            },
-          );
-
-          res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
+          mutationLogout.logout(null, null, { res });
           const userData = null;
           return userData;
         }
-        debug('Failed to verify refresh token', refreshTokenError);
+        debug('Failed to verify refresh token');
         throw new ApolloError('refresh token expired', 'BAD_REQUEST');
       }
     }
