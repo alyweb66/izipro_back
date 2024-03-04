@@ -24,8 +24,8 @@ class SirenAPI extends RESTDataSource {
   async getSiretData(siret) {
     try {
       const response = await this.get(siret);
-      debug('response', response.etablissement.siret);
-      return response.etablissement.siret;
+      debug('response', response.etablissement);
+      return response.etablissement;
     } catch (error) {
       debug('error', error);
       throw new ApolloError('Error getting siret data', 'SIREN_API_ERROR');

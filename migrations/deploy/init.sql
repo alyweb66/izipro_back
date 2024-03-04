@@ -21,7 +21,6 @@ CREATE TABLE "user"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "first_name" TEXT CHECK (LENGTH("first_name") <= 50),
    "last_name" TEXT CHECK (LENGTH("last_name") <= 50),
-   "company_name" TEXT CHECK (LENGTH("last_name") <= 50),
    "email" email NOT NULL UNIQUE CHECK (LENGTH("email") <= 50),
    "verified_email" BOOLEAN NOT NULL DEFAULT FALSE,
    "adress" TEXT CHECK (LENGTH("adress") <= 100),
@@ -31,7 +30,7 @@ CREATE TABLE "user"(
    "remember_token" TEXT,
    "refresh_token" TEXT,
    "siret" BIGINT UNIQUE CHECK (LENGTH("siret"::TEXT) = 14),
-   "campany-name" TEXT CHECK (LENGTH("last_name") <= 50),
+   "denomination" TEXT CHECK (LENGTH("last_name") <= 50),
    "role" TEXT NOT NULL,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
