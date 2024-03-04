@@ -87,7 +87,7 @@ mutation Mutation($input: loginInput!) {
 {
   "input": {
     "email": "alemany.pierrick@gmail.com",
-    "password": "Tutu12345*"
+    "password": "Toto12345*"
   }
 }
 
@@ -112,9 +112,14 @@ POST {{endpoint}}
 Content-Type: application/json
 X-REQUEST-TYPE: GraphQL
 
-mutation Mutation {
-  logout
+mutation Mutation (($id: Int!) {
+  logout(id: $id) 
 }
+
+{
+  "id": 12
+}
+
 
 ### Request to update user
 POST {{endpoint}}
@@ -139,12 +144,29 @@ mutation Mutation($id: Int!, $input: UpdateUserInput!) {
   "id": 12,
   "input": {
     "first_name": "Pierrick",
-    "last_name": "Ahkjiiuuy",
+    "last_name": "Ahkjghgtguuy",
     "postal_code": "75000",
     //"email": "alemany.pierrick@gmail.com",
     "city": "Paris",
     "company_name": "Alemany",
     "siret": 12345678912345
+  }
+}
+
+### Request to change user password
+POST {{endpoint}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+mutation Mutation($id: Int!, $input: ChangePasswordInput!) {
+  changePassword(id: $id, input: $input)
+}
+
+{
+  "id": 12,
+  "input": {
+    "oldPassword": "Tutu12345*",
+    "newPassword": "Toto12345*"
   }
 }
 

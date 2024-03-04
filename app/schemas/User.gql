@@ -34,7 +34,7 @@ input CreateUserInput {
     password: validatePassword!
 }
 
-input confirmRegisterEmailInput {
+input ConfirmRegisterEmailInput {
     token: String!
 }
 
@@ -55,6 +55,12 @@ input UpdateUserInput {
     siret: validateSiret
 }
 
-input forgotPasswordInput {
+input ForgotPasswordInput {
     email: String!
 }
+
+input ChangePasswordInput {
+    oldPassword: validatePassword!
+    newPassword: validatePassword!
+}
+
