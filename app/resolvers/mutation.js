@@ -48,13 +48,14 @@ async function createUserFunction(_, { input }, { dataSources }) {
     const hashedPassword = await bcrypt.hash(input.password, 10);
 
     // Check if the siret is valid
+    let siretData = null;
     if (input.siret) {
       const sirenAPI = new SirenAPI();
-      const siret = await sirenAPI.getSiretData(input.siret);
-      if (!siret) {
+      siretData = await sirenAPI.getSiretData(input.siret);
+      if (!siretData) {
         throw new ApolloError('Siret not found', 'BAD_REQUEST');
       }
-      if (Number(siret) !== input.siret) {
+      if (Number(siretData.siret) !== input.siret) {
         throw new ApolloError('Siret not found', 'BAD_REQUEST');
       }
     }
@@ -72,6 +73,7 @@ async function createUserFunction(_, { input }, { dataSources }) {
     const userInputWithHashedPassword = {
       ...input,
       password: hashedPassword,
+      denomination: siretData ? siretData.uniteLegale.denominationUniteLegale : null,
       role: addRole,
       remember_token: token,
     };
