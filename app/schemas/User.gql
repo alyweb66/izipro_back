@@ -7,9 +7,8 @@ type User {
     adress: String
     postal_code: String
     city: String
-    company_name: String
     siret: String
-    denomination: String!
+    denomination: String
     messages: [Message]
 }
 
