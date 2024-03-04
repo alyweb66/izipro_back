@@ -29,13 +29,12 @@ function debugInDevelopment(message = '', value = '') {
 // The ApolloServer constructor requires two parameters: schema
 // definition and set of resolvers.
 const server = new ApolloServer({
-  cors: {
-    origin: ' https://sandbox.embed.apollographql.com', // Allow only this origin
-    credentials: true, // Allow cookies to be sent
-  },
+  // cors: {
+  //   origin: ' https://sandbox.embed.apollographql.com', // Allow only this origin
+  //   credentials: true, // Allow cookies to be sent
+  // },
   typeDefs,
   resolvers,
-  debug: process.env.NODE_ENV !== 'production',
   cache: new InMemoryLRUCache({
     maxSize: 2 ** 20 * 100,
     clearOnMutation: true,
@@ -65,12 +64,13 @@ const { url } = await startStandaloneServer(server, {
       // After refreshing the token, get the user data again
       // userData = getUserByToken(req, res, dataSources);
       // }
+      dataSources.userData = userData;
     } else {
       debug('no cookie in headers');
+      dataSources.userData = null;
     }
 
     // Update userData in dataSources
-    dataSources.userData = userData;
 
     return {
       res,
