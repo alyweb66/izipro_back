@@ -11,7 +11,7 @@ INSERT INTO "user" (
     "password",
     "remember_token",
     "siret",
-    "company_name",
+    "denomination",
     "role",
     "created_at",
     "updated_at"
