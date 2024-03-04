@@ -6,6 +6,7 @@ import {
   AuthenticationError, ApolloError, ForbiddenError, UserInputError,
 } from 'apollo-server-core';
 import * as sendEmail from '../middleware/sendEmail.js';
+import SirenAPI from '../datasources/SirenAPI/index.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:mutation`);
 
@@ -42,8 +43,21 @@ async function createUserFunction(_, { input }, { dataSources }) {
     if (existingUser) {
       throw new ApolloError('Email ou mot de passe incorrect', 'BAD_REQUEST');
     }
+
     // Hash the password using bcrypt
     const hashedPassword = await bcrypt.hash(input.password, 10);
+
+    // Check if the siret is valid
+    if (input.siret) {
+      const sirenAPI = new SirenAPI();
+      const siret = await sirenAPI.getSiretData(input.siret);
+      if (!siret) {
+        throw new ApolloError('Siret not found', 'BAD_REQUEST');
+      }
+      if (Number(siret) !== input.siret) {
+        throw new ApolloError('Siret not found', 'BAD_REQUEST');
+      }
+    }
 
     // Determine role based on the email address
     const addRole = input.siret ? 'pro' : 'user';
