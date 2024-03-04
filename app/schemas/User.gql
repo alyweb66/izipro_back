@@ -63,3 +63,4 @@ input ChangePasswordInput {
     oldPassword: validatePassword!
     newPassword: validatePassword!
 }
+

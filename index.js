@@ -29,13 +29,12 @@ function debugInDevelopment(message = '', value = '') {
 // The ApolloServer constructor requires two parameters: schema
 // definition and set of resolvers.
 const server = new ApolloServer({
-  cors: {
-    origin: ' https://sandbox.embed.apollographql.com', // Allow only this origin
-    credentials: true, // Allow cookies to be sent
-  },
+  // cors: {
+  //   origin: ' https://sandbox.embed.apollographql.com', // Allow only this origin
+  //   credentials: true, // Allow cookies to be sent
+  // },
   typeDefs,
   resolvers,
-  debug: process.env.NODE_ENV !== 'production',
   cache: new InMemoryLRUCache({
     maxSize: 2 ** 20 * 100,
     clearOnMutation: true,
