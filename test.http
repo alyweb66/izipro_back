@@ -69,8 +69,9 @@ mutation Mutation($input: CreateUserInput!) {
 
 {
   "input": {
-    "email": "alemany.pierrick@gmail.com",
-    "password": "Tutu12345*"
+    "email": "alyweb@gmail.com",
+    "password": "Tutu12345*",
+    "siret": 12345678912345
   }
 }
 
@@ -96,7 +97,7 @@ POST {{endpoint}}
 Content-Type: application/json
 X-REQUEST-TYPE: GraphQL
 
-mutation Mutation($input: confirmRegisterEmailInput!) {
+mutation Mutation($input: ConfirmRegisterEmailInput!) {
   confirmRegisterEmail(input: $input)
 }
 
@@ -112,13 +113,10 @@ POST {{endpoint}}
 Content-Type: application/json
 X-REQUEST-TYPE: GraphQL
 
-mutation Mutation (($id: Int!) {
-  logout(id: $id) 
+mutation Mutation {
+  logout
 }
 
-{
-  "id": 12
-}
 
 
 ### Request to update user

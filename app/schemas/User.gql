@@ -32,6 +32,7 @@ input loginInput {
 input CreateUserInput {
     email: validateEmail!
     password: validatePassword!
+    siret: validateSiret!
 }
 
 input ConfirmRegisterEmailInput {
