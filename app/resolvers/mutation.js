@@ -36,33 +36,37 @@ function secureEnv() {
  */
 async function createUserFunction(_, { input }, { dataSources }) {
   debugInDevelopment(input);
-
+  try {
   // Check if user exists
-  const existingUser = await dataSources.dataDB.user.findUserByEmail(input.email);
-  if (existingUser) {
-    throw new ApolloError('Email ou mot de passe incorrect', 'BAD_REQUEST');
+    const existingUser = await dataSources.dataDB.user.findUserByEmail(input.email);
+    if (existingUser) {
+      throw new ApolloError('Email ou mot de passe incorrect', 'BAD_REQUEST');
+    }
+    // Hash the password using bcrypt
+    const hashedPassword = await bcrypt.hash(input.password, 10);
+
+    // Determine role based on the email address
+    const addRole = input.siret ? 'pro' : 'user';
+
+    // Create a token and send an email to confirm the email address
+    const token = jwt.sign({ email: input.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    debugInDevelopment('Token is generated', token);
+    await sendEmail.confirmEmail(input.email, token);
+    debug('confirmEmail sent');
+
+    // Update the input object with the hashed password
+    const userInputWithHashedPassword = {
+      ...input,
+      password: hashedPassword,
+      role: addRole,
+      remember_token: token,
+    };
+
+    return dataSources.dataDB.user.create(userInputWithHashedPassword);
+  } catch (err) {
+    debug(err);
+    throw new ApolloError('Error');
   }
-  // Hash the password using bcrypt
-  const hashedPassword = await bcrypt.hash(input.password, 10);
-
-  // Determine role based on the email address
-  const addRole = input.siret ? 'pro' : 'user';
-
-  // Create a token and send an email to confirm the email address
-  const token = jwt.sign({ email: input.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
-  debugInDevelopment('Token is generated', token);
-  await sendEmail.confirmEmail(input.email, token);
-  debug('confirmEmail sent');
-
-  // Update the input object with the hashed password
-  const userInputWithHashedPassword = {
-    ...input,
-    password: hashedPassword,
-    role: addRole,
-    remember_token: token,
-  };
-
-  return dataSources.dataDB.user.create(userInputWithHashedPassword);
 }
 
 async function confirmRegisterEmail(_, { input }, { dataSources }) {
@@ -99,87 +103,105 @@ async function confirmRegisterEmail(_, { input }, { dataSources }) {
 }
 
 async function login(_, { input }, { dataSources, res }) {
+  debug('login is starting');
   debugInDevelopment(input);
+  try {
+    dataSources.dataDB.user.cache.clear();
+    const user = await dataSources.dataDB.user.findUserByEmail(input.email);
 
-  const user = await dataSources.dataDB.user.findUserByEmail(input.email);
+    if (!user) {
+      debugInDevelopment('login:user failed', user);
+      throw new ApolloError('Incorrect email or password', 'BAD_REQUEST');
+    }
+    if (user.verified_email === false) {
+      debugInDevelopment('login:verified_email false');
+      throw new ApolloError('Unverified email', 'BAD_REQUEST');
+    }
 
-  if (!user) {
-    debugInDevelopment('login:user failed', user);
-    throw new ApolloError('Incorrect email or password', 'BAD_REQUEST');
+    const validPassword = await bcrypt.compare(input.password, user.password);
+
+    if (!validPassword) {
+      debugInDevelopment('login:validPassword failed', validPassword);
+      throw new ApolloError('EIncorrect email or password', 'BAD_REQUEST');
+    }
+    // Create a token
+    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
+
+    const refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
+    const saveRefreshToken = await dataSources.dataDB.user.update(
+      user.id,
+      { refresh_token: refreshToken },
+    );
+    debugInDevelopment('saveRefreshToken', saveRefreshToken);
+
+    // Set the token as a cookie
+    const TokenCookie = cookie.serialize(
+      'auth-token',
+      token,
+      { httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv() },
+    );
+    const refreshTokenCookie = cookie.serialize(
+      'refresh-token',
+      refreshToken,
+      { httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv() },
+    );
+
+    console.log('finish login');
+    res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
+    return true;
+  } catch (err) {
+    debug(err);
+    throw new ApolloError('Error');
   }
-  if (user.verified_email === false) {
-    debugInDevelopment('login:verified_email false');
-    throw new ApolloError('Unverified email', 'BAD_REQUEST');
-  }
-
-  const validPassword = await bcrypt.compare(input.password, user.password);
-
-  if (!validPassword) {
-    debugInDevelopment('login:validPassword failed', validPassword);
-    throw new ApolloError('EIncorrect email or password', 'BAD_REQUEST');
-  }
-  // Create a token
-  const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1m' });
-
-  const refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '2m' });
-  const saveRefreshToken = await dataSources.dataDB.user.update(
-    user.id,
-    { refresh_token: refreshToken },
-  );
-  debugInDevelopment('saveRefreshToken', saveRefreshToken);
-
-  // Set the token as a cookie
-  const TokenCookie = cookie.serialize(
-    'auth-token',
-    token,
-    { httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv() },
-  );
-  const refreshTokenCookie = cookie.serialize(
-    'refresh-token',
-    refreshToken,
-    { httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv() },
-  );
-
-  res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
-  return true;
 }
 
 async function logout(_, __, { res }) {
   debug('logout is starting');
-  const pastDate = new Date(0);
-  const TokenCookie = cookie.serialize(
-    'auth-token',
-    '',
-    {
-      httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv(), expires: pastDate,
-    },
-  );
-  const refreshTokenCookie = cookie.serialize(
-    'refresh-token',
-    '',
-    {
-      httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv(), expires: pastDate,
-    },
-  );
+  try {
+    const pastDate = new Date(0);
+    const TokenCookie = cookie.serialize(
+      'auth-token',
+      '',
+      {
+        httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv(), expires: pastDate,
+      },
+    );
+    const refreshTokenCookie = cookie.serialize(
+      'refresh-token',
+      '',
+      {
+        httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv(), expires: pastDate,
+      },
+    );
 
-  res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
-  return true;
+    res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
+    return true;
+  } catch (err) {
+    debug(err);
+    throw new ApolloError('Error', err);
+  }
 }
 
 async function deleteUser(_, { id }, { dataSources, res }) {
   debug('delete user is starting', id);
-  if (dataSources.userData.id !== id) {
-    throw new ForbiddenError('Not authorized');
-  }
+  try {
+  // Check if the user is logged in
+    if (dataSources.userData === null || dataSources.userData.id !== id) {
+      throw new AuthenticationError('Unauthorized');
+    }
 
-  const user = await dataSources.dataDB.user.findByPk(id);
+    const user = await dataSources.dataDB.user.findByPk(id);
 
-  if (!user) {
-    throw new ApolloError('User not found', 'NOT_FOUND');
+    if (!user) {
+      throw new ApolloError('User not found', 'NOT_FOUND');
+    }
+    dataSources.dataDB.user.delete(id);
+    logout(null, null, { res });
+    return true;
+  } catch (err) {
+    debug(err);
+    throw new ApolloError('Error');
   }
-  dataSources.dataDB.user.delete(id);
-  logout(null, null, { res });
-  return true;
 }
 
 // async function refreshUserToken(_, __, { dataSources, req, res }) {

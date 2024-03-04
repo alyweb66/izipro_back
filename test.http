@@ -112,9 +112,14 @@ POST {{endpoint}}
 Content-Type: application/json
 X-REQUEST-TYPE: GraphQL
 
-mutation Mutation {
-  logout
+mutation Mutation (($id: Int!) {
+  logout(id: $id) 
 }
+
+{
+  "id": 12
+}
+
 
 ### Request to update user
 POST {{endpoint}}
@@ -139,7 +144,7 @@ mutation Mutation($id: Int!, $input: UpdateUserInput!) {
   "id": 12,
   "input": {
     "first_name": "Pierrick",
-    "last_name": "Ahkjiiuuy",
+    "last_name": "Ahkjghgtguuy",
     "postal_code": "75000",
     //"email": "alemany.pierrick@gmail.com",
     "city": "Paris",
