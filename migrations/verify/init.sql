@@ -15,6 +15,7 @@ SELECT * FROM "user_has_job" WHERE false;
 SELECT * FROM "event" WHERE false;
 SELECT * FROM "research" WHERE false;
 SELECT * FROM "request" WHERE false;
+SELECT * FROM "conversation" WHERE false;
 SELECT * FROM "request_has_media" WHERE false;
 
 

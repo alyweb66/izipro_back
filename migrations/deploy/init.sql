@@ -60,25 +60,6 @@ CREATE TABLE "category"(
    "updated_at" timestamptz
 );
 
-CREATE TABLE "message"(
-   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "content" TEXT,
-   "user_id" INT NOT NULL REFERENCES "user"(id),
-   "user_id_1" INT NOT NULL REFERENCES "user"(id),
-   "created_at" timestamptz NOT NULL DEFAULT now(),
-   "updated_at" timestamptz
-);
-
-CREATE TABLE "media"(
-   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "url" TEXT,
-   "user_id" INT NOT NULL REFERENCES "user"(id),
-   "user_id_1" INT NOT NULL REFERENCES "user"(id),
-   "created_at" timestamptz NOT NULL DEFAULT now(),
-   "updated_at" timestamptz
-  
-);
-
 CREATE TABLE "job"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "name" TEXT CHECK (LENGTH("name") <= 50),
@@ -87,6 +68,50 @@ CREATE TABLE "job"(
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );
+
+CREATE TABLE "request"(
+   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   "title" TEXT CHECK (LENGTH("title") <= 50),
+   "urgent" BOOLEAN NOT NULL,
+   "message" TEXT NOT NULL,
+   "localization" TEXT,
+   "user_id" INT NOT NULL REFERENCES "user"(id),
+   "job_id" INT NOT NULL REFERENCES "job"(id),
+   "created_at" timestamptz NOT NULL DEFAULT now(),
+   "updated_at" timestamptz
+);
+
+CREATE TABLE "conversation"( 
+   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   "title" TEXT CHECK (LENGTH("title") <= 50),
+   "participant_1" INT NOT NULL REFERENCES "user"(id),
+   "participant_2" INT NOT NULL REFERENCES "user"(id),
+   "request_id" INT NOT NULL REFERENCES "request"(id),
+   "created_at" timestamptz NOT NULL DEFAULT now(),
+   "updated_at" timestamptz
+   CONSTRAINT different_participants CHECK ("participant_1" <> "participant_2")
+);
+
+CREATE TABLE "message"(
+   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   "content" TEXT,
+   "sender" INT NOT NULL REFERENCES "user"(id),
+   "receiver" INT NOT NULL REFERENCES "user"(id),
+   "conversation_id" INT NOT NULL REFERENCES "conversation"(id),
+   "created_at" timestamptz NOT NULL DEFAULT now(),
+   "updated_at" timestamptz
+);
+
+CREATE TABLE "media"(
+   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   "url" TEXT,
+   "sender" INT NOT NULL REFERENCES "user"(id),
+   "receiver" INT NOT NULL REFERENCES "user"(id),
+   "created_at" timestamptz NOT NULL DEFAULT now(),
+   "updated_at" timestamptz
+  
+);
+
 
 CREATE TABLE "event"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -108,16 +133,6 @@ CREATE TABLE "research"(
    "updated_at" timestamptz
 );
 
-CREATE TABLE "request"(
-   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "urgent" BOOLEAN NOT NULL,
-   "message" TEXT NOT NULL,
-   "localization" TEXT,
-   "user_id" INT NOT NULL REFERENCES "user"(id),
-   "job_id" INT NOT NULL REFERENCES "job"(id),
-   "created_at" timestamptz NOT NULL DEFAULT now(),
-   "updated_at" timestamptz
-);
 
 CREATE TABLE "request_has_media"(
     "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

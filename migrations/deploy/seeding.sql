@@ -23,20 +23,6 @@ INSERT INTO "user" (
     ('Éléonore', 'Rousseau', 'eleonore.rousseau@example.com', '33000', 'Bordeaux', 'hashed_password_5', 'token_5', 89012345678901, 'Company E', 'admin', '2023-02-14 16:34:00', '2023-02-14 16:34:00');
 
 
-INSERT INTO "message" (
-    "content",
-    "user_id",
-    "user_id_1",
-    "created_at",
-    "updated_at"
-) VALUES
-    ('Hello, how are you?', 1, 2, '2023-01-01 15:00:00', '2023-01-01 15:00:00'),
-    ('I am doing well, thank you!', 2, 1, '2023-01-01 15:30:00', '2023-01-01 15:30:00'),
-    ('Any plans for the weekend?', 3, 1, '2023-01-02 10:00:00', '2023-01-02 10:00:00'),
-    ('Not yet, maybe some relaxation.', 1, 3, '2023-01-02 11:00:00', '2023-01-02 11:00:00'),
-    ('Meeting at 2 PM today.', 2, 3, '2023-01-03 13:45:00', '2023-01-03 13:45:00');
-
-
 
 INSERT INTO "category" (
     "name", 
@@ -80,10 +66,40 @@ INSERT INTO "request"(
 
 
 
+INSERT INTO "conversation" (
+    "title", 
+    "participant_1", 
+    "participant_2", 
+    "request_id"
+) VALUES 
+    ('Conversation 1', 1, 2, 1),
+    ('Conversation 2', 2, 3, 2),
+    ('Conversation 3', 3, 4, 3),
+    ('Conversation 4', 4, 5, 4),
+    ('Conversation 5', 5, 1, 5);
+
+
+
+INSERT INTO "message" (
+    "content",
+    "sender",
+    "receiver",
+    "conversation_id",
+    "created_at",
+    "updated_at"
+) VALUES
+    ('Hello, how are you?', 1, 2, 1, '2023-01-01 15:00:00', '2023-01-01 15:00:00'),
+    ('I am doing well, thank you!', 2, 1, 2, '2023-01-01 15:30:00', '2023-01-01 15:30:00'),
+    ('Any plans for the weekend?', 3, 1, 3, '2023-01-02 10:00:00', '2023-01-02 10:00:00'),
+    ('Not yet, maybe some relaxation.', 1, 3, 4, '2023-01-02 11:00:00', '2023-01-02 11:00:00'),
+    ('Meeting at 2 PM today.', 2, 3, 5, '2023-01-03 13:45:00', '2023-01-03 13:45:00');
+
+
+
 INSERT INTO "media" (
     "url", 
-    "user_id", 
-    "user_id_1", 
+    "sender", 
+    "receiver", 
     "updated_at"
 ) VALUES
     ('http://exemple.com/image1.jpg', 1, 2, '2024-02-14T12:00:00Z'),

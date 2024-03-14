@@ -23,7 +23,6 @@ class User extends CoreDatamapper {
     };
     const { rows } = await this.client.query(query);
     const user = rows[0];
-    debug('User found. Connexion successfull');
 
     return user;
   }

@@ -1,0 +1,14 @@
+type Conversation {
+    id: Int!
+    participant_1: Int!
+    participant_2: Int!
+    messages: [Message!]!
+    created_at: String!
+}
+
+input NewConversationInput {
+    title: String!
+    participant_1: Int!
+    participant_2: Int!
+    request_id: Int!
+}
