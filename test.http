@@ -69,7 +69,7 @@ mutation Mutation($input: CreateUserInput!) {
 
 {
   "input": {
-    "email": "alyweb@gmail.com",
+    "email": "cucu@gmail.com",
     "password": "Tutu12345*"
   }
 }
@@ -107,7 +107,7 @@ mutation Mutation($input: loginInput!) {
 {
   "input": {
     "email": "alemany.pierrick@gmail.com",
-    "password": "Toto12345*"
+    "password": "12Pierrick1987*"
   }
 }
 
@@ -196,7 +196,19 @@ mutation Mutation {
   refreshUserToken
 }
 
+### Request to get all conversation
+POST {{endpoint}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
 
+query Query {
+  conversations {
+    id
+    participant_1
+    participant_2
+    created_at
+  }
+}
 
 
 ### Delete user

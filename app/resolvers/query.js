@@ -4,6 +4,14 @@ import { ForbiddenError } from 'apollo-server-core';
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:query`);
 
 export default {
+  conversations(_, { offset, limit }, { dataSources }) {
+    debug('get all conversations');
+    return dataSources.dataDB.conversation.findAll(offset, limit);
+  },
+  conversation(_, { id }, { dataSources }) {
+    debug(`get conversation with id ${id}`);
+    return dataSources.dataDB.conversation.findByPk(id);
+  },
   messages(_, { offset, limit }, { dataSources }) {
     debug('get all messages');
     return dataSources.dataDB.message.findAll(offset, limit);

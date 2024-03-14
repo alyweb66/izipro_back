@@ -9,7 +9,8 @@ type User {
     city: String
     siret: String
     denomination: String
-    messages: [Message]
+    conversation: [Conversation!]!
+    messages: [Message!]!
 }
 
 
