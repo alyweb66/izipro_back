@@ -3,7 +3,9 @@ import Message from './message.js';
 import User from './user.js';
 import Request from './request.js';
 import Media from './media.js';
+import Conversation from './conversation.js';
 import Mutation from './mutation.js';
+import Subscription from './subscription.js';
 import {
   validateEmail, validatePassword, validatePostalCode, validateSiret,
 } from '../validations/validationScalars.js';
@@ -15,8 +17,10 @@ export default {
   validateSiret,
   Query,
   Mutation,
+  Subscription,
   Message,
   User,
   Request,
   Media,
+  Conversation,
 };

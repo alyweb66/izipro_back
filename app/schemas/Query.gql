@@ -1,11 +1,13 @@
 ### this is what i can get back and how
 type Query {
-    messages: [Message!]!
-    message(id: Int!): Message! 
     users: [User!]!
-    user(id: Int!): User!
+    user: User!
     requests: [Request!]!
     request(id: Int!): Request!
+    conversations: [Conversation!]!
+    conversation(id: Int!): Conversation!
+    messages: [Message!]!
+    message(id: Int!): Message! 
     medias: [Media!]!
     media(id: Int!): Media!
 }
