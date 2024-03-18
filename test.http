@@ -51,10 +51,6 @@ query Query($id: Int!) {
   }
 }
 
-{
-  "id": 7
-}
-
 ### Request to create user
 POST {{endpoint}}
 Content-Type: application/json

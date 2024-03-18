@@ -17,12 +17,12 @@ function debugInDevelopment(message = '', value = '') {
     debug('⚠️', message, value);
   }
 }
-function sameSiteEnv() {
+/* function sameSiteEnv() {
   if (process.env.NODE_ENV === 'development') {
     return 'none';
   }
   return 'strict';
-}
+} */
 function secureEnv() {
   if (process.env.NODE_ENV === 'development') {
     return false;
@@ -148,7 +148,14 @@ async function login(_, { input }, { dataSources, res }) {
     // Create a token
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
 
-    const refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
+    // activeSession or not that is the question
+    let refreshToken;
+    debugInDevelopment('input.activeSession', input.activeSession);
+    if (input.activeSession) {
+      refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
+    } else {
+      refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
+    }
     const saveRefreshToken = await dataSources.dataDB.user.update(
       user.id,
       { refresh_token: refreshToken },
@@ -161,7 +168,7 @@ async function login(_, { input }, { dataSources, res }) {
       token,
       {
         httpOnly: false,
-        sameSite: sameSiteEnv(),
+        sameSite: 'strict',
         secure: secureEnv(),
         domain: 'localhost',
         path: '/',
@@ -172,7 +179,7 @@ async function login(_, { input }, { dataSources, res }) {
       refreshToken,
       {
         httpOnly: true,
-        sameSite: sameSiteEnv(),
+        sameSite: 'strict',
         secure: secureEnv(),
         domain: 'localhost',
         path: '/',
@@ -195,14 +202,14 @@ async function logout(_, __, { res }) {
       'auth-token',
       '',
       {
-        httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv(), expires: pastDate,
+        httpOnly: true, sameSite: 'strict', secure: secureEnv(), expires: pastDate,
       },
     );
     const refreshTokenCookie = cookie.serialize(
       'refresh-token',
       '',
       {
-        httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv(), expires: pastDate,
+        httpOnly: true, sameSite: 'strict', secure: secureEnv(), expires: pastDate,
       },
     );
 
@@ -255,17 +262,18 @@ async function forgotPassword(_, { input }, { dataSources }) {
   }
 }
 
-async function updateUser(_, { id, input }, { dataSources }) {
+async function updateUser(_, { input }, { dataSources }) {
   debug('updateUser is starting');
+  const { id } = dataSources.userData;
   try {
-    if (dataSources.userData === null || dataSources.userData.id !== id) {
+    if (dataSources.userData === null) {
       throw new AuthenticationError('Unauthorized');
     }
     // Remove siret and company_name if the user is not a pro
     const updateInput = { ...input };
     if (dataSources.userData.role === 'user') {
       delete updateInput.siret;
-      delete updateInput.company_name;
+      delete updateInput.denomination;
     }
 
     const user = await dataSources.dataDB.user.findByPk(id);
