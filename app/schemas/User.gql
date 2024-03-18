@@ -4,11 +4,12 @@ type User {
     first_name: String
     last_name: String
     email: String!
-    adress: String
+    address: String
     postal_code: String
     city: String
     siret: String
     denomination: String
+    role: String
     conversation: [Conversation!]!
     messages: [Message!]!
 }
@@ -27,6 +28,7 @@ type AccessToken {
 input loginInput {
     email: String!
     password: String!
+    activeSession: Boolean!
 }
 
 input CreateUserInput {
@@ -48,11 +50,11 @@ input UpdateUserInput {
     first_name: String
     last_name: String
     email: validateEmail
-    adress: String
+    address: String
     postal_code: validatePostalCode
     city: String
-    company_name: String
     siret: validateSiret
+    denomination: String
 }
 
 input ForgotPasswordInput {
