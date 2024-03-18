@@ -2,7 +2,7 @@ type Mutation {
 # User mutations
     createUser(input: CreateUserInput!): User
     createProUser(input: CreateProUserInput!): User
-    updateUser(id: Int!, input: UpdateUserInput!): User
+    updateUser(input: UpdateUserInput!): User
     deleteUser(id: Int!): Boolean
     login(input: loginInput!): Boolean
     logout: Boolean
@@ -10,4 +10,7 @@ type Mutation {
     forgotPassword(input: ForgotPasswordInput!): Boolean
     confirmRegisterEmail(input: ConfirmRegisterEmailInput!): Boolean
     changePassword(id: Int!, input: ChangePasswordInput!): Boolean
+
+# Message mutations
+    sendMessage(message: NewMessageInput!): Message!
 }

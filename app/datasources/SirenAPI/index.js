@@ -4,9 +4,9 @@ import { ApolloError } from 'apollo-server-core';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:SirenAPI`);
 
-// class to get siret data from api.siren
-debug('siren api starting');
+debug('siren API starting');
 
+// class to get siret data from api.siren
 class SirenAPI extends RESTDataSource {
   constructor(options) {
     super(options);

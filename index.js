@@ -4,9 +4,22 @@ import 'dotenv/config.js';
 import Debug from 'debug';
 // Modules import
 import { ApolloServer } from '@apollo/server';
+// eslint-disable-next-line import/extensions
+import { expressMiddleware } from '@apollo/server/express4';
+import cors from 'cors';
+import express from 'express';
+// import { PubSub } from 'graphql-subscriptions';
+import http from 'http';
 
 // eslint-disable-next-line import/extensions
-import { startStandaloneServer } from '@apollo/server/standalone';
+import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
+import { makeExecutableSchema } from '@graphql-tools/schema';
+// import { WebSocketServer } from 'ws';
+// eslint-disable-next-line import/extensions
+// import { useServer } from 'graphql-ws/lib/use/ws';
+
+// eslint-disable-next-line import/extensions
+// import { startStandaloneServer } from '@apollo/server/standalone';
 // module to use cache
 import { InMemoryLRUCache } from '@apollo/utils.keyvaluecache';
 // A schema is a collection of type definitions (hence "typeDefs")
@@ -20,6 +33,14 @@ import getUserByToken from './app/middleware/getUserByToken.js';
 import DataDB from './app/datasources/data/index.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:httpserver`);
+
+const app = express();
+
+app.use(express.json());
+
+// The `listen` method launches a web server.
+const httpServer = http.createServer(app);
+
 function debugInDevelopment(message = '', value = '') {
   if (process.env.NODE_ENV === 'development') {
     debug('⚠️', message, value);
@@ -28,58 +49,102 @@ function debugInDevelopment(message = '', value = '') {
 
 // The ApolloServer constructor requires two parameters: schema
 // definition and set of resolvers.
-const server = new ApolloServer({
-  // cors: {
-  //   origin: ' https://sandbox.embed.apollographql.com', // Allow only this origin
-  //   credentials: true, // Allow cookies to be sent
-  // },
+const schema = makeExecutableSchema({
   typeDefs,
   resolvers,
+});
+
+// create a new instance of ApolloServer
+const server = new ApolloServer({
+  schema,
+  plugins: [
+    // Proper shutdown for the HTTP server.
+    ApolloServerPluginDrainHttpServer({ httpServer }),
+    // Proper shutdown for the WebSocket server.
+
+  ],
   cache: new InMemoryLRUCache({
     maxSize: 2 ** 20 * 100,
     clearOnMutation: true,
   }),
 });
+
+await server.start();
+
+app.use(
+  '/',
+  cors({
+    origin: process.env.CORS_ORIGIN,
+    credentials: true,
+  }),
+  // bodyParser.json({ limit: '50mb' }),
+  expressMiddleware(server, {
+    context: async ({ req, res }) => {
+      // Get the user token from the headers.
+      let userData = null;
+
+      const { cache } = server;
+      const dataSources = {
+        dataDB: new DataDB({ cache }),
+        userData,
+      };
+
+      if (typeof req.headers.cookie !== 'undefined' && req.headers.cookie !== null && req.headers.cookie !== '') {
+        debug('cookie in headers');
+        userData = await getUserByToken(req, res, dataSources);
+        // Update userData in dataSources
+        dataSources.userData = userData;
+      } else {
+        debug('no cookie in headers');
+        dataSources.userData = null;
+      }
+
+      return {
+        res,
+        req,
+        dataSources,
+      };
+
+      // listen: { port: process.env.PORT ?? 3000 },
+    },
+  }),
+);
+
 // Passing an ApolloServer instance to the `startStandaloneServer` function:
 //  1. creates an Express app
 //  2. installs ApolloServer instance as middleware
 //  3. prepares app to handle incoming requests
-const { url } = await startStandaloneServer(server, {
-  // Context declaration
-  context: async ({ req, res }) => {
-    // Get the user token from the headers.
-    let userData = null;
+// const { url } = await startStandaloneServer(server, {
+//   // Context declaration
+//   context: async ({ req, res }) => {
+//     // Get the user token from the headers.
+//     let userData = null;
 
-    const { cache } = server;
-    const dataSources = {
-      dataDB: new DataDB({ cache }),
-      userData,
-    };
+//     const { cache } = server;
+//     const dataSources = {
+//       dataDB: new DataDB({ cache }),
+//       userData,
+//     };
 
-    if (typeof req.headers.cookie !== 'undefined' && req.headers.cookie !== null && req.headers.cookie !== '') {
-      debug('cookie in headers');
-      userData = await getUserByToken(req, res, dataSources);
-      // if (userData === null) {
-      // refreshToken(req, res, dataSources);
-      // After refreshing the token, get the user data again
-      // userData = getUserByToken(req, res, dataSources);
-      // }
-      dataSources.userData = userData;
-    } else {
-      debug('no cookie in headers');
-      dataSources.userData = null;
-    }
+//     if (typeof req.headers.cookie !== 'undefined' &&
+// req.headers.cookie !== null && req.headers.cookie !== '') {
+//       debug('cookie in headers');
+//       userData = await getUserByToken(req, res, dataSources);
+//       // Update userData in dataSources
+//       dataSources.userData = userData;
+//     } else {
+//       debug('no cookie in headers');
+//       dataSources.userData = null;
+//     }
 
-    // Update userData in dataSources
-
-    return {
-      res,
-      req,
-      dataSources,
-    };
-  },
-  listen: { port: process.env.PORT ?? 3000 },
-});
-
+//     return {
+//       res,
+//       req,
+//       dataSources,
+//     };
+//   },
+//   listen: { port: process.env.PORT ?? 3000 },
+// });
+await new Promise((resolve) => { httpServer.listen({ port: process.env.PORT || 4000 }, resolve); });
 debugInDevelopment('⚠️   Warning:  DEVELOPMENT MODE ON');
-debug(`🚀  Server ready at: ${url}`);
+debug(`🚀  Server ready at: http://localhost:${httpServer.address().port}`);

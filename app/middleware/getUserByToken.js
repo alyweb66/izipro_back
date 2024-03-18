@@ -11,12 +11,12 @@ function debugInDevelopment(message = '', value = '') {
     debug('⚠️', message, value);
   }
 }
-function sameSiteEnv() {
+/* function sameSiteEnv() {
   if (process.env.NODE_ENV === 'development') {
     return 'none';
   }
   return 'strict';
-}
+} */
 function secureEnv() {
   if (process.env.NODE_ENV === 'development') {
     return false;
@@ -45,7 +45,7 @@ export default async function getUserByToken(req, res, dataSources) {
     debug('Failed to verify token', tokenError);
 
     if (tokenError instanceof jwt.TokenExpiredError) {
-      // If the error is token expired, i refresh the token
+      // If the error is token expired, refresh the token
       debug('refreshToken is starting');
       try {
         const verifyRefreshToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
@@ -74,12 +74,12 @@ export default async function getUserByToken(req, res, dataSources) {
         const TokenCookie = cookie.serialize(
           'auth-token',
           newToken,
-          { httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv() },
+          { httpOnly: true, sameSite: 'strict', secure: secureEnv() },
         );
         const refreshTokenCookie = cookie.serialize(
           'refresh-token',
           refreshToken,
-          { httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv() },
+          { httpOnly: true, sameSite: 'strict', secure: secureEnv() },
         );
 
         res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);

@@ -2,9 +2,11 @@ import Debug from 'debug';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import cookie from 'cookie';
+import { GraphQLError } from 'graphql';
 import {
-  AuthenticationError, ApolloError, ForbiddenError, UserInputError,
+  AuthenticationError, ApolloError, UserInputError,
 } from 'apollo-server-core';
+import { PubSub } from 'graphql-subscriptions';
 import * as sendEmail from '../middleware/sendEmail.js';
 import SirenAPI from '../datasources/SirenAPI/index.js';
 
@@ -15,12 +17,12 @@ function debugInDevelopment(message = '', value = '') {
     debug('⚠️', message, value);
   }
 }
-function sameSiteEnv() {
+/* function sameSiteEnv() {
   if (process.env.NODE_ENV === 'development') {
     return 'none';
   }
   return 'strict';
-}
+} */
 function secureEnv() {
   if (process.env.NODE_ENV === 'development') {
     return false;
@@ -36,6 +38,7 @@ function secureEnv() {
  * @returns
  */
 async function createUserFunction(_, { input }, { dataSources }) {
+  debug('createUser is starting');
   debugInDevelopment(input);
   try {
   // Check if user exists
@@ -48,11 +51,12 @@ async function createUserFunction(_, { input }, { dataSources }) {
     const hashedPassword = await bcrypt.hash(input.password, 10);
 
     // Check if the siret is valid
+    const siret = Number(input.siret);
     let siretData = null;
     if (input.siret) {
       const sirenAPI = new SirenAPI();
-      siretData = await sirenAPI.getSiretData(input.siret);
-      if (!siretData) {
+      siretData = await sirenAPI.getSiretData(siret);
+      if (!siretData.siret) {
         throw new ApolloError('Siret not found', 'BAD_REQUEST');
       }
       if (Number(siretData.siret) !== input.siret) {
@@ -81,11 +85,12 @@ async function createUserFunction(_, { input }, { dataSources }) {
     return dataSources.dataDB.user.create(userInputWithHashedPassword);
   } catch (err) {
     debug(err);
-    throw new ApolloError('Error');
+    throw new GraphQLError('Error');
   }
 }
 
 async function confirmRegisterEmail(_, { input }, { dataSources }) {
+  debug('confirmRegisterEmail is starting');
   try {
     const { token } = input;
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
@@ -143,7 +148,14 @@ async function login(_, { input }, { dataSources, res }) {
     // Create a token
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
 
-    const refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
+    // activeSession or not that is the question
+    let refreshToken;
+    debugInDevelopment('input.activeSession', input.activeSession);
+    if (input.activeSession) {
+      refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
+    } else {
+      refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
+    }
     const saveRefreshToken = await dataSources.dataDB.user.update(
       user.id,
       { refresh_token: refreshToken },
@@ -154,15 +166,26 @@ async function login(_, { input }, { dataSources, res }) {
     const TokenCookie = cookie.serialize(
       'auth-token',
       token,
-      { httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv() },
+      {
+        httpOnly: false,
+        sameSite: 'strict',
+        secure: secureEnv(),
+        domain: 'localhost',
+        path: '/',
+      },
     );
     const refreshTokenCookie = cookie.serialize(
       'refresh-token',
       refreshToken,
-      { httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv() },
+      {
+        httpOnly: true,
+        sameSite: 'strict',
+        secure: secureEnv(),
+        domain: 'localhost',
+        path: '/',
+      },
     );
 
-    console.log('finish login');
     res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
     return true;
   } catch (err) {
@@ -179,14 +202,14 @@ async function logout(_, __, { res }) {
       'auth-token',
       '',
       {
-        httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv(), expires: pastDate,
+        httpOnly: true, sameSite: 'strict', secure: secureEnv(), expires: pastDate,
       },
     );
     const refreshTokenCookie = cookie.serialize(
       'refresh-token',
       '',
       {
-        httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv(), expires: pastDate,
+        httpOnly: true, sameSite: 'strict', secure: secureEnv(), expires: pastDate,
       },
     );
 
@@ -220,46 +243,6 @@ async function deleteUser(_, { id }, { dataSources, res }) {
   }
 }
 
-// async function refreshUserToken(_, __, { dataSources, req, res }) {
-//   const cookies = cookie.parse(req.headers.cookie || '');
-//   const refreshToken = cookies['refresh-token'] || '';
-//   debugInDevelopment('refreshToken', refreshToken);
-
-//   try {
-//     const { id } = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-//     const user = await dataSources.dataDB.user.findByPk(id);
-//     if (!user) {
-//       debugInDevelopment('refreshToken:user failed');
-//       throw new ApolloError('User not found', 'BAD_REQUEST');
-//     }
-//     if (user.refresh_token !== refreshToken) {
-//       debugInDevelopment('refreshToken:refresh_token failed', refreshToken);
-//       throw new ApolloError('Error token', 'BAD_REQUEST');
-//     }
-//     // Make a new token
-//     const token = jwt.sign({ id: user.id, role: user.role },
-// process.env.JWT_SECRET, { expiresIn: '15m' });
-
-//     // Add the new token to the cookies
-//     const TokenCookie = cookie.serialize(
-//       'auth-token',
-//       token,
-//       { httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv() },
-//     );
-//     const refreshTokenCookie = cookie.serialize(
-//       'refresh-token',
-//       refreshToken,
-//       { httpOnly: true, sameSite: sameSiteEnv(), secure: secureEnv() },
-//     );
-
-//     res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
-//     return true;
-//   } catch (err) {
-//     debug('Error', err);
-//     throw new AuthenticationError('Invalid refresh token');
-//   }
-// }
-
 async function forgotPassword(_, { input }, { dataSources }) {
   try {
     const user = await dataSources.dataDB.user.findUserByEmail(input.email);
@@ -279,17 +262,18 @@ async function forgotPassword(_, { input }, { dataSources }) {
   }
 }
 
-async function updateUser(_, { id, input }, { dataSources }) {
+async function updateUser(_, { input }, { dataSources }) {
   debug('updateUser is starting');
+  const { id } = dataSources.userData;
   try {
-    if (dataSources.userData === null || dataSources.userData.id !== id) {
+    if (dataSources.userData === null) {
       throw new AuthenticationError('Unauthorized');
     }
     // Remove siret and company_name if the user is not a pro
     const updateInput = { ...input };
     if (dataSources.userData.role === 'user') {
       delete updateInput.siret;
-      delete updateInput.company_name;
+      delete updateInput.denomination;
     }
 
     const user = await dataSources.dataDB.user.findByPk(id);
@@ -348,6 +332,22 @@ async function changePassword(_, { id, input }, { dataSources }) {
   }
 }
 
+// Function for chat
+async function sendMessage(_, { input }, { dataSources }) {
+  debug('sendMessage is starting');
+  try {
+    // if (dataSources.userData === null) {
+    //   throw new AuthenticationError('Unauthorized');
+    // }
+    const message = await dataSources.dataDB.message.create(input);
+    PubSub.publish('MESSAGE_SENT', { messageSent: message });
+    return message;
+  } catch (err) {
+    debug(err);
+    throw new ApolloError('Error');
+  }
+}
+
 export default {
   createUser: createUserFunction,
   createProUser: createUserFunction,
@@ -359,4 +359,5 @@ export default {
   confirmRegisterEmail,
   updateUser,
   changePassword,
+  sendMessage,
 };
