@@ -39,4 +39,12 @@ export default {
     debug(`get media with id ${id}`);
     return dataSources.dataDB.media.findByPk(id);
   },
+  categories(_, __, { dataSources }) {
+    debug('get all categories');
+    return dataSources.dataDB.category.findAll();
+  },
+  category(_, { id }, { dataSources }) {
+    debug(`get category with id ${id}`);
+    return dataSources.dataDB.category.findByPk(id);
+  },
 };

@@ -4,6 +4,8 @@ import User from './user.js';
 import Request from './request.js';
 import Media from './media.js';
 import Conversation from './conversation.js';
+import Category from './category.js';
+import Job from './job.js';
 import Mutation from './mutation.js';
 import Subscription from './subscription.js';
 import {
@@ -23,4 +25,6 @@ export default {
   Request,
   Media,
   Conversation,
+  Category,
+  Job,
 };

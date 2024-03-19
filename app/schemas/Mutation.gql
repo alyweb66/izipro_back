@@ -13,4 +13,7 @@ type Mutation {
 
 # Message mutations
     sendMessage(message: NewMessageInput!): Message!
+
+# Request mutations
+
 }
