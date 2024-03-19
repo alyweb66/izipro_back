@@ -167,7 +167,7 @@ async function login(_, { input }, { dataSources, res }) {
       'auth-token',
       token,
       {
-        httpOnly: false,
+        httpOnly: true,
         sameSite: 'strict',
         secure: secureEnv(),
         domain: 'localhost',
@@ -194,25 +194,31 @@ async function login(_, { input }, { dataSources, res }) {
   }
 }
 
-async function logout(_, __, { res }) {
+async function logout(_, { id }, { dataSources, res }) {
   debug('logout is starting');
   try {
-    const pastDate = new Date(0);
-    const TokenCookie = cookie.serialize(
-      'auth-token',
-      '',
-      {
-        httpOnly: true, sameSite: 'strict', secure: secureEnv(), expires: pastDate,
-      },
-    );
-    const refreshTokenCookie = cookie.serialize(
-      'refresh-token',
-      '',
-      {
-        httpOnly: true, sameSite: 'strict', secure: secureEnv(), expires: pastDate,
-      },
-    );
-
+    // Controle if it's the good user who want to logout
+    let TokenCookie;
+    let refreshTokenCookie;
+    if (dataSources.userData.id === id) {
+      const pastDate = new Date(0);
+      TokenCookie = cookie.serialize(
+        'auth-token',
+        '',
+        {
+          httpOnly: true, sameSite: 'strict', secure: secureEnv(), expires: pastDate,
+        },
+      );
+      refreshTokenCookie = cookie.serialize(
+        'refresh-token',
+        '',
+        {
+          httpOnly: true, sameSite: 'strict', secure: secureEnv(), expires: pastDate,
+        },
+      );
+    }
+    // eslint-disable-next-line no-param-reassign
+    dataSources.userData = null;
     res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
     return true;
   } catch (err) {
@@ -262,11 +268,11 @@ async function forgotPassword(_, { input }, { dataSources }) {
   }
 }
 
-async function updateUser(_, { input }, { dataSources }) {
+async function updateUser(_, { id, input }, { dataSources }) {
   debug('updateUser is starting');
-  const { id } = dataSources.userData;
+
   try {
-    if (dataSources.userData === null) {
+    if (dataSources.userData === null || dataSources.userData.id !== id) {
       throw new AuthenticationError('Unauthorized');
     }
     // Remove siret and company_name if the user is not a pro

@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import cookie from 'cookie';
 import Debug from 'debug';
 import { ApolloError, AuthenticationError } from 'apollo-server-core';
-import mutationLogout from '../resolvers/mutation.js';
+import serverLogout from './serverLogout.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:getUserByToken`);
 
@@ -61,12 +61,12 @@ export default async function getUserByToken(req, res, dataSources) {
 
         if (!user) {
           debugInDevelopment('refreshToken: user failed');
-          mutationLogout.logout(null, null, { res });
+          serverLogout(null, null, { res });
           throw new ApolloError('User not found', 'BAD_REQUEST');
         }
         if (user.refresh_token !== refreshToken) {
           debugInDevelopment('refreshToken: refresh_token failed', verifyRefreshToken);
-          mutationLogout.logout(null, null, { res });
+          serverLogout(null, null, { res });
           throw new ApolloError('Error token', 'BAD_REQUEST');
         }
         const newToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1m' });
@@ -88,7 +88,7 @@ export default async function getUserByToken(req, res, dataSources) {
       } catch (refreshTokenError) {
         // If the error is token expired or user not found, i clear the cookies
         if (refreshTokenError instanceof jwt.TokenExpiredError) {
-          mutationLogout.logout(null, null, { res });
+          serverLogout(null, null, { res });
           const userData = null;
           return userData;
         }
