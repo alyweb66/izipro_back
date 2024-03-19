@@ -12,6 +12,8 @@ const User = readFileSync(path.join(dirname, './User.gql'), 'utf8');
 const Request = readFileSync(path.join(dirname, './Request.gql'), 'utf8');
 const Media = readFileSync(path.join(dirname, './Media.gql'), 'utf8');
 const Conversation = readFileSync(path.join(dirname, './Conversation.gql'), 'utf8');
+const Category = readFileSync(path.join(dirname, './Category.gql'), 'utf8');
+const Job = readFileSync(path.join(dirname, './Job.gql'), 'utf8');
 const Mutation = readFileSync(path.join(dirname, './Mutation.gql'), 'utf8');
 const Subscription = readFileSync(path.join(dirname, './Subscription.gql'), 'utf8');
 
@@ -25,6 +27,8 @@ scalar validateSiret
     ${Request}
     ${Media}
     ${Conversation}
+    ${Category}
+    ${Job}
     ${Query}
     ${Mutation}
     ${Subscription}

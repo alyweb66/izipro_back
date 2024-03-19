@@ -1,8 +1,19 @@
 type Request {
     id: Int!
-    urgent: String!
+    urgent: Boolean!
+    title: String!
     message: String!
     localization: String!
     user_id: Int!
-    job_id: Int!
+    category: Category!
+}
+
+input CreateRequestInput {
+    urgent: Boolean!
+    title: String!
+    message: String!
+    localization: String!
+    user_id: Int!
+    category: String!
+    jobs: String!
 }
