@@ -89,7 +89,7 @@ app.use(
         userData,
       };
 
-      if (typeof req.headers.cookie !== 'undefined' && req.headers.cookie !== null && req.headers.cookie !== '') {
+      if (req.headers.cookie !== undefined) {
         debug('cookie in headers');
         userData = await getUserByToken(req, res, dataSources);
         // Update userData in dataSources
@@ -97,6 +97,7 @@ app.use(
       } else {
         debug('no cookie in headers');
         dataSources.userData = null;
+        debugInDevelopment('dataSources', dataSources);
       }
 
       return {
@@ -104,47 +105,10 @@ app.use(
         req,
         dataSources,
       };
-
-      // listen: { port: process.env.PORT ?? 3000 },
     },
   }),
 );
 
-// Passing an ApolloServer instance to the `startStandaloneServer` function:
-//  1. creates an Express app
-//  2. installs ApolloServer instance as middleware
-//  3. prepares app to handle incoming requests
-// const { url } = await startStandaloneServer(server, {
-//   // Context declaration
-//   context: async ({ req, res }) => {
-//     // Get the user token from the headers.
-//     let userData = null;
-
-//     const { cache } = server;
-//     const dataSources = {
-//       dataDB: new DataDB({ cache }),
-//       userData,
-//     };
-
-//     if (typeof req.headers.cookie !== 'undefined' &&
-// req.headers.cookie !== null && req.headers.cookie !== '') {
-//       debug('cookie in headers');
-//       userData = await getUserByToken(req, res, dataSources);
-//       // Update userData in dataSources
-//       dataSources.userData = userData;
-//     } else {
-//       debug('no cookie in headers');
-//       dataSources.userData = null;
-//     }
-
-//     return {
-//       res,
-//       req,
-//       dataSources,
-//     };
-//   },
-//   listen: { port: process.env.PORT ?? 3000 },
-// });
 await new Promise((resolve) => { httpServer.listen({ port: process.env.PORT || 4000 }, resolve); });
 debugInDevelopment('⚠️   Warning:  DEVELOPMENT MODE ON');
 debug(`🚀  Server ready at: http://localhost:${httpServer.address().port}`);
