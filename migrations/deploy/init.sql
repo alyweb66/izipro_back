@@ -62,7 +62,7 @@ CREATE TABLE "category"(
 
 CREATE TABLE "job"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "name" TEXT CHECK (LENGTH("name") <= 50),
+   "name" TEXT CHECK (LENGTH("name") <= 60),
    "description" TEXT,
    "category_id" INT NOT NULL REFERENCES "category"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
