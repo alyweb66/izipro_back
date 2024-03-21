@@ -1,3 +1,5 @@
+directive @length(max: Int!) on INPUT_FIELD_DEFINITION
+
 type Request {
     id: Int!
     urgent: Boolean!
@@ -5,15 +7,14 @@ type Request {
     message: String!
     localization: String!
     user_id: Int!
-    category: Category!
+    job_id: Int!
 }
 
 input CreateRequestInput {
     urgent: Boolean!
-    title: String!
+    title: String! @length(max: 255)
     message: String!
     localization: String!
     user_id: Int!
-    category: String!
-    jobs: String!
+    job_id: Int!
 }

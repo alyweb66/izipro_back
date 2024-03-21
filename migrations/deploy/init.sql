@@ -76,7 +76,7 @@ CREATE TABLE "request"(
    "message" TEXT NOT NULL,
    "localization" TEXT,
    "user_id" INT NOT NULL REFERENCES "user"(id),
-   "category_id" INT NOT NULL REFERENCES "category"(id),
+   "job_id" INT NOT NULL REFERENCES "job"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );
