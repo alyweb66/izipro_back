@@ -234,7 +234,7 @@ INSERT INTO "request"(
     "message",
     "localization",
     "user_id",
-    "category_id"
+    "job_id"
 ) VALUES
     (true, 'Baby-sitter pour ce soir', 'Nous cherchons une personne de confiance pour garder nos enfants ce soir.', '75001', 1, 1),
     (false, 'Aide à domicile pour personne âgée', 'Nous recherchons une personne pour aider ma mère dans les tâches quotidiennes.', '91300', 2, 2),

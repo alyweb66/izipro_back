@@ -7,6 +7,8 @@ import Conversation from './conversation.js';
 import Category from './category.js';
 import Job from './job.js';
 import Mutation from './mutation.js';
+// import UserMutation from './userMutation.js';
+// import RequestMutation from './requestMutation.js';
 import Subscription from './subscription.js';
 import {
   validateEmail, validatePassword, validatePostalCode, validateSiret,
@@ -19,6 +21,8 @@ export default {
   validateSiret,
   Query,
   Mutation,
+  // UserMutation,
+  // RequestMutation,
   Subscription,
   Message,
   User,
