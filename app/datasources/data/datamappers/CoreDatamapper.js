@@ -82,7 +82,7 @@ class CoreDatamapper {
   *
   * @returns an array of entities
   */
-  async findAll(offset = 0, limit = 10) {
+  async findAll(offset = 0, limit = 20) {
     const preparedQuery = {
       text: `SELECT * FROM "${this.tableName}" ORDER BY id OFFSET ${offset} LIMIT ${limit}`,
     };

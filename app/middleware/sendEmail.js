@@ -25,7 +25,7 @@ export async function sendPasswordResetEmail(email, resetToken) {
 
       <p>Bonjour,</p>
       <p>Vous avez demandé une réinitialisation de mot de passe. Cliquez sur le bouton ci-dessous pour réinitialiser votre mot de passe. :</p>
-      <a href="${process.env.SERVER_URL}/token=${resetToken}" style="background-color: #F79323; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Réinitialiser le mot de passe</a>
+      <a href="${process.env.CORS_ORIGIN}/forgot-password?token=${resetToken}" style="background-color: #F79323; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Réinitialiser le mot de passe</a>
       <p>Si vous n'avez pas demandé de réinitialisation de mot de passe, ignorez simplement cet e-mail.</p>
     `,
   };
@@ -43,7 +43,7 @@ export async function confirmEmail(email, confirmToken) {
 
       <p>Bonjour,</p>
       <p>Vous avez demandé une confirmation de compte. Cliquez sur le bouton ci-dessous pour confirmer votre compte. :</p>
-      <a href="${process.env.SERVER_URL}/token=${confirmToken}" style="background-color: #F79323; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Confirmer le compte</a>
+      <a href="${process.env.CORS_ORIGIN}/confirm-email?token=${confirmToken}" style="background-color: #F79323; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Confirmer le compte</a>
       <p>Si vous n'avez pas demandé de confirmation de compte, ignorez simplement cet e-mail.</p>
     `,
   };

@@ -1,0 +1,17 @@
+extend type Mutation {
+# User mutations
+    createUser(input: CreateUserInput!): User
+    createProUser(input: CreateProUserInput!): User
+    updateUser(id: Int!, input: UpdateUserInput!): User
+    deleteUser(id: Int!): Boolean
+    login(input: loginInput!): Boolean
+    logout(id: Int!): Boolean
+    forgotPassword(input: ForgotPasswordInput!): Boolean
+    validateForgotPassword(input: ValidateForgotPasswordInput!): Boolean
+    confirmRegisterEmail(input: ConfirmRegisterEmailInput!): Boolean
+    changePassword(id: Int!, input: ChangePasswordInput!): Boolean
+
+# Message mutations
+    sendMessage(message: NewMessageInput!): Message!
+
+}

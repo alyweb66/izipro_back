@@ -10,4 +10,7 @@ type Query {
     message(id: Int!): Message! 
     medias: [Media!]!
     media(id: Int!): Media!
+    categories: [Category!]!
+    category(id: Int!): Category!
+    
 }
