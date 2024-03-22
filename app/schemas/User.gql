@@ -35,7 +35,7 @@ input loginInput {
 
 input CreateUserInput {
     email: validateEmail!
-    password: validatePassword!
+    password: validatePassword! @length(max: 60)
 }
 
 input ConfirmRegisterEmailInput {
@@ -63,8 +63,13 @@ input ForgotPasswordInput {
     email: validateEmail!
 }
 
+input ValidateForgotPasswordInput {
+    token: String!
+    password: validatePassword! @length(max: 60)
+}
+
 input ChangePasswordInput {
-    oldPassword: validatePassword!
-    newPassword: validatePassword!
+    oldPassword: validatePassword! @length(max: 60)
+    newPassword: validatePassword! @length(max: 60)
 }
 

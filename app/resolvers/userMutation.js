@@ -1,6 +1,6 @@
 import Debug from 'debug';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import jwt, { decode } from 'jsonwebtoken';
 import cookie from 'cookie';
 import { GraphQLError } from 'graphql';
 import {
@@ -256,7 +256,7 @@ async function forgotPassword(_, { input }, { dataSources }) {
       throw new ApolloError('User not found', 'BAD_REQUEST');
     }
     debug('Token is generated');
-    const resetToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const resetToken = jwt.sign({ id: user.id, email: input.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
     await dataSources.dataDB.user.update(user.id, { remember_token: resetToken });
 
     await sendEmail.sendPasswordResetEmail(input.email, resetToken);
@@ -265,6 +265,46 @@ async function forgotPassword(_, { input }, { dataSources }) {
   } catch (err) {
     debug(err);
     throw new ApolloError('Error', 'BAD_REQUEST');
+  }
+}
+
+async function validateForgotPassword(_, { input }, { dataSources }) {
+  debug('validation forgot password is starting');
+  debugInDevelopment(input);
+  try {
+    const { token } = input;
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decodedToken.id) {
+      throw new ApolloError('Token is invalid', 'BAD_REQUEST');
+    }
+
+    // Check if user exists
+    const existingUser = await dataSources.dataDB.user.findUserByEmail(decodedToken.email);
+    if (!existingUser) {
+      throw new ApolloError('Email ou mot de passe incorrect', 'BAD_REQUEST');
+    }
+    // Check if the token is the same as the one in the database
+    if (existingUser.remember_token !== token && decodedToken.id !== existingUser.id) {
+      throw new UserInputError('Error token');
+    }
+
+    // Hash the password using bcrypt
+    const hashedPassword = await bcrypt.hash(input.password, 10);
+
+    // Update the input object with the hashed password
+    const userInputWithHashedPassword = {
+      ...input,
+      password: hashedPassword,
+      remember_token: null,
+    };
+
+    delete userInputWithHashedPassword.token;
+
+    dataSources.dataDB.user.update(existingUser.id, userInputWithHashedPassword);
+    return true;
+  } catch (err) {
+    debug(err);
+    throw new GraphQLError('Error');
   }
 }
 
@@ -365,4 +405,5 @@ export default {
   updateUser,
   changePassword,
   sendMessage,
+  validateForgotPassword,
 };
