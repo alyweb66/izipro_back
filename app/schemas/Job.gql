@@ -1,0 +1,6 @@
+type Job {
+    id: Int!
+    name: String!
+    description: String!
+    category: String!
+}

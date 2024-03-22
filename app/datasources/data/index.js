@@ -5,6 +5,8 @@ import UserDataMapper from './datamappers/User.js';
 import RequestDataMapper from './datamappers/Request.js';
 import MediaDataMapper from './datamappers/Media.js';
 import ConversationDataMapper from './datamappers/Conversation.js';
+import CategoryDataMapper from './datamappers/Category.js';
+import JobDataMapper from './datamappers/Job.js';
 
 // allows you to instantiate the datamappers
 // to put it in context
@@ -17,6 +19,8 @@ class DataDB {
     this.request = new RequestDataMapper(newOptions);
     this.media = new MediaDataMapper(newOptions);
     this.conversation = new ConversationDataMapper(newOptions);
+    this.category = new CategoryDataMapper(newOptions);
+    this.job = new JobDataMapper(newOptions);
   }
 }
 

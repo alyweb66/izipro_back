@@ -1,6 +1,18 @@
+directive @length(max: Int!) on INPUT_FIELD_DEFINITION
+
 type Request {
     id: Int!
-    urgent: String!
+    urgent: Boolean!
+    title: String!
+    message: String!
+    localization: String!
+    user_id: Int!
+    job_id: Int!
+}
+
+input CreateRequestInput {
+    urgent: Boolean!
+    title: String! @length(max: 255)
     message: String!
     localization: String!
     user_id: Int!

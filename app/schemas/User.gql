@@ -1,3 +1,4 @@
+directive @length(max: Int!) on INPUT_FIELD_DEFINITION
 
 type User {
     id: Int!
@@ -34,7 +35,7 @@ input loginInput {
 
 input CreateUserInput {
     email: validateEmail!
-    password: validatePassword!
+    password: validatePassword! @length(max: 60)
 }
 
 input ConfirmRegisterEmailInput {
@@ -48,22 +49,27 @@ input CreateProUserInput {
 }
 
 input UpdateUserInput {
-    first_name: String
-    last_name: String
+    first_name: String @length(max: 50)
+    last_name: String @length(max: 50)
     email: validateEmail
-    address: String
+    address: String @length(max: 100)
     postal_code: validatePostalCode
-    city: String
-    siret: validateSiret
-    denomination: String
+    city: String @length(max: 50)
+    siret: validateSiret @length(max: 14)
+    denomination: String @length(max: 50)
 }
 
 input ForgotPasswordInput {
-    email: String!
+    email: validateEmail!
+}
+
+input ValidateForgotPasswordInput {
+    token: String!
+    password: validatePassword! @length(max: 60)
 }
 
 input ChangePasswordInput {
-    oldPassword: validatePassword!
-    newPassword: validatePassword!
+    oldPassword: validatePassword! @length(max: 60)
+    newPassword: validatePassword! @length(max: 60)
 }
 
