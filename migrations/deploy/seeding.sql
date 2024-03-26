@@ -233,14 +233,15 @@ INSERT INTO "request"(
     "title",
     "message",
     "localization",
+    "range",
     "user_id",
     "job_id"
 ) VALUES
-    (true, 'Baby-sitter pour ce soir', 'Nous cherchons une personne de confiance pour garder nos enfants ce soir.', '75001', 1, 1),
-    (false, 'Aide à domicile pour personne âgée', 'Nous recherchons une personne pour aider ma mère dans les tâches quotidiennes.', '91300', 2, 2),
-    (true, 'Cours particuliers de mathématiques', 'Je cherche un professeur pour aider mon fils à améliorer ses résultats en mathématiques.', '69001', 3, 3),
-    (false, 'Réparation de fuite d''eau', 'Nous avons une fuite d''eau dans la salle de bain et nous cherchons un plombier pour la réparer.', '13005', 4, 11),
-    (true, 'Cours de guitare pour débutant', 'Je souhaite apprendre à jouer de la guitare et je cherche un professeur pour des cours particuliers.', '33000', 5, 8);
+    (true, 'Baby-sitter pour ce soir', 'Nous cherchons une personne de confiance pour garder nos enfants ce soir.', '75001', 10, 1, 1),
+    (false, 'Aide à domicile pour personne âgée', 'Nous recherchons une personne pour aider ma mère dans les tâches quotidiennes.', '91300', 10, 2, 2),
+    (true, 'Cours particuliers de mathématiques', 'Je cherche un professeur pour aider mon fils à améliorer ses résultats en mathématiques.', '69001', 10, 3, 3),
+    (false, 'Réparation de fuite d''eau', 'Nous avons une fuite d''eau dans la salle de bain et nous cherchons un plombier pour la réparer.', '13005', 10, 4, 11),
+    (true, 'Cours de guitare pour débutant', 'Je souhaite apprendre à jouer de la guitare et je cherche un professeur pour des cours particuliers.', '33000', 10, 5, 8);
 
 
 

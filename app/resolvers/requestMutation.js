@@ -21,7 +21,7 @@ function debugInDevelopment(message = '', value = '') {
 async function createRequest(_, { input }, { dataSources }) {
   debug('create request');
   debugInDevelopment('input', input);
-  if (!dataSources.userData.id) {
+  if (dataSources.userData.id !== input.user_id) {
     throw new AuthenticationError('Unauthorized');
   }
   return dataSources.dataDB.request.create(input);
