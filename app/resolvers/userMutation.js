@@ -1,6 +1,6 @@
 import Debug from 'debug';
 import bcrypt from 'bcrypt';
-import jwt, { decode } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import cookie from 'cookie';
 import { GraphQLError } from 'graphql';
 import {
@@ -368,6 +368,7 @@ async function changePassword(_, { id, input }, { dataSources }) {
       dataSources.userData.id,
       { password: hashedNewPassword },
     );
+    await sendEmail.changePasswordEmail(user.email);
     return true;
   } catch (err) {
     debug(err);

@@ -71,10 +71,11 @@ CREATE TABLE "job"(
 
 CREATE TABLE "request"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "title" TEXT CHECK (LENGTH("title") <= 50),
+   "title" TEXT NOT NULL CHECK (LENGTH("title") <= 50),
    "urgent" BOOLEAN NOT NULL,
    "message" TEXT NOT NULL,
-   "localization" TEXT,
+   "localization" TEXT NOT NULL,
+   "range" INT NOT NULL,
    "user_id" INT NOT NULL REFERENCES "user"(id),
    "job_id" INT NOT NULL REFERENCES "job"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
