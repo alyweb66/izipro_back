@@ -51,4 +51,22 @@ export async function confirmEmail(email, confirmToken) {
   await transporter.sendMail(mailOptions);
 }
 
-export default { sendPasswordResetEmail, confirmEmail };
+export async function changePasswordEmail(email) {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: `${email}`,
+    subject: 'Changement de mot de passe',
+    html: `
+      <h1>Confirmation de changement de mot de passe</h1>
+
+      <p>Bonjour,</p>
+      <p>Votre mot de passe a bien été changé :</p>
+      
+      <p>Si vous n'êtes pas l'auteur de cette action, veuillez nous contacter</p>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
+
+export default { sendPasswordResetEmail, confirmEmail, changePasswordEmail };
