@@ -1,7 +1,8 @@
 import Debug from 'debug';
 import {
-  AuthenticationError,
+  AuthenticationError, ApolloError,
 } from 'apollo-server-core';
+import handleUploadedFiles from '../middleware/media.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:mutation`);
 
@@ -24,7 +25,24 @@ async function createRequest(_, { input }, { dataSources }) {
   if (dataSources.userData.id !== input.user_id) {
     throw new AuthenticationError('Unauthorized');
   }
-  return dataSources.dataDB.request.create(input);
+  try {
+    const { file } = input.media[0].file;
+    const {
+      createReadStream, filename, mimetype, encoding,
+    } = await file;
+    console.log('file', createReadStream, filename, mimetype, encoding);
+    const requestInput = { ...input };
+    delete requestInput.media;
+    const isCreatedRequest = dataSources.dataDB.request.create(requestInput);
+
+    if (!isCreatedRequest) {
+      throw new ApolloError('Error creating request');
+    }
+    handleUploadedFiles(input.media);
+  } catch (error) {
+    debug('error', error);
+    throw new Error(error);
+  }
 }
 
 export default {

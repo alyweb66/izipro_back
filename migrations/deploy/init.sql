@@ -103,11 +103,20 @@ CREATE TABLE "message"(
    "updated_at" timestamptz
 );
 
-CREATE TABLE "media"(
+CREATE TABLE "chat_media"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "url" TEXT,
    "sender" INT NOT NULL REFERENCES "user"(id),
    "receiver" INT NOT NULL REFERENCES "user"(id),
+   "created_at" timestamptz NOT NULL DEFAULT now(),
+   "updated_at" timestamptz
+  
+);
+
+CREATE TABLE "request_media"(
+   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   "url" TEXT,
+   "user_id" INT NOT NULL REFERENCES "user"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
   
@@ -135,17 +144,17 @@ CREATE TABLE "research"(
 );
 
 
-CREATE TABLE "request_has_media"(
+CREATE TABLE "request_has_request_media"(
     "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "media_id" INT NOT NULL REFERENCES "media"(id),
+   "request_media_id" INT NOT NULL REFERENCES "request_media"(id),
    "request_id" INT NOT NULL REFERENCES "request"(id) ,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );
 
-CREATE TABLE "message_has_media"(
+CREATE TABLE "message_has_chat_media"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "media_id" INT NOT NULL REFERENCES "media"(id),
+   "chat_media_id" INT NOT NULL REFERENCES "chat_media"(id),
    "message_id" INT NOT NULL REFERENCES "message"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
