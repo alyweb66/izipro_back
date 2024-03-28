@@ -41,6 +41,15 @@ app.use(express.json());
 // middleware to handle file uploads
 app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
 
+app.use('/graphql', async (req, res, next) => {
+  // Si la demande contient des fichiers téléchargés, loggez-les
+  if (req.files) {
+    console.log('Files uploaded:', req.files);
+  }
+
+  // Passez à l'étape suivante
+  next();
+});
 // The `listen` method launches a web server.
 const httpServer = http.createServer(app);
 
@@ -103,7 +112,6 @@ app.use(
         dataSources.userData = null;
         debugInDevelopment('dataSources', dataSources);
       }
-
       return {
         res,
         req,

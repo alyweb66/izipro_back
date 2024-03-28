@@ -115,7 +115,8 @@ CREATE TABLE "chat_media"(
 
 CREATE TABLE "request_media"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "url" TEXT,
+   "url" TEXT NOT NULL UNIQUE,
+   "name" TEXT NOT NULL UNIQUE,
    "user_id" INT NOT NULL REFERENCES "user"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz

@@ -25,5 +25,5 @@ input CreateRequestInput {
     range: Int!
     user_id: Int!
     job_id: Int!
-    media: [MediaInput!]
+    media: [Upload]
 }
