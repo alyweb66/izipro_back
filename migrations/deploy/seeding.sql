@@ -225,9 +225,6 @@ INSERT INTO "job" (
 
 
 
-
-
-
 INSERT INTO "request"(
     "urgent",
     "title",
@@ -275,7 +272,7 @@ INSERT INTO "message" (
 
 
 
-INSERT INTO "media" (
+INSERT INTO "chat_media" (
     "url", 
     "sender", 
     "receiver", 
@@ -289,8 +286,8 @@ INSERT INTO "media" (
 
 
 
-INSERT INTO "message_has_media" (
-    "media_id", 
+INSERT INTO "message_has_chat_media" (
+    "chat_media_id", 
     "message_id", 
     "updated_at"
 ) VALUES

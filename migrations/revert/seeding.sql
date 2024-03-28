@@ -2,8 +2,10 @@
 
 BEGIN;
 
-DELETE FROM "message_has_media";
-DELETE FROM "media";
+DELETE FROM "message_has_chat_media";
+DELETE FROM "request_has_request_media";
+DELETE FROM "chat_media";
+DELETE FROM "request_media";
 DELETE FROM "message";
 DELETE FROM "conversation";
 DELETE FROM "request";

@@ -21,8 +21,6 @@ export default {
   validateSiret,
   Query,
   Mutation,
-  // UserMutation,
-  // RequestMutation,
   Subscription,
   Message,
   User,
