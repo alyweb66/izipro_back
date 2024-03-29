@@ -2,7 +2,7 @@ import Debug from 'debug';
 import {
   AuthenticationError, ApolloError,
 } from 'apollo-server-core';
-import handleUploadedFiles from '../middleware/media.js';
+import handleUploadedFiles from '../middleware/handleUploadFiles.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:mutation`);
 

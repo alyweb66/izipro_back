@@ -4,6 +4,7 @@ import Debug from 'debug';
 import path from 'path';
 import sharp from 'sharp';
 import { ApolloError } from 'apollo-server-core';
+import fs from 'fs';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:middleware:sharp`);
 
@@ -27,18 +28,24 @@ async function handleUploadedFiles(media) {
 
     const compressedImages = await Promise.all(media.map(async (file) => {
       // Image compression with Sharp
-      const buffer = await getBuffer(file.buffer);
-      const compressedBuffer = await sharp(buffer)
-        .resize({ width: 800, height: 800, withoutEnlargement: true })
-        .jpeg({ quality: 80 })
-        .toBuffer();
-
+      let compressedBuffer;
+      if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg') {
+        const buffer = await getBuffer(file.buffer);
+        compressedBuffer = await sharp(buffer)
+          .resize({ width: 800, height: 800, withoutEnlargement: true })
+          .jpeg({ quality: 80 })
+          .toBuffer();
+      }
       // Get file name without extension
       const fileNameWithoutExtension = path.parse(file.filename).name;
       // Generating a unique file name
       const uniqueFileName = `${fileNameWithoutExtension}_${Date.now()}${path.extname(file.filename)}`;
-      // Saving or further processing the compressed image
-      await sharp(compressedBuffer).toFile(`./public/media/${uniqueFileName}`);
+      // Saving or further processing the compressed image or pdf
+      if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg') {
+        await sharp(compressedBuffer).toFile(`./public/media/${uniqueFileName}`);
+      } else {
+        await file.buffer.pipe(fs.createWriteStream(`./public/media/${uniqueFileName}`));
+      }
       // get the file path
       const filePath = `./media/${uniqueFileName}`;
 
