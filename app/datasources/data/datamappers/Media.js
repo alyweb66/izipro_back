@@ -12,19 +12,18 @@ class Media extends CoreDatamapper {
    * create media data to a request.
   *
   * @param {string} media - media to a request.
-  * @returns {Promise<object>} The found user.
-  * @throws {Error} If user not found.
+  * @returns {Promise<object>} return ids of media.
+  * @throws {Error} If bad request.
   */
   async createRequestMedia(media) {
     debug('create media to a request');
-    debug(`SQL function ${this.tableName} called`);
+    debug(`SQL function ${this.insertFunc} called`);
     // call sql function
     const query = {
       text: `SELECT * FROM "${this.insertFunc}" ($1) `,
       values: [JSON.stringify(media)],
     };
     const { rows } = await this.client.query(query);
-    console.log('rows', rows);
     const requestMedia = rows;
 
     return requestMedia;

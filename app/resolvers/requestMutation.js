@@ -12,13 +12,6 @@ function debugInDevelopment(message = '', value = '') {
   }
 }
 
-/**
- *
- * @param {*} _ parent object
- * @param {*} param1 destructuring input from the mutation
- * @param {*} param2 destructuring dataSources from the context
- * @returns
- */
 async function createRequest(_, { input }, { dataSources }) {
   debug('create request');
   debugInDevelopment('input', input.media);
@@ -28,11 +21,13 @@ async function createRequest(_, { input }, { dataSources }) {
   try {
     const requestInput = { ...input };
     delete requestInput.media;
+
+    // create request
     const isCreatedRequest = await dataSources.dataDB.request.create(requestInput);
-console.log('isCreatedRequest', isCreatedRequest);
     if (!isCreatedRequest) {
       throw new ApolloError('Error creating request');
     }
+
     // mapping the media array to createReadStream
     const ReadStreamArray = await Promise.all(input.media.map(async (upload) => {
       const fileUpload = upload.file;
@@ -48,6 +43,7 @@ console.log('isCreatedRequest', isCreatedRequest);
       };
       return file;
     }));
+
     // calling the handleUploadedFiles function to compress the images and save them
     const result = await handleUploadedFiles(ReadStreamArray);
 
@@ -56,24 +52,27 @@ console.log('isCreatedRequest', isCreatedRequest);
       user_id: input.user_id,
     }));
 
+    // create media
     const createMedia = await dataSources.dataDB.media.createRequestMedia(mediaInput);
     if (!createMedia) {
       throw new ApolloError('Error creating media');
     }
-console.log('createMedia', createMedia[0]);
-    const requestHasMedia = createMedia.map((media) => ({
-      request_media_id: media.id,
-    }));
 
-    const requestId = {
-      request_id: isCreatedRequest.id,
-    };
-console.log('requestId', requestId, 'requestHasMedia', requestHasMedia);
-    const isCreatedRequestMedia = await dataSources.dataDB.request.create(
-      requestHasMedia,
+    // get the media ids from the createMedia array
+    const mediaIds = createMedia.map((obj) => obj.insert_request_media).flat();
+
+    // create request_has_request_media
+    const requestId = isCreatedRequest.id;
+    const isCreatedRequestMedia = await dataSources.dataDB.requestHasMedia.createRequestHasMedia(
       requestId,
+      mediaIds,
     );
-    console.log('isCreatedRequestMedia', isCreatedRequestMedia);
+    debug('created media', isCreatedRequestMedia.insert_request_has_request_media);
+    if (!isCreatedRequestMedia
+       || (isCreatedRequestMedia.insert_request_has_request_media === false)) {
+      throw new ApolloError('Error creating request_has_request_media');
+    }
+    return isCreatedRequest;
   } catch (error) {
     debug('error', error);
     throw new Error(error);
