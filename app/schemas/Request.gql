@@ -1,4 +1,5 @@
 directive @length(max: Int!) on INPUT_FIELD_DEFINITION
+scalar Upload
 
 type Request {
     id: Int!
@@ -24,4 +25,5 @@ input CreateRequestInput {
     range: Int!
     user_id: Int!
     job_id: Int!
+    media: [Upload]
 }

@@ -28,10 +28,12 @@
     "graphql": "^16.8.1",
     "graphql-subscriptions": "^2.0.0",
     "graphql-tag": "^2.12.6",
+    "graphql-upload": "^16.0.2",
     "graphql-ws": "^5.15.0",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^6.9.10",
     "pg": "^8.11.3",
+    "sharp": "^0.33.3",
     "validator": "^13.11.0",
     "ws": "^8.16.0"
   },
