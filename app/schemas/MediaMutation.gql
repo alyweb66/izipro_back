@@ -1,0 +1,4 @@
+extend type Mutation{
+    # Request mutations
+    requestMedia(input: MediaInput): Boolean
+}

@@ -3,6 +3,7 @@
 import 'dotenv/config.js';
 import Debug from 'debug';
 // Modules import
+import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
 import { ApolloServer } from '@apollo/server';
 // eslint-disable-next-line import/extensions
 import { expressMiddleware } from '@apollo/server/express4';
@@ -37,7 +38,18 @@ const debug = Debug(`${process.env.DEBUG_MODULE}:httpserver`);
 const app = express();
 
 app.use(express.json());
+// middleware to handle file uploads
+app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
 
+app.use('/graphql', async (req, res, next) => {
+  // Si la demande contient des fichiers téléchargés, loggez-les
+  if (req.files) {
+    console.log('Files uploaded:', req.files);
+  }
+
+  // Passez à l'étape suivante
+  next();
+});
 // The `listen` method launches a web server.
 const httpServer = http.createServer(app);
 
@@ -57,6 +69,7 @@ const schema = makeExecutableSchema({
 // create a new instance of ApolloServer
 const server = new ApolloServer({
   schema,
+  csrfPrevention: true,
   plugins: [
     // Proper shutdown for the HTTP server.
     ApolloServerPluginDrainHttpServer({ httpServer }),
@@ -99,7 +112,6 @@ app.use(
         dataSources.userData = null;
         debugInDevelopment('dataSources', dataSources);
       }
-
       return {
         res,
         req,
