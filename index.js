@@ -11,6 +11,8 @@ import cors from 'cors';
 import express from 'express';
 // import { PubSub } from 'graphql-subscriptions';
 import http from 'http';
+import path from 'path';
+import url from 'url';
 
 // eslint-disable-next-line import/extensions
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
@@ -38,10 +40,17 @@ const debug = Debug(`${process.env.DEBUG_MODULE}:httpserver`);
 const app = express();
 
 app.use(express.json());
+
+// __dirname not on module, this is the way to use it.
+const filename = url.fileURLToPath(import.meta.url);
+const dirname = path.dirname(filename);
+
+app.use('/public', express.static(path.join(dirname, 'public')));
+
 // middleware to handle file uploads
 app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
 
-app.use('/graphql', async (req, res, next) => {
+/* app.use('/graphql', async (req, res, next) => {
   // Si la demande contient des fichiers téléchargés, loggez-les
   if (req.files) {
     console.log('Files uploaded:', req.files);
@@ -49,7 +58,7 @@ app.use('/graphql', async (req, res, next) => {
 
   // Passez à l'étape suivante
   next();
-});
+}); */
 // The `listen` method launches a web server.
 const httpServer = http.createServer(app);
 

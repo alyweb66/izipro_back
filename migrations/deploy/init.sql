@@ -148,7 +148,7 @@ CREATE TABLE "research"(
 CREATE TABLE "request_has_request_media"(
     "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "request_media_id" INT NOT NULL REFERENCES "request_media"(id),
-   "request_id" INT NOT NULL REFERENCES "request"(id) ,
+   "request_id" INT NOT NULL REFERENCES "request"(id) ON DELETE CASCADE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );

@@ -50,5 +50,20 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Function to delete a row from the request_media table
+CREATE OR REPLACE FUNCTION delete_orphaned_request_media_func() RETURNS TRIGGER AS $$
+BEGIN
+  DELETE FROM request_media
+  WHERE id = OLD.request_media_id AND NOT EXISTS (
+    SELECT 1 FROM request_has_request_media WHERE request_media_id = OLD.request_media_id
+  );
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER delete_orphaned_request_media
+AFTER DELETE ON request_has_request_media
+FOR EACH ROW EXECUTE PROCEDURE delete_orphaned_request_media_func();
+
 COMMIT;
 
