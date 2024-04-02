@@ -53,7 +53,7 @@ async function handleUploadedFiles(media) {
       const fileName = path.basename(filePath);
       // Returning image details
       return {
-        url: `https://localhost:3000/public/media/${fileName}`,
+        url: `http://localhost:${process.env.PORT}/public/media/${fileName}`,
         name: uniqueFileName,
       };
     }));

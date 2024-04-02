@@ -2,4 +2,5 @@
 extend type Mutation{
     # Request mutations
     createRequest(input: CreateRequestInput!): Request
+    deleteRequest(input: DeleteRequestInput!): Boolean
 }

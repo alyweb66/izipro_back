@@ -10,6 +10,9 @@ type Request {
     range: Int!
     user_id: Int!
     job_id: Int!
+    job: String
+    media: [Media]
+    created_at: String!
 }
 
 input Coordinates {
@@ -26,4 +29,10 @@ input CreateRequestInput {
     user_id: Int!
     job_id: Int!
     media: [Upload]
+}
+
+input DeleteRequestInput {
+    id: Int!
+    user_id: Int!
+    image_names: [String]
 }

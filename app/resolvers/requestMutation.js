@@ -2,7 +2,15 @@ import Debug from 'debug';
 import {
   AuthenticationError, ApolloError,
 } from 'apollo-server-core';
+import fs from 'fs';
+import path from 'path';
+import url from 'url';
 import handleUploadedFiles from '../middleware/handleUploadFiles.js';
+
+// __dirname not on module, this is the way to use it.
+const filename = url.fileURLToPath(import.meta.url);
+const dirname = path.dirname(filename);
+const directoryPath = path.join(dirname, '..', '..', 'public', 'media');
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:mutation`);
 
@@ -10,6 +18,18 @@ function debugInDevelopment(message = '', value = '') {
   if (process.env.NODE_ENV === 'development') {
     debug('⚠️', message, value);
   }
+}
+// function to delete the files from the public folder
+function deleteFile(file) {
+  const filePath = path.join(directoryPath, file);
+
+  fs.unlink(filePath, (err) => {
+    if (err) {
+      debugInDevelopment(`Error deleting file: ${err}`);
+    } else {
+      debugInDevelopment(`File ${filename} deleted successfully`);
+    }
+  });
 }
 
 async function createRequest(_, { input }, { dataSources }) {
@@ -79,6 +99,38 @@ async function createRequest(_, { input }, { dataSources }) {
   }
 }
 
+async function deleteRequest(_, { input }, { dataSources }) {
+  debug('delete request');
+  try {
+    if (dataSources.userData.id !== input.user_id) {
+      throw new AuthenticationError('Unauthorized');
+    }
+
+    const isDeletedRequest = await dataSources.dataDB.request.delete(input.id);
+
+    if (!isDeletedRequest) {
+      throw new ApolloError('Error deleting request');
+    }
+
+    // read the public folder and delete all the files
+    fs.readdir(path.join(directoryPath), (err) => {
+      if (err) {
+        debugInDevelopment(`Error reading directory: ${err}`);
+      } else {
+        input.image_names.forEach((file) => {
+          deleteFile(file);
+        });
+      }
+    });
+
+    return true;
+  } catch (error) {
+    debug('error', error);
+    throw new Error(error);
+  }
+}
+
 export default {
   createRequest,
+  deleteRequest,
 };
