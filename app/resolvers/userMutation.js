@@ -336,7 +336,7 @@ async function updateUser(_, { id, input }, { dataSources }) {
     if (!user) {
       throw new ApolloError('User not found', 'NOT_FOUND');
     }
-
+    dataSources.dataDB.user.cache.clear();
     return dataSources.dataDB.user.update(id, updateInput);
   } catch (err) {
     if (err instanceof AuthenticationError) {
