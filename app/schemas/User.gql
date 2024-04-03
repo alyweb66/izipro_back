@@ -11,6 +11,7 @@ type User {
     siret: String
     denomination: String
     role: String
+    requests(id: Int): [Request]
     conversation: [Conversation!]!
     messages: [Message!]!
 }

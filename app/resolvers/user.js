@@ -7,6 +7,10 @@ const UserResolver = {
     debug(`get all messages from: ${firstName}`);
     return dataSources.dataDB.message.findByUser(id);
   },
+  requests({ id }, _, { dataSources }) {
+    debug(`get all request from user id: ${id}`);
+    return dataSources.dataDB.request.getRequestByUserId(id);
+  },
 };
 
 export default UserResolver;
