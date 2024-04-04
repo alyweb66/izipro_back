@@ -41,6 +41,7 @@ CREATE TABLE "setting"(
    "name" TEXT CHECK (LENGTH("name") <= 50),
    "status" TEXT NOT NULL CHECK (LENGTH("status") <= 50) ,
    "content" TEXT,
+   "range" INT,
    "user_id" INT NOT NULL REFERENCES "user"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz

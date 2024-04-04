@@ -1,0 +1,4 @@
+extend type Mutation{
+    # User_has_job mutations
+    createUserJob(input: UserJobInput!): Boolean
+}

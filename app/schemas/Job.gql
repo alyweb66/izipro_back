@@ -4,3 +4,9 @@ type Job {
     description: String
     category: String
 }
+
+input UserJobInput {
+    user_id: Int!
+    job_id: [Int]!
+    
+}
