@@ -65,5 +65,29 @@ CREATE TRIGGER delete_orphaned_request_media
 AFTER DELETE ON request_has_request_media
 FOR EACH ROW EXECUTE PROCEDURE delete_orphaned_request_media_func();
 
+-- Function to insert a new row in the user_has_job table
+CREATE OR REPLACE FUNCTION insert_user_has_job(user_id INTEGER, job_ids INTEGER[])
+RETURNS BOOLEAN AS $$
+DECLARE
+    job_id INTEGER;
+BEGIN
+    -- Loop over each media_id in the array
+    FOR job_id IN SELECT UNNEST(job_ids)
+    LOOP
+    -- Begin an exception block
+        BEGIN
+        -- Insert a new row with the request_id and media_id
+        INSERT INTO user_has_job (user_id, job_id)
+        VALUES (user_id, job_id);
+        EXCEPTION WHEN OTHERS THEN
+            -- If an error occurred, return false
+            RETURN false;
+        END;
+    END LOOP;
+     -- If no errors occurred, return true
+    RETURN true;
+END;
+$$ LANGUAGE plpgsql;
+
 COMMIT;
 
