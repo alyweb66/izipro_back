@@ -12,5 +12,7 @@ type Query {
     media(id: Int!): Media!
     categories: [Category!]!
     category(id: Int!): Category!
+    jobs(ids: [Int!]): [Job]
+    settings: UserSettings!
     
 }

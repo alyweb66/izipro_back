@@ -3,7 +3,7 @@
 BEGIN;
 
 SELECT * FROM "user" WHERE false;
-SELECT * FROM "setting" WHERE false;
+SELECT * FROM "user_setting" WHERE false;
 SELECT * FROM "type" WHERE false;
 SELECT * FROM "category" WHERE false;
 SELECT * FROM "message" WHERE false;

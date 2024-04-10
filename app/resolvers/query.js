@@ -47,4 +47,10 @@ export default {
     debug(`get category with id ${id}`);
     return dataSources.dataDB.category.findByPk(id);
   },
+  jobs(_, { ids }, { dataSources }) {
+    debug(`get job with id ${ids}`);
+    dataSources.dataDB.job.cache.clear();
+    return dataSources.dataDB.job.findJobByPK(ids);
+  },
+
 };

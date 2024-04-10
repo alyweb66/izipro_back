@@ -16,7 +16,7 @@ DROP TABLE "request";
 DROP TABLE "job";
 DROP TABLE "category";
 DROP TABLE "type";
-DROP TABLE "setting";
+DROP TABLE "user_setting";
 DROP TABLE "user";
 
 DROP DOMAIN email;

@@ -1,12 +1,7 @@
 type Job {
-    id: Int
-    name: String
-    description: String
-    category: String
+    id: Int!
+    name: String!
+    description: String!
+    category: String!
 }
 
-input UserJobInput {
-    user_id: Int!
-    job_id: [Int]!
-    
-}
