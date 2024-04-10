@@ -2,7 +2,7 @@
 
 BEGIN;
 
-INSERT INTO "user" (
+/* INSERT INTO "user" (
     "first_name",
     "last_name",
     "email",
@@ -21,7 +21,7 @@ INSERT INTO "user" (
     ('Alice', 'Johnson', 'alice.johnson@example.com', '69001', 'Lyon', 'hashed_password_3', 'token_3', 11112222333344, 'Company C', 'user', '2023-01-03 10:45:00', '2023-01-03 10:45:00'),
     ('Bob', 'Dylan', 'bob.dylan@example.com', '13005', 'Marseille', 'hashed_password_4', 'token_4', 45678901234567, 'Company D', 'user', '2023-02-14 16:34:00', '2023-02-14 16:34:00'),
     ('Éléonore', 'Rousseau', 'eleonore.rousseau@example.com', '33000', 'Bordeaux', 'hashed_password_5', 'token_5', 89012345678901, 'Company E', 'admin', '2023-02-14 16:34:00', '2023-02-14 16:34:00');
-
+ */
 
 
 INSERT INTO "category" (
@@ -225,11 +225,11 @@ INSERT INTO "job" (
 
 
 
-INSERT INTO "request"(
+/* INSERT INTO "request"(
     "urgent",
     "title",
     "message",
-    "localization",
+
     "range",
     "user_id",
     "job_id"
@@ -239,10 +239,10 @@ INSERT INTO "request"(
     (true, 'Cours particuliers de mathématiques', 'Je cherche un professeur pour aider mon fils à améliorer ses résultats en mathématiques.', '69001', 10, 3, 3),
     (false, 'Réparation de fuite d''eau', 'Nous avons une fuite d''eau dans la salle de bain et nous cherchons un plombier pour la réparer.', '13005', 10, 4, 11),
     (true, 'Cours de guitare pour débutant', 'Je souhaite apprendre à jouer de la guitare et je cherche un professeur pour des cours particuliers.', '33000', 10, 5, 8);
+ */
 
 
-
-INSERT INTO "conversation" (
+/* INSERT INTO "conversation" (
     "title", 
     "participant_1", 
     "participant_2", 
@@ -253,10 +253,10 @@ INSERT INTO "conversation" (
     ('Conversation 3', 3, 4, 3),
     ('Conversation 4', 4, 5, 4),
     ('Conversation 5', 5, 1, 5);
+ */
 
 
-
-INSERT INTO "message" (
+/* INSERT INTO "message" (
     "content",
     "sender",
     "receiver",
@@ -269,9 +269,9 @@ INSERT INTO "message" (
     ('Any plans for the weekend?', 3, 1, 3, '2023-01-02 10:00:00', '2023-01-02 10:00:00'),
     ('Not yet, maybe some relaxation.', 1, 3, 4, '2023-01-02 11:00:00', '2023-01-02 11:00:00'),
     ('Meeting at 2 PM today.', 2, 3, 5, '2023-01-03 13:45:00', '2023-01-03 13:45:00');
+ */
 
-
-
+/* 
 INSERT INTO "chat_media" (
     "url", 
     "sender", 
@@ -296,7 +296,7 @@ INSERT INTO "message_has_chat_media" (
     (3, 3, '2024-02-15T10:45:00Z'),
     (4, 4, '2024-02-16T08:20:00Z'),
     (5, 5, '2024-02-17T14:10:00Z');
-
+ */
 
 
 COMMIT;

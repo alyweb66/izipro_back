@@ -6,7 +6,8 @@ type Request {
     urgent: Boolean!
     title: String!
     message: String!
-    localization: String!
+    lng: Float!
+    lat: Float!
     range: Int!
     user_id: Int!
     job_id: Int!
@@ -15,16 +16,13 @@ type Request {
     created_at: String!
 }
 
-input Coordinates {
-  lng: Float!
-  lat: Float!
-}
 
 input CreateRequestInput {
     urgent: Boolean!
     title: String! @length(max: 255)
     message: String!
-    localization: Coordinates!
+    lng: Float!
+    lat: Float!
     range: Int!
     user_id: Int!
     job_id: Int!
