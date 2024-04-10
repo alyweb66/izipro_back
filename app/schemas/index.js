@@ -19,6 +19,9 @@ const UserMutation = readFileSync(path.join(dirname, './UserMutation.gql'), 'utf
 const RequestMutation = readFileSync(path.join(dirname, './RequestMutation.gql'), 'utf8');
 const UserHasJobMutation = readFileSync(path.join(dirname, './UserHasJobMutation.gql'), 'utf8');
 const Subscription = readFileSync(path.join(dirname, './Subscription.gql'), 'utf8');
+const UserHasJob = readFileSync(path.join(dirname, './UserHasJob.gql'), 'utf8');
+const UserSettings = readFileSync(path.join(dirname, './UserSettings.gql'), 'utf8');
+const UserSettingsMutation = readFileSync(path.join(dirname, './UserSettingsMutation.gql'), 'utf8');
 
 const schema = `#graphql
 scalar validateEmail
@@ -37,6 +40,9 @@ scalar validateSiret
     ${UserMutation}
     ${RequestMutation}
     ${UserHasJobMutation}
+    ${UserHasJob}
+    ${UserSettings}
+    ${UserSettingsMutation}
    
     ${Subscription}
 `;

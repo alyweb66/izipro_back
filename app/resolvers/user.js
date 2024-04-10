@@ -11,6 +11,15 @@ const UserResolver = {
     debug(`get all request from user id: ${id}`);
     return dataSources.dataDB.request.getRequestByUserId(id);
   },
+
+  jobs({ id }, _, { dataSources }) {
+    debug(`get all jobs from user id: ${id}`);
+    return dataSources.dataDB.userHasJob.findByUser(id);
+  },
+  settings({ id }, _, { dataSources }) {
+    debug(`get setting from user id: ${id}`);
+    return dataSources.dataDB.userSetting.findByUser(id);
+  },
 };
 
 export default UserResolver;

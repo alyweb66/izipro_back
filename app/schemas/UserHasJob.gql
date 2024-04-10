@@ -1,0 +1,13 @@
+type UserHasJob {
+    id: Int!
+    user_id: Int!
+    job_id: Int!
+    created_at: String
+    updated_at: String
+}
+
+input UserJobInput {
+    user_id: Int!
+    job_id: [Int]!
+    
+}

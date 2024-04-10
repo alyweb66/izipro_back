@@ -26,6 +26,8 @@ CREATE TABLE "user"(
    "address" TEXT CHECK (LENGTH("address") <= 100),
    "postal_code" postal_code_domain,
    "city" TEXT CHECK (LENGTH("city") <= 50),
+   "lat" NUMERIC,
+   "lng" NUMERIC,
    "password" TEXT NOT NULL UNIQUE,
    "remember_token" TEXT,
    "refresh_token" TEXT,
@@ -36,13 +38,13 @@ CREATE TABLE "user"(
    "updated_at" timestamptz
 );
 
-CREATE TABLE "setting"(
+CREATE TABLE "user_setting"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "name" TEXT CHECK (LENGTH("name") <= 50),
-   "status" TEXT NOT NULL CHECK (LENGTH("status") <= 50) ,
+   "status" TEXT CHECK (LENGTH("status") <= 50) ,
    "content" TEXT,
-   "range" INT,
-   "user_id" INT NOT NULL REFERENCES "user"(id),
+   "range" INT NOT NULL DEFAULT 0,
+   "user_id" INT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );

@@ -62,6 +62,7 @@ class CoreDatamapper {
     debug('add new entity to dataLoader');
     // "load" allows you to add the value to the query table
     const record = await this.findByPkLoader.load(id);
+    console.log('record', record);
     return record || null;
   }
 
