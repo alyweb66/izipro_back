@@ -14,7 +14,7 @@ type User {
     siret: String
     denomination: String
     role: String
-    requests(id: Int): [Request]
+    requests(id: Int!, offset: Int!, limit: Int!): [Request]
     conversation: [Conversation!]!
     messages: [Message!]!
     jobs: [UserHasJob]

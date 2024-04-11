@@ -89,5 +89,60 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION getRequestByJob(job_ids INT[], ofset INT, lim INT)
+RETURNS TABLE(
+id INT,
+title TEXT,
+urgent BOOLEAN,
+message TEXT,
+lng NUMERIC,
+lat NUMERIC,
+range INT,
+user_id INT,
+job_id INT,
+created_at TIMESTAMP WITH TIME ZONE,
+job TEXT,
+media JSON
+) AS $$
+BEGIN
+  RETURN QUERY 
+  SELECT 
+r.id,
+r.title,
+r.urgent,
+r.message,
+r.lng,
+r.lat,
+r.range,
+r.user_id,
+r.job_id,
+r.created_at,
+j.name AS job,
+json_agg(row_to_json((SELECT x FROM (SELECT rm.url, rm.name) AS x))) AS "media"
+FROM "request" r
+JOIN "request_has_request_media" rhm ON "request_id"=r."id"
+JOIN "request_media" rm ON rm."id"="request_media_id"
+JOIN "job" j ON j."id"=r."job_id"
+WHERE r.job_id = ANY(job_ids)
+GROUP BY
+r.id,
+r.title,
+r.urgent,
+r.message,
+r.lng,
+r.lat,
+r.range,
+r.user_id,
+r.job_id,
+r.created_at,
+j.name
+ORDER BY r.created_at DESC
+  OFFSET ofset LIMIT lim;
+END; $$
+LANGUAGE plpgsql;
+
+
+
+
 COMMIT;
 
