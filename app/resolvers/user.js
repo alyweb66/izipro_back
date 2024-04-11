@@ -7,9 +7,9 @@ const UserResolver = {
     debug(`get all messages from: ${firstName}`);
     return dataSources.dataDB.message.findByUser(id);
   },
-  requests({ id }, _, { dataSources }) {
-    debug(`get all request from user id: ${id}`);
-    return dataSources.dataDB.request.getRequestByUserId(id);
+  requests({ id }, { offset, limit }, { dataSources }) {
+    debug(`get all request from user id: ${id}, offset ${offset}, limit ${limit}`);
+    return dataSources.dataDB.request.getRequestByUserId(id, offset, limit);
   },
 
   jobs({ id }, _, { dataSources }) {

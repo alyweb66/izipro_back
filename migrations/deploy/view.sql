@@ -34,4 +34,5 @@ r.created_at,
 j.name
 ORDER BY r.created_at DESC;
 
+
 COMMIT;
