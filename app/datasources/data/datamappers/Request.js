@@ -24,13 +24,13 @@ class Request extends CoreDatamapper {
     return user;
   }
 
-  async getRequestByJobId(jobId, offset, limit) {
+  async getRequestByJobId(jobId, userId, offset, limit) {
     debug('Finding request by job id');
     debug(`SQL function ${this.insertFunc} called`);
     // call sql function
     const query = {
-      text: `SELECT * FROM ${this.insertFunc} ($1, $2, $3)`,
-      values: [jobId, offset, limit],
+      text: `SELECT * FROM ${this.insertFunc} ($1, $2, $3, $4)`,
+      values: [jobId, userId, offset, limit],
     };
     const { rows } = await this.client.query(query);
     const job = rows;

@@ -54,7 +54,12 @@ export default {
   },
   async requestsByJob(_, { ids, offset, limit }, { dataSources }) {
     debug(`get all requests by job_id: ${ids}, offset ${offset}, limit ${limit}`);
-    const result = await dataSources.dataDB.request.getRequestByJobId(ids, offset, limit);
+    const result = await dataSources.dataDB.request.getRequestByJobId(
+      ids,
+      dataSources.userData.id,
+      offset,
+      limit,
+    );
     const clientRequests = result.filter((request) => request.user_id !== dataSources.userData.id);
     return clientRequests;
   },

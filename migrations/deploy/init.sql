@@ -181,4 +181,12 @@ CREATE TABLE "user_has_user"(
    "updated_at" timestamptz
 );
 
+CREATE TABLE "user_has_hiddingClientRequest"(
+   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   "user_id" INT NOT NULL REFERENCES "user"(id),
+   "request_id" INT NOT NULL REFERENCES "request"(id),
+   "created_at" timestamptz NOT NULL DEFAULT now(),
+   "updated_at" timestamptz
+);
+
 COMMIT;
