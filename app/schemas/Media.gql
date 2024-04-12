@@ -1,6 +1,7 @@
 
 
 type Media {
+    id: Int!
     url: String!
     name: String!
 }

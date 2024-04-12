@@ -11,7 +11,6 @@ const UserResolver = {
     debug(`get all request from user id: ${id}, offset ${offset}, limit ${limit}`);
     return dataSources.dataDB.request.getRequestByUserId(id, offset, limit);
   },
-
   jobs({ id }, _, { dataSources }) {
     debug(`get all jobs from user id: ${id}`);
     return dataSources.dataDB.userHasJob.findByUser(id);

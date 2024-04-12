@@ -71,12 +71,12 @@ RETURNS BOOLEAN AS $$
 DECLARE
     job_id INTEGER;
 BEGIN
-    -- Loop over each media_id in the array
+    -- Loop over each job_id in the array
     FOR job_id IN SELECT UNNEST(job_ids)
     LOOP
     -- Begin an exception block
         BEGIN
-        -- Insert a new row with the request_id and media_id
+        -- Insert a new row with the user_id and job_id
         INSERT INTO user_has_job (user_id, job_id)
         VALUES (user_id, job_id);
         EXCEPTION WHEN OTHERS THEN
@@ -88,6 +88,7 @@ BEGIN
     RETURN true;
 END;
 $$ LANGUAGE plpgsql;
+
 
 CREATE OR REPLACE FUNCTION getRequestByJob(job_ids INT[], ofset INT, lim INT)
 RETURNS TABLE(
