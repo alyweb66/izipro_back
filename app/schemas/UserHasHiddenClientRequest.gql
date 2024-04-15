@@ -1,0 +1,9 @@
+type UserHasHiddenClientRequest {
+  user_id: Int!
+  request_id: Int!
+}
+
+input UserHasHiddenClientRequestInput {
+  user_id: Int!
+  request_id: Int!
+}

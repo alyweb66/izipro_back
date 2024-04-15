@@ -2,6 +2,7 @@
 
 BEGIN;
 
+DROP TABLE "user_has_hiddingClientRequest";
 DROP TABLE "user_has_user";
 DROP TABLE "user_has_job";
 DROP TABLE "message_has_chat_media";
@@ -16,7 +17,7 @@ DROP TABLE "request";
 DROP TABLE "job";
 DROP TABLE "category";
 DROP TABLE "type";
-DROP TABLE "setting";
+DROP TABLE "user_setting";
 DROP TABLE "user";
 
 DROP DOMAIN email;

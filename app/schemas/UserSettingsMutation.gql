@@ -1,0 +1,5 @@
+extend type Mutation{
+    # User setting mutations
+    userSetting(id: Int!, input: UserSettingsInput!): UserSettings
+ 
+}

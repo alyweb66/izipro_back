@@ -1,5 +1,6 @@
 directive @length(max: Int!) on INPUT_FIELD_DEFINITION
 
+
 type User {
     id: Int!
     first_name: String
@@ -8,12 +9,16 @@ type User {
     address: String
     postal_code: String
     city: String
+    lat: Float
+    lng: Float
     siret: String
     denomination: String
     role: String
-    requests(id: Int): [Request]
+    requests(id: Int!, offset: Int!, limit: Int!): [Request]
     conversation: [Conversation!]!
     messages: [Message!]!
+    jobs: [UserHasJob]
+    settings: [UserSettings]
 }
 
 
@@ -58,6 +63,8 @@ input UpdateUserInput {
     city: String @length(max: 50)
     siret: validateSiret @length(max: 14)
     denomination: String @length(max: 50)
+    lat: Float
+    lng: Float
 }
 
 input ForgotPasswordInput {

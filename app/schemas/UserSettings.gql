@@ -1,0 +1,17 @@
+type UserSettings {
+    id: Int
+    name: String
+    status: String
+    content: String
+    range: Int
+    user_id: Int
+    created_at: String
+    updated_at: String
+}
+
+input UserSettingsInput {
+    name: String
+    content: String
+    range: Int!
+    user_id: Int!
+}

@@ -26,6 +26,22 @@ class Job extends CoreDatamapper {
     const { rows } = await this.client.query(preparedQuery);
     return rows;
   }
+
+  async findJobByPK(jobIds) {
+    debug('find jobs by ids');
+    debug(`SQL function ${this.tableName} called`);
+    // call sql function
+    const query = {
+      text: `SELECT * FROM ${this.tableName}
+      WHERE id = ANY($1::int[]) `,
+      values: [jobIds],
+    };
+    const { rows } = await this.client.query(query);
+    const jobData = rows;
+    console.log('jobData', jobData);
+
+    return jobData;
+  }
 }
 
 export default Job;
