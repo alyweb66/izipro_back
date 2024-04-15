@@ -72,7 +72,12 @@ const wsServer = new WebSocketServer({
   // serves expressMiddleware at a different path
   path: '/subscriptions',
 });
-
+wsServer.on('connection', (ws) => {
+  console.log('A new client Connected!');
+  ws.on('message', (message) => {
+    console.log('received: %s', message);
+  });
+});
 // Hand in the schema we just created and have the
 // WebSocketServer start listening.
 const serverCleanup = useServer({ schema }, wsServer);
@@ -143,3 +148,4 @@ app.use(
 await new Promise((resolve) => { httpServer.listen({ port: process.env.PORT || 4000 }, resolve); });
 debugInDevelopment('⚠️   Warning:  DEVELOPMENT MODE ON');
 debug(`🚀  Server ready at: http://localhost:${httpServer.address().port}`);
+debug(`🚀  Subscription ready at: ws//localhost:${httpServer.address().port}/subscriptions`);

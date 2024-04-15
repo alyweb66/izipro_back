@@ -34,7 +34,21 @@ class Request extends CoreDatamapper {
     };
     const { rows } = await this.client.query(query);
     const job = rows;
-    console.log(job);
+
+    return job;
+  }
+
+  async getSubscritpionRequest(jobId, userId, requestId, offset = 0, limit = 1) {
+    debug('Finding request by job id');
+    debug(`SQL function ${this.QueryFunc} called`);
+    // call sql function
+    const query = {
+      text: `SELECT * FROM ${this.QueryFunc} ($1, $2, $4, $5)
+      WHERE id = $3`,
+      values: [jobId, userId, requestId, offset, limit],
+    };
+    const { rows } = await this.client.query(query);
+    const job = rows;
 
     return job;
   }

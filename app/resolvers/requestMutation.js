@@ -5,6 +5,7 @@ import {
 import fs from 'fs';
 import path from 'path';
 import url from 'url';
+import pubsub from '../middleware/pubSub.js';
 import handleUploadedFiles from '../middleware/handleUploadFiles.js';
 
 // __dirname not on module, this is the way to use it.
@@ -32,6 +33,7 @@ function deleteFile(file) {
   });
 }
 
+// function to create the request
 async function createRequest(_, { input }, { dataSources }) {
   debug('create request');
   debugInDevelopment('input', input.media);
@@ -91,6 +93,16 @@ async function createRequest(_, { input }, { dataSources }) {
       || (isCreatedRequestMedia.insert_request_has_request_media === false)) {
       throw new ApolloError('Error creating request_has_request_media');
     }
+    const subscriptionResult = await dataSources.dataDB.request.getSubscritpionRequest(
+      [isCreatedRequest.job_id],
+      dataSources.userData.id,
+      requestId,
+    );
+    debugInDevelopment('subscriptionResult', subscriptionResult);
+    pubsub.publish('REQUEST_CREATED', {
+      requestAdded: subscriptionResult,
+
+    });
     debug('created media', isCreatedRequestMedia.insert_request_has_request_media);
     return isCreatedRequest;
   } catch (error) {
@@ -99,6 +111,7 @@ async function createRequest(_, { input }, { dataSources }) {
   }
 }
 
+// function to delete the request
 async function deleteRequest(_, { input }, { dataSources }) {
   debug('delete request');
   try {
