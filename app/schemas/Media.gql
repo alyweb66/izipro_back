@@ -1,9 +1,9 @@
 
 
 type Media {
-    id: Int!
-    url: String!
-    name: String!
+    id: Int
+    url: String
+    name: String
 }
 
 scalar Upload

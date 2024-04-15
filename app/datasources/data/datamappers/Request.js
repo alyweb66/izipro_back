@@ -8,7 +8,7 @@ class Request extends CoreDatamapper {
 
   viewName = 'getRequest';
 
-  insertFunc = 'getRequestByJob';
+  QueryFunc = 'getRequestByJob';
 
   async getRequestByUserId(userId, offset, limit) {
     debug('Finding request by user id');
@@ -26,14 +26,15 @@ class Request extends CoreDatamapper {
 
   async getRequestByJobId(jobId, userId, offset, limit) {
     debug('Finding request by job id');
-    debug(`SQL function ${this.insertFunc} called`);
+    debug(`SQL function ${this.QueryFunc} called`);
     // call sql function
     const query = {
-      text: `SELECT * FROM ${this.insertFunc} ($1, $2, $3, $4)`,
+      text: `SELECT * FROM ${this.QueryFunc} ($1, $2, $3, $4)`,
       values: [jobId, userId, offset, limit],
     };
     const { rows } = await this.client.query(query);
     const job = rows;
+    console.log(job);
 
     return job;
   }
