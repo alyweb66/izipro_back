@@ -90,7 +90,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE FUNCTION getRequestByJob(job_ids INT[], ofset INT, lim INT)
+CREATE OR REPLACE FUNCTION getRequestByJob(job_ids INT[], userId_id INT, ofset INT, lim INT)
 RETURNS TABLE(
 id INT,
 title TEXT,
@@ -121,10 +121,14 @@ r.created_at,
 j.name AS job,
 json_agg(row_to_json((SELECT x FROM (SELECT rm.url, rm.name) AS x))) AS "media"
 FROM "request" r
-JOIN "request_has_request_media" rhm ON "request_id"=r."id"
-JOIN "request_media" rm ON rm."id"="request_media_id"
+LEFT JOIN "request_has_request_media" rhm ON "request_id"=r."id"
+LEFT JOIN "request_media" rm ON rm."id"="request_media_id"
 JOIN "job" j ON j."id"=r."job_id"
 WHERE r.job_id = ANY(job_ids)
+AND NOT EXISTS (
+  SELECT 1 FROM "user_has_hiddingClientRequest" uhhcr
+  WHERE uhhcr."request_id" = r.id AND uhhcr."user_id" = userId_id 
+)
 GROUP BY
 r.id,
 r.title,
