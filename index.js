@@ -17,12 +17,10 @@ import url from 'url';
 // eslint-disable-next-line import/extensions
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import { makeExecutableSchema } from '@graphql-tools/schema';
-// import { WebSocketServer } from 'ws';
+import { WebSocketServer } from 'ws';
 // eslint-disable-next-line import/extensions
-// import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
 
-// eslint-disable-next-line import/extensions
-// import { startStandaloneServer } from '@apollo/server/standalone';
 // module to use cache
 import { InMemoryLRUCache } from '@apollo/utils.keyvaluecache';
 // A schema is a collection of type definitions (hence "typeDefs")
@@ -37,6 +35,12 @@ import DataDB from './app/datasources/data/index.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:httpserver`);
 
+function debugInDevelopment(message = '', value = '') {
+  if (process.env.NODE_ENV === 'development') {
+    debug('⚠️', message, value);
+  }
+}
+
 const app = express();
 
 app.use(express.json());
@@ -50,23 +54,8 @@ app.use('/public', express.static(path.join(dirname, 'public')));
 // middleware to handle file uploads
 app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
 
-/* app.use('/graphql', async (req, res, next) => {
-  // Si la demande contient des fichiers téléchargés, loggez-les
-  if (req.files) {
-    console.log('Files uploaded:', req.files);
-  }
-
-  // Passez à l'étape suivante
-  next();
-}); */
 // The `listen` method launches a web server.
 const httpServer = http.createServer(app);
-
-function debugInDevelopment(message = '', value = '') {
-  if (process.env.NODE_ENV === 'development') {
-    debug('⚠️', message, value);
-  }
-}
 
 // The ApolloServer constructor requires two parameters: schema
 // definition and set of resolvers.
@@ -74,6 +63,19 @@ const schema = makeExecutableSchema({
   typeDefs,
   resolvers,
 });
+
+// Creating the WebSocket server
+const wsServer = new WebSocketServer({
+  // This is the `httpServer` we created in a previous step.
+  server: httpServer,
+  // Pass a different path here if app.use
+  // serves expressMiddleware at a different path
+  path: '/subscriptions',
+});
+
+// Hand in the schema we just created and have the
+// WebSocketServer start listening.
+const serverCleanup = useServer({ schema }, wsServer);
 
 // create a new instance of ApolloServer
 const server = new ApolloServer({
@@ -83,7 +85,15 @@ const server = new ApolloServer({
     // Proper shutdown for the HTTP server.
     ApolloServerPluginDrainHttpServer({ httpServer }),
     // Proper shutdown for the WebSocket server.
-
+    {
+      async serverWillStart() {
+        return {
+          async drainServer() {
+            await serverCleanup.dispose();
+          },
+        };
+      },
+    },
   ],
   cache: new InMemoryLRUCache({
     maxSize: 2 ** 20 * 100,
