@@ -8,8 +8,8 @@ import url from 'url';
 import handleUploadedFiles from '../middleware/handleUploadFiles.js';
 
 // __dirname not on module, this is the way to use it.
-const filename = url.fileURLToPath(import.meta.url);
-const dirname = path.dirname(filename);
+const fileName = url.fileURLToPath(import.meta.url);
+const dirname = path.dirname(fileName);
 const directoryPath = path.join(dirname, '..', '..', 'public', 'media');
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:mutation`);
@@ -27,7 +27,7 @@ function deleteFile(file) {
     if (err) {
       debugInDevelopment(`Error deleting file: ${err}`);
     } else {
-      debugInDevelopment(`File ${filename} deleted successfully`);
+      debugInDevelopment(`File ${file} deleted successfully`);
     }
   });
 }
@@ -87,11 +87,11 @@ async function createRequest(_, { input }, { dataSources }) {
       requestId,
       mediaIds,
     );
-    debug('created media', isCreatedRequestMedia.insert_request_has_request_media);
     if (!isCreatedRequestMedia
-       || (isCreatedRequestMedia.insert_request_has_request_media === false)) {
+      || (isCreatedRequestMedia.insert_request_has_request_media === false)) {
       throw new ApolloError('Error creating request_has_request_media');
     }
+    debug('created media', isCreatedRequestMedia.insert_request_has_request_media);
     return isCreatedRequest;
   } catch (error) {
     debug('error', error);

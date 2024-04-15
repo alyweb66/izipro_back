@@ -26,6 +26,8 @@ CREATE TABLE "user"(
    "address" TEXT CHECK (LENGTH("address") <= 100),
    "postal_code" postal_code_domain,
    "city" TEXT CHECK (LENGTH("city") <= 50),
+   "lat" NUMERIC,
+   "lng" NUMERIC,
    "password" TEXT NOT NULL UNIQUE,
    "remember_token" TEXT,
    "refresh_token" TEXT,
@@ -36,12 +38,13 @@ CREATE TABLE "user"(
    "updated_at" timestamptz
 );
 
-CREATE TABLE "setting"(
+CREATE TABLE "user_setting"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "name" TEXT CHECK (LENGTH("name") <= 50),
-   "status" TEXT NOT NULL CHECK (LENGTH("status") <= 50) ,
+   "status" TEXT CHECK (LENGTH("status") <= 50) ,
    "content" TEXT,
-   "user_id" INT NOT NULL REFERENCES "user"(id),
+   "range" INT NOT NULL DEFAULT 0,
+   "user_id" INT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );
@@ -74,7 +77,8 @@ CREATE TABLE "request"(
    "title" TEXT NOT NULL CHECK (LENGTH("title") <= 50),
    "urgent" BOOLEAN NOT NULL,
    "message" TEXT NOT NULL,
-   "localization" TEXT NOT NULL,
+   "lng" NUMERIC NOT NULL,
+   "lat" NUMERIC NOT NULL,
    "range" INT NOT NULL,
    "user_id" INT NOT NULL REFERENCES "user"(id),
    "job_id" INT NOT NULL REFERENCES "job"(id),
@@ -173,6 +177,14 @@ CREATE TABLE "user_has_user"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "user_id" INT NOT NULL REFERENCES "user"(id),
    "user_id_1" INT NOT NULL REFERENCES "user"(id),
+   "created_at" timestamptz NOT NULL DEFAULT now(),
+   "updated_at" timestamptz
+);
+
+CREATE TABLE "user_has_hiddingClientRequest"(
+   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   "user_id" INT NOT NULL REFERENCES "user"(id),
+   "request_id" INT NOT NULL REFERENCES "request"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );

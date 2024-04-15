@@ -82,7 +82,18 @@ async function createUserFunction(_, { input }, { dataSources }) {
       remember_token: token,
     };
 
-    return dataSources.dataDB.user.create(userInputWithHashedPassword);
+    const createdUser = await dataSources.dataDB.user.create(userInputWithHashedPassword);
+    if (!createdUser.id) {
+      throw new ApolloError('Error creating user', 'BAD_REQUEST');
+    }
+
+    const createSetting = await dataSources.dataDB.userSetting.create({ user_id: createdUser.id });
+
+    if (!createSetting.id) {
+      throw new ApolloError('Error creating user setting', 'BAD_REQUEST');
+    }
+
+    return createdUser;
   } catch (err) {
     debug(err);
     throw new GraphQLError('Error');

@@ -12,5 +12,8 @@ type Query {
     media(id: Int!): Media!
     categories: [Category!]!
     category(id: Int!): Category!
+    jobs(ids: [Int!]): [Job]
+    requestsByJob(ids: [Int!], offset: Int, limit: Int): [Request]
+    settings: UserSettings!
     
 }
