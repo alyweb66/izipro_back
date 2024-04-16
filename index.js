@@ -72,12 +72,15 @@ const wsServer = new WebSocketServer({
   // serves expressMiddleware at a different path
   path: '/subscriptions',
 });
+
+// Handle incoming connections
 wsServer.on('connection', (ws) => {
   console.log('A new client Connected!');
   ws.on('message', (message) => {
     console.log('received: %s', message);
   });
 });
+
 // Hand in the schema we just created and have the
 // WebSocketServer start listening.
 const serverCleanup = useServer({ schema }, wsServer);

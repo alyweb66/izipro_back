@@ -101,7 +101,6 @@ async function createRequest(_, { input }, { dataSources }) {
     debugInDevelopment('subscriptionResult', subscriptionResult);
     pubsub.publish('REQUEST_CREATED', {
       requestAdded: subscriptionResult,
-
     });
     debug('created media', isCreatedRequestMedia.insert_request_has_request_media);
     return isCreatedRequest;

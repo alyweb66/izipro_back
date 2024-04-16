@@ -1,5 +1,5 @@
 type Subscription {
     messageAdded(conversationId: Int!): Message!
-    requestAdded: [Request]
+    requestAdded(ids: [Int!]): [Request]
     requestDeleted: Request
 }
