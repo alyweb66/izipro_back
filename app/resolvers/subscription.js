@@ -4,7 +4,11 @@ import pubsub from '../middleware/pubSub.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:subscription`);
 
-debug('subscription');
+function debugInDevelopment(message = '', value = '') {
+  if (process.env.NODE_ENV === 'development') {
+    debug('⚠️', message, value);
+  }
+}
 
 const Subscription = {
   /* messageAdded: {
@@ -15,7 +19,13 @@ const Subscription = {
   }, */
 
   requestAdded: {
-    subscribe: () => pubsub.asyncIterator(['REQUEST_CREATED']),
+    subscribe: withFilter(
+      () => pubsub.asyncIterator('REQUEST_CREATED'),
+      (payload, variables) => {
+        debugInDevelopment('requestAdded subscription: payload', payload, 'variables', variables);
+        return payload.requestAdded.some((request) => variables.ids.includes(request.job_id));
+      },
+    ),
   },
 
 };
