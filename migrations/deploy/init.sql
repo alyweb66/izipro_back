@@ -77,6 +77,7 @@ CREATE TABLE "request"(
    "title" TEXT NOT NULL CHECK (LENGTH("title") <= 50),
    "urgent" BOOLEAN NOT NULL,
    "message" TEXT NOT NULL,
+   "city" TEXT NOT NULL CHECK (LENGTH("city") <= 50),
    "lng" NUMERIC NOT NULL,
    "lat" NUMERIC NOT NULL,
    "range" INT NOT NULL,

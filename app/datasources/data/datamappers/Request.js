@@ -19,9 +19,9 @@ class Request extends CoreDatamapper {
       values: [userId, offset, limit],
     };
     const { rows } = await this.client.query(query);
-    const user = rows;
+    const request = rows;
 
-    return user;
+    return request;
   }
 
   async getRequestByJobId(jobId, userId, offset, limit) {
@@ -33,9 +33,9 @@ class Request extends CoreDatamapper {
       values: [jobId, userId, offset, limit],
     };
     const { rows } = await this.client.query(query);
-    const job = rows;
+    const requestsByJob = rows;
 
-    return job;
+    return requestsByJob;
   }
 
   async getSubscritpionRequest(jobId, userId, requestId, offset = 0, limit = 1) {

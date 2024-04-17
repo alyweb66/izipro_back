@@ -6,11 +6,14 @@ type Request {
     urgent: Boolean!
     title: String!
     message: String!
+    city: String!
     lng: Float!
     lat: Float!
     range: Int!
     user_id: Int!
     job_id: Int!
+    first_name: String!
+    last_name: String!
     job: String
     media: [Media]
     created_at: String!
@@ -20,6 +23,7 @@ input CreateRequestInput {
     urgent: Boolean!
     title: String! @length(max: 255)
     message: String!
+    city: String!
     lng: Float!
     lat: Float!
     range: Int!
