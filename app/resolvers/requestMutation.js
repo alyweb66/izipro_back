@@ -67,21 +67,16 @@ async function createRequest(_, { input }, { dataSources }) {
     }));
 
     // calling the handleUploadedFiles function to compress the images and save them
-    const result = await handleUploadedFiles(ReadStreamArray);
-
-    const mediaInput = result.map((media) => ({
-      ...media,
-      user_id: input.user_id,
-    }));
+    const media = await handleUploadedFiles(ReadStreamArray);
 
     // create media
-    const createMedia = await dataSources.dataDB.media.createRequestMedia(mediaInput);
+    const createMedia = await dataSources.dataDB.media.createRequestMedia(media);
     if (!createMedia) {
       throw new ApolloError('Error creating media');
     }
-
+console.log('createMedia', createMedia);
     // get the media ids from the createMedia array
-    const mediaIds = createMedia.map((obj) => obj.insert_request_media).flat();
+    const mediaIds = createMedia.map((obj) => obj.insert_media).flat();
 
     // create request_has_request_media
     const requestId = isCreatedRequest.id;
@@ -89,8 +84,9 @@ async function createRequest(_, { input }, { dataSources }) {
       requestId,
       mediaIds,
     );
+    console.log('isCreatedRequestMedia', isCreatedRequestMedia);
     if (!isCreatedRequestMedia
-      || (isCreatedRequestMedia.insert_request_has_request_media === false)) {
+      || (isCreatedRequestMedia.insert_request_has_media === false)) {
       throw new ApolloError('Error creating request_has_request_media');
     }
     const subscriptionResult = await dataSources.dataDB.request.getSubscritpionRequest(
@@ -102,7 +98,7 @@ async function createRequest(_, { input }, { dataSources }) {
     pubsub.publish('REQUEST_CREATED', {
       requestAdded: subscriptionResult,
     });
-    debug('created media', isCreatedRequestMedia.insert_request_has_request_media);
+    debug('created media', isCreatedRequestMedia.insert_request_has_media);
     return isCreatedRequest;
   } catch (error) {
     debug('error', error);
