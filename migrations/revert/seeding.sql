@@ -2,6 +2,8 @@
 
 BEGIN;
 
+DELETE FROM "user_has_hiddingClientRequest";
+DELETE FROM "user_has_job";
 DELETE FROM "message_has_chat_media";
 DELETE FROM "request_has_request_media";
 DELETE FROM "chat_media";
