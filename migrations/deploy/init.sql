@@ -89,40 +89,29 @@ CREATE TABLE "request"(
 
 CREATE TABLE "conversation"( 
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "title" TEXT CHECK (LENGTH("title") <= 50),
-   "participant_1" INT NOT NULL REFERENCES "user"(id),
-   "participant_2" INT NOT NULL REFERENCES "user"(id),
+   "user_1" INT NOT NULL REFERENCES "user"(id),
+   "user_2" INT NOT NULL REFERENCES "user"(id),
    "request_id" INT NOT NULL REFERENCES "request"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
-   CONSTRAINT different_participants CHECK ("participant_1" <> "participant_2")
+   /* Check if the two participants are different */
+   CONSTRAINT different_participants CHECK ("user_1" <> "user_2")
 );
 
 CREATE TABLE "message"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "content" TEXT,
-   "sender" INT NOT NULL REFERENCES "user"(id),
-   "receiver" INT NOT NULL REFERENCES "user"(id),
+   "user_id" INT NOT NULL REFERENCES "user"(id),
    "conversation_id" INT NOT NULL REFERENCES "conversation"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );
 
-CREATE TABLE "chat_media"(
-   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "url" TEXT,
-   "sender" INT NOT NULL REFERENCES "user"(id),
-   "receiver" INT NOT NULL REFERENCES "user"(id),
-   "created_at" timestamptz NOT NULL DEFAULT now(),
-   "updated_at" timestamptz
-  
-);
 
-CREATE TABLE "request_media"(
+CREATE TABLE "media"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "url" TEXT NOT NULL UNIQUE,
    "name" TEXT NOT NULL UNIQUE,
-   "user_id" INT NOT NULL REFERENCES "user"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
   
@@ -150,17 +139,17 @@ CREATE TABLE "research"(
 );
 
 
-CREATE TABLE "request_has_request_media"(
+CREATE TABLE "request_has_media"(
     "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "request_media_id" INT NOT NULL REFERENCES "request_media"(id),
+   "media_id" INT NOT NULL REFERENCES "media"(id),
    "request_id" INT NOT NULL REFERENCES "request"(id) ON DELETE CASCADE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );
 
-CREATE TABLE "message_has_chat_media"(
+CREATE TABLE "message_has_media"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "chat_media_id" INT NOT NULL REFERENCES "chat_media"(id),
+   "media_id" INT NOT NULL REFERENCES "media"(id),
    "message_id" INT NOT NULL REFERENCES "message"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz

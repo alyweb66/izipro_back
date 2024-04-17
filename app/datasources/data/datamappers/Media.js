@@ -4,9 +4,9 @@ import CoreDatamapper from './CoreDatamapper.js';
 const debug = Debug(`${process.env.DEBUG_MODULE}:datamappers:media`);
 
 class Media extends CoreDatamapper {
-  tableName = 'request_media';
+  tableName = 'media';
 
-  insertFunc = 'insert_request_media';
+  insertFunc = 'insert_media';
 
   /**
    * create media data to a request.
