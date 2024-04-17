@@ -61,6 +61,7 @@ export default {
       limit,
     );
     const clientRequests = result.filter((request) => request.user_id !== dataSources.userData.id);
+
     return clientRequests;
   },
 

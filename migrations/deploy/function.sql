@@ -101,6 +101,9 @@ lat NUMERIC,
 range INT,
 user_id INT,
 job_id INT,
+city TEXT,
+first_name TEXT,
+last_name TEXT,
 created_at TIMESTAMP WITH TIME ZONE,
 job TEXT,
 media JSON
@@ -117,6 +120,9 @@ r.lat,
 r.range,
 r.user_id,
 r.job_id,
+r.city,
+u.first_name,
+u.last_name,
 r.created_at,
 j.name AS job,
 json_agg(row_to_json((SELECT x FROM (SELECT rm.id, rm.url, rm.name) AS x))) AS "media"
@@ -124,10 +130,11 @@ FROM "request" r
 LEFT JOIN "request_has_request_media" rhm ON "request_id"=r."id"
 LEFT JOIN "request_media" rm ON rm."id"="request_media_id"
 JOIN "job" j ON j."id"=r."job_id"
+JOIN "user" u ON u."id"=r."user_id"
 WHERE r.job_id = ANY(job_ids)
 AND NOT EXISTS (
   SELECT 1 FROM "user_has_hiddingClientRequest" uhhcr
-  WHERE uhhcr."request_id" = r.id AND uhhcr."user_id" = userId_id 
+  WHERE uhhcr."request_id" = r.id AND uhhcr."user_id" = userId_id
 )
 GROUP BY
 r.id,
@@ -139,6 +146,9 @@ r.lat,
 r.range,
 r.user_id,
 r.job_id,
+r.city,
+u.first_name,
+u.last_name,
 r.created_at,
 j.name
 ORDER BY r.created_at DESC
