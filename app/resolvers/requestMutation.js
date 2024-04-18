@@ -74,7 +74,7 @@ async function createRequest(_, { input }, { dataSources }) {
     if (!createMedia) {
       throw new ApolloError('Error creating media');
     }
-console.log('createMedia', createMedia);
+
     // get the media ids from the createMedia array
     const mediaIds = createMedia.map((obj) => obj.insert_media).flat();
 
@@ -84,7 +84,7 @@ console.log('createMedia', createMedia);
       requestId,
       mediaIds,
     );
-    console.log('isCreatedRequestMedia', isCreatedRequestMedia);
+
     if (!isCreatedRequestMedia
       || (isCreatedRequestMedia.insert_request_has_media === false)) {
       throw new ApolloError('Error creating request_has_request_media');
@@ -95,9 +95,11 @@ console.log('createMedia', createMedia);
       requestId,
     );
     debugInDevelopment('subscriptionResult', subscriptionResult);
+    // publish the request to the client
     pubsub.publish('REQUEST_CREATED', {
       requestAdded: subscriptionResult,
     });
+
     debug('created media', isCreatedRequestMedia.insert_request_has_media);
     return isCreatedRequest;
   } catch (error) {

@@ -15,7 +15,7 @@ type User {
     denomination: String
     role: String
     requests(id: Int!, offset: Int!, limit: Int!): [Request]
-    conversation: [Conversation!]!
+    requestsConversations(offset: Int!, limit: Int!): [Request]
     messages: [Message!]!
     jobs: [UserHasJob]
     settings: [UserSettings]

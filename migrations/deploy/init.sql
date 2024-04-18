@@ -95,7 +95,8 @@ CREATE TABLE "conversation"(
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
    /* Check if the two participants are different */
-   CONSTRAINT different_participants CHECK ("user_1" <> "user_2")
+   CONSTRAINT different_participants CHECK ("user_1" <> "user_2"),
+   CONSTRAINT unique_conversation UNIQUE ("user_1", "user_2", "request_id")
 );
 
 CREATE TABLE "message"(

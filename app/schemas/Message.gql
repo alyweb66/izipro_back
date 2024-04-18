@@ -1,8 +1,7 @@
 type Message {
     id: Int!
     content: String!
-    sender: Int!
-    receiver: Int!
+    user_id: Int!
     conversation_id: Int!
     created_at: String!
 }

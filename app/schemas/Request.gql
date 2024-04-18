@@ -17,6 +17,7 @@ type Request {
     job: String
     media: [Media]
     created_at: String!
+    conversation:[Conversation]
 }
 
 input CreateRequestInput {
