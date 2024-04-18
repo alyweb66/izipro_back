@@ -106,7 +106,8 @@ first_name TEXT,
 last_name TEXT,
 created_at TIMESTAMP WITH TIME ZONE,
 job TEXT,
-media JSON
+media JSON,
+conversation JSON
 ) AS $$
 BEGIN
   RETURN QUERY 
@@ -125,12 +126,14 @@ u.first_name,
 u.last_name,
 r.created_at,
 j.name AS job,
-json_agg(row_to_json((SELECT x FROM (SELECT m.id, m.url, m.name) AS x))) AS "media"
+json_agg(row_to_json((SELECT x FROM (SELECT m.id, m.url, m.name) AS x))) AS "media",
+json_agg(json_build_object('id', conversation.id, 'user_1', conversation.user_1, 'user_2', conversation.user_2)) AS conversation
 FROM "request" r
 LEFT JOIN "request_has_media" rhm ON "request_id"=r."id"
 LEFT JOIN "media" m ON m."id"="media_id"
 JOIN "job" j ON j."id"=r."job_id"
 JOIN "user" u ON u."id"=r."user_id"
+JOIN "conversation" ON conversation."request_id"=r."id"
 WHERE r.job_id = ANY(job_ids)
 AND NOT EXISTS (
   SELECT 1 FROM "user_has_hiddingClientRequest" uhhcr

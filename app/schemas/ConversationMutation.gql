@@ -1,0 +1,4 @@
+extend type Mutation{
+    # conversation mutations
+    createConversation(input: ConversationInput!): Conversation
+}
