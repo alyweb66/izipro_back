@@ -16,7 +16,7 @@ type User {
     role: String
     requests(id: Int!, offset: Int!, limit: Int!): [Request]
     requestsConversations(offset: Int!, limit: Int!): [Request]
-    messages: [Message!]!
+    messages(id: Int!, conversationId: Int!, offset: Int!, limit: Int! ): [Message!]!
     jobs: [UserHasJob]
     settings: [UserSettings]
 }

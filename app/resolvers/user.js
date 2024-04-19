@@ -1,4 +1,7 @@
 import Debug from 'debug';
+import {
+  AuthenticationError,
+} from 'apollo-server-core';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:user`);
 
@@ -20,6 +23,13 @@ const UserResolver = {
   requestsConversations({ id }, { offset, limit }, { dataSources }) {
     debug(`get all requests by conversations from user id: ${id}`);
     return dataSources.dataDB.request.getRequestByConversation(id, offset, limit);
+  },
+  messages({ id }, { conversationId, offset, limit }, { dataSources }) {
+    debug(`get all messages from conversation id: ${conversationId}`);
+    if (dataSources.userData.id !== id) {
+      throw new AuthenticationError('Unauthorized');
+    }
+    return dataSources.dataDB.message.findByUserConversation(id, conversationId, offset, limit);
   },
 };
 

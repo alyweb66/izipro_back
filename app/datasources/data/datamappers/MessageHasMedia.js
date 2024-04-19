@@ -1,28 +1,28 @@
 import Debug from 'debug';
 import CoreDatamapper from './CoreDatamapper.js';
 
-const debug = Debug(`${process.env.DEBUG_MODULE}:datamappers:request_has_media`);
+const debug = Debug(`${process.env.DEBUG_MODULE}:datamappers:message_has_media`);
 
-class RequestHasMedia extends CoreDatamapper {
-  tableName = 'request_has_media';
+class MessageHasMedia extends CoreDatamapper {
+  tableName = 'message_has_media';
 
-  insertFunc = 'insert_request_has_media';
+  insertFunc = 'insert_message_has_media';
 
   /**
-   * create data in request_has_request_media.
+   * create data in message_has_media.
   *
-  * @param {string} value - value like { request_id: <integer>,
+  * @param {string} value - value like { message_id: <integer>,
   media_ids: [<integer>, <integer>, ...]}.
   * @returns {Promise<object>} boolean.
   * @throws {Error} If user not found.
   */
-  async createRequestHasMedia(requestId, mediaIds) {
-    debug('create request_has_media');
+  async createMessageHasMedia(messageId, mediaIds) {
+    debug('create message_has_media');
     debug(`SQL function ${this.insertFunc} called`);
     // call sql function
     const query = {
       text: `SELECT * FROM "${this.insertFunc}" ($1, $2) `,
-      values: [requestId, mediaIds],
+      values: [messageId, mediaIds],
     };
     const { rows } = await this.client.query(query);
     const requestMedia = rows[0];
@@ -31,4 +31,4 @@ class RequestHasMedia extends CoreDatamapper {
   }
 }
 
-export default RequestHasMedia;
+export default MessageHasMedia;

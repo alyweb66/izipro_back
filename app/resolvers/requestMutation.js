@@ -70,7 +70,7 @@ async function createRequest(_, { input }, { dataSources }) {
     const media = await handleUploadedFiles(ReadStreamArray);
 
     // create media
-    const createMedia = await dataSources.dataDB.media.createRequestMedia(media);
+    const createMedia = await dataSources.dataDB.media.createMedia(media);
     if (!createMedia) {
       throw new ApolloError('Error creating media');
     }
@@ -87,7 +87,7 @@ async function createRequest(_, { input }, { dataSources }) {
 
     if (!isCreatedRequestMedia
       || (isCreatedRequestMedia.insert_request_has_media === false)) {
-      throw new ApolloError('Error creating request_has_request_media');
+      throw new ApolloError('Error creating request_has_media');
     }
     const subscriptionResult = await dataSources.dataDB.request.getSubscritpionRequest(
       [isCreatedRequest.job_id],

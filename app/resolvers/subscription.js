@@ -11,12 +11,18 @@ function debugInDevelopment(message = '', value = '') {
 }
 
 const Subscription = {
-  /* messageAdded: {
+  messageAdded: {
     subscribe: withFilter(
       () => pubsub.asyncIterator('MESSAGE_ADDED'),
-      (payload, variables) => payload.conversationId === variables.conversationId,
+      (payload, variables) => {
+        debugInDevelopment('messageAdded subscription: payload', payload, 'variables', variables);
+        return payload.messageAdded.some((message) => variables.request_ids.includes(
+          message.request_id,
+        )
+          && variables.conversations_ids.includes(message.conversation_id));
+      },
     ),
-  }, */
+  },
 
   requestAdded: {
     subscribe: withFilter(

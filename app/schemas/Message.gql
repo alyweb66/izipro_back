@@ -1,16 +1,20 @@
+scalar Upload
+
 type Message {
     id: Int!
     content: String!
     user_id: Int!
     conversation_id: Int!
+    request_id: Int!
     created_at: String!
+    media: [Media]
 }
 
 input NewMessageInput {
     content: String!
-    sender: Int!
-    receiver: Int!
-    conversationId: Int!
+    user_id: Int!
+    conversation_id: Int!
+    media: [Upload]
 }
 
 

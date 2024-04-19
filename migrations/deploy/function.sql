@@ -26,7 +26,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Function to insert a new row in the request_has_request_media table
+-- Function to insert a new row in the request_has_media table
 CREATE OR REPLACE FUNCTION insert_request_has_media(request_id INTEGER, media_ids INTEGER[])
 RETURNS BOOLEAN AS $$
 DECLARE
@@ -40,6 +40,30 @@ BEGIN
         -- Insert a new row with the request_id and media_id
         INSERT INTO request_has_media (request_id, media_id)
         VALUES (request_id, media_id);
+        EXCEPTION WHEN OTHERS THEN
+            -- If an error occurred, return false
+            RETURN false;
+        END;
+    END LOOP;
+     -- If no errors occurred, return true
+    RETURN true;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to insert a new row in the message_has_media table
+CREATE OR REPLACE FUNCTION insert_message_has_media(message_id INTEGER, media_ids INTEGER[])
+RETURNS BOOLEAN AS $$
+DECLARE
+    media_id INTEGER;
+BEGIN
+    -- Loop over each media_id in the array
+    FOR media_id IN SELECT UNNEST(media_ids)
+    LOOP
+    -- Begin an exception block
+        BEGIN
+        -- Insert a new row with the message_id and media_id
+        INSERT INTO message_has_media (message_id, media_id)
+        VALUES (message_id, media_id);
         EXCEPTION WHEN OTHERS THEN
             -- If an error occurred, return false
             RETURN false;
