@@ -15,8 +15,8 @@ class Media extends CoreDatamapper {
   * @returns {Promise<object>} return ids of media.
   * @throws {Error} If bad request.
   */
-  async createRequestMedia(media) {
-    debug('create media to a request');
+  async createMedia(media) {
+    debug('create media');
     debug(`SQL function ${this.insertFunc} called`);
     // call sql function
     const query = {

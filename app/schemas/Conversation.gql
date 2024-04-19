@@ -1,9 +1,9 @@
 type Conversation {
-    id: Int!
-    user_1: Int!
-    user_2: Int!
-    request_id: Int!
-    created_at: String!
+    id: Int
+    user_1: Int
+    user_2: Int
+    request_id: Int
+    created_at: String
     messages: [Message]
 }
 

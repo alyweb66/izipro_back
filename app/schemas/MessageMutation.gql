@@ -1,5 +1,5 @@
 extend type Mutation{
     # Request mutations
-    createMessage(input: NewMessageInput!): Message
+    createMessage(id: Int!, input: NewMessageInput!): Boolean
 
 }
