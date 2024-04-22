@@ -16,7 +16,7 @@ function debugInDevelopment(message = '', value = '') {
 async function createMessage(_, { id, input }, { dataSources }) {
   debug('create message');
 
-  debugInDevelopment('input', input.media);
+  debugInDevelopment('input', input);
   if (dataSources.userData.id !== id) {
     throw new AuthenticationError('Unauthorized');
   }

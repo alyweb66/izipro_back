@@ -14,12 +14,17 @@ const Subscription = {
   messageAdded: {
     subscribe: withFilter(
       () => pubsub.asyncIterator('MESSAGE_CREATED'),
-      (payload, variables) => {
-        debugInDevelopment('messageAdded subscription: payload', payload, 'variables', variables);
-        return payload.messageAdded.some(
-          (message) => variables.conversation_ids.includes(message.conversation_id),
-        );
-      },
+      (payload, variables) => payload.messageAdded.some(
+        (message) => {
+          const isMessageForConversation = variables.conversation_ids.includes(
+            message.conversation_id,
+          );
+          if (isMessageForConversation) {
+            debugInDevelopment('messageAdded subscription: payload', payload, 'variables', variables);
+          }
+          return isMessageForConversation;
+        },
+      ),
     ),
   },
 
