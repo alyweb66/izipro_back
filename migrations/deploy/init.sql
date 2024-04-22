@@ -38,6 +38,15 @@ CREATE TABLE "user"(
    "updated_at" timestamptz
 );
 
+CREATE TABLE "subscription"(
+   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   "user_id" INT NOT NULL REFERENCES "user"(id),
+   "subscriber" TEXT NOT NULL CHECK (LENGTH("subscriber") <= 50),
+   "subscriber_id" INT[] NOT NULL,
+   "created_at" timestamptz NOT NULL DEFAULT now(),
+   "updated_at" timestamptz
+);
+
 CREATE TABLE "user_setting"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "name" TEXT CHECK (LENGTH("name") <= 50),
@@ -103,7 +112,7 @@ CREATE TABLE "message"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "content" TEXT,
    "user_id" INT NOT NULL REFERENCES "user"(id),
-   "conversation_id" INT NOT NULL REFERENCES "conversation"(id),
+   "conversation_id" INT NOT NULL REFERENCES "conversation"(id) ON DELETE CASCADE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );

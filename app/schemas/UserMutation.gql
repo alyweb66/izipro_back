@@ -10,8 +10,4 @@ extend type Mutation {
     validateForgotPassword(input: ValidateForgotPasswordInput!): Boolean
     confirmRegisterEmail(input: ConfirmRegisterEmailInput!): Boolean
     changePassword(id: Int!, input: ChangePasswordInput!): Boolean
-
-# Message mutations
-    sendMessage(message: NewMessageInput!): Message!
-
 }

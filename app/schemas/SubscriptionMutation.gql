@@ -1,0 +1,5 @@
+extend type Mutation {
+# Subscription mutations
+    createSubscription(input: SubscriptionInput!): UserSubscription
+
+}

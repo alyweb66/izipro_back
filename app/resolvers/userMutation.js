@@ -6,7 +6,6 @@ import { GraphQLError } from 'graphql';
 import {
   AuthenticationError, ApolloError, UserInputError,
 } from 'apollo-server-core';
-import { PubSub } from 'graphql-subscriptions';
 import * as sendEmail from '../middleware/sendEmail.js';
 import SirenAPI from '../datasources/SirenAPI/index.js';
 
@@ -390,7 +389,7 @@ async function changePassword(_, { id, input }, { dataSources }) {
   }
 }
 
-// Function for chat
+/* // Function for chat
 async function sendMessage(_, { input }, { dataSources }) {
   debug('sendMessage is starting');
   try {
@@ -404,7 +403,7 @@ async function sendMessage(_, { input }, { dataSources }) {
     debug(err);
     throw new ApolloError('Error');
   }
-}
+} */
 
 export default {
   createUser: createUserFunction,
@@ -416,6 +415,5 @@ export default {
   confirmRegisterEmail,
   updateUser,
   changePassword,
-  sendMessage,
   validateForgotPassword,
 };

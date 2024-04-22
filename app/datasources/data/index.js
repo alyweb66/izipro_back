@@ -12,6 +12,7 @@ import UserHasJob from './datamappers/UserHasJob.js';
 import UserSetting from './datamappers/UserSetting.js';
 import UserHasHiddingClientRequest from './datamappers/UserHasHiddingClientRequest.js';
 import MessageHasMedia from './datamappers/MessageHasMedia.js';
+import Subscription from './datamappers/Subscription.js';
 
 // allows you to instantiate the datamappers
 // to put it in context
@@ -31,6 +32,7 @@ class DataDB {
     this.userSetting = new UserSetting(newOptions);
     this.userHasHiddingClientRequest = new UserHasHiddingClientRequest(newOptions);
     this.messageHasMedia = new MessageHasMedia(newOptions);
+    this.subscription = new Subscription(newOptions);
   }
 }
 

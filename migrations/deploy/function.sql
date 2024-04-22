@@ -155,9 +155,9 @@ json_agg(json_build_object('id', conversation.id, 'user_1', conversation.user_1,
 FROM "request" r
 LEFT JOIN "request_has_media" rhm ON "request_id"=r."id"
 LEFT JOIN "media" m ON m."id"="media_id"
-JOIN "job" j ON j."id"=r."job_id"
+LEFT JOIN "job" j ON j."id"=r."job_id"
 JOIN "user" u ON u."id"=r."user_id"
-JOIN "conversation" ON conversation."request_id"=r."id"
+LEFT JOIN "conversation" ON conversation."request_id"=r."id"
 WHERE r.job_id = ANY(job_ids)
 AND NOT EXISTS (
   SELECT 1 FROM "user_has_hiddingClientRequest" uhhcr
@@ -183,6 +183,34 @@ ORDER BY r.created_at DESC
 END; $$
 LANGUAGE plpgsql;
 
+
+-- Function to insert a new row in the subscription table and return table
+CREATE OR REPLACE FUNCTION insert_subscription(
+    p_user_id INT,
+    p_subscriber TEXT,
+    p_subscriber_id INT[]
+)
+RETURNS TABLE(
+    id INT,
+    user_id INT,
+    subscriber TEXT,
+    subscriber_id INT[],
+    created_at timestamptz,
+    updated_at timestamptz
+)
+AS $$
+BEGIN
+    -- delete old values
+    DELETE FROM "subscription"
+    WHERE "subscription"."subscriber" = p_subscriber;
+
+    -- Insert data into the subscription table
+    RETURN QUERY
+    INSERT INTO "subscription" ("user_id", "subscriber", "subscriber_id")
+    VALUES (p_user_id, p_subscriber, p_subscriber_id)
+    RETURNING *;
+END;
+$$ LANGUAGE plpgsql;
 
 
 

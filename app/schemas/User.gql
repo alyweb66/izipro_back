@@ -19,6 +19,7 @@ type User {
     messages(id: Int!, conversationId: Int!, offset: Int!, limit: Int! ): [Message!]!
     jobs: [UserHasJob]
     settings: [UserSettings]
+    subscription: [UserSubscription]
 }
 
 
