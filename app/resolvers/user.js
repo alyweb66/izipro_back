@@ -31,6 +31,10 @@ const UserResolver = {
     }
     return dataSources.dataDB.message.findByUserConversation(id, conversationId, offset, limit);
   },
+  subscription({ id }, _, { dataSources }) {
+    debug(`get all subscription from user id: ${id}`);
+    return dataSources.dataDB.subscription.findByUser(id);
+  },
 };
 
 export default UserResolver;

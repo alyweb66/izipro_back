@@ -4,22 +4,21 @@ import pubsub from '../middleware/pubSub.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:subscription`);
 
-function debugInDevelopment(message = '', value = '') {
+function debugInDevelopment(...args) {
   if (process.env.NODE_ENV === 'development') {
-    debug('⚠️', message, value);
+    debug('⚠️', ...args);
   }
 }
 
 const Subscription = {
   messageAdded: {
     subscribe: withFilter(
-      () => pubsub.asyncIterator('MESSAGE_ADDED'),
+      () => pubsub.asyncIterator('MESSAGE_CREATED'),
       (payload, variables) => {
         debugInDevelopment('messageAdded subscription: payload', payload, 'variables', variables);
-        return payload.messageAdded.some((message) => variables.request_ids.includes(
-          message.request_id,
-        )
-          && variables.conversations_ids.includes(message.conversation_id));
+        return payload.messageAdded.some(
+          (message) => variables.conversation_ids.includes(message.conversation_id),
+        );
       },
     ),
   },

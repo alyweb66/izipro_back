@@ -22,5 +22,5 @@ async function createConversation(_, { id, input }, { dataSources }) {
     throw new ApolloError('Error creating conversation');
   }
 }
-debug('RequestResolver');
+
 export default { createConversation };

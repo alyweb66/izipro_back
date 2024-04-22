@@ -12,6 +12,7 @@ DELETE FROM "conversation";
 DELETE FROM "request";
 DELETE FROM "job";
 DELETE FROM "category";
+DELETE FROM "subscription";
 DELETE FROM "user";
 
 COMMIT;

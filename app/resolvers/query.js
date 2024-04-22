@@ -60,8 +60,10 @@ export default {
       offset,
       limit,
     );
+    console.log('result', result);
+    // filter out the requests that are not from the client
     const clientRequests = result.filter((request) => request.user_id !== dataSources.userData.id);
-
+console.log('clientRequests', clientRequests);
     return clientRequests;
   },
 
