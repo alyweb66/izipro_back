@@ -5,7 +5,7 @@ const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:query`);
 export default {
   conversations(_, { offset, limit }, { dataSources }) {
     debug('get all conversations');
-    return dataSources.dataDB.conversation.findAll(offset, limit);
+    return dataSources.dataDB.conversation.getConversationByUser(offset, limit);
   },
   conversation(_, { id }, { dataSources }) {
     debug(`get conversation with id ${id}`);
@@ -60,6 +60,7 @@ export default {
       offset,
       limit,
     );
+    // filter out the requests that are not from the client
     const clientRequests = result.filter((request) => request.user_id !== dataSources.userData.id);
 
     return clientRequests;

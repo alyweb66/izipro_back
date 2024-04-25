@@ -4,9 +4,9 @@ import CoreDatamapper from './CoreDatamapper.js';
 const debug = Debug(`${process.env.DEBUG_MODULE}:datamappers:media`);
 
 class Media extends CoreDatamapper {
-  tableName = 'request_media';
+  tableName = 'media';
 
-  insertFunc = 'insert_request_media';
+  insertFunc = 'insert_media';
 
   /**
    * create media data to a request.
@@ -15,8 +15,8 @@ class Media extends CoreDatamapper {
   * @returns {Promise<object>} return ids of media.
   * @throws {Error} If bad request.
   */
-  async createRequestMedia(media) {
-    debug('create media to a request');
+  async createMedia(media) {
+    debug('create media');
     debug(`SQL function ${this.insertFunc} called`);
     // call sql function
     const query = {

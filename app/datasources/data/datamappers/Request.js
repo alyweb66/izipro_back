@@ -8,6 +8,8 @@ class Request extends CoreDatamapper {
 
   viewName = 'getRequest';
 
+  viewNameByConversation = 'getRequestByConversation';
+
   QueryFunc = 'getRequestByJob';
 
   async getRequestByUserId(userId, offset, limit) {
@@ -51,6 +53,24 @@ class Request extends CoreDatamapper {
     const job = rows;
 
     return job;
+  }
+
+  async getRequestByConversation(userId, offset = 0, limit = 3) {
+    debug('Finding request by user conversation');
+    debug(`SQL function ${this.viewNameByConversation} called`);
+    // call sql function
+    const query = {
+      text: `SELECT * FROM "${this.viewNameByConversation}" WHERE EXISTS (
+        SELECT 1
+        FROM json_array_elements(conversation) AS conv
+        WHERE conv->>'user_1' = $1 OR conv->>'user_2' = $1
+        ) OFFSET $2 LIMIT $3`,
+      values: [userId, offset, limit],
+    };
+    const { rows } = await this.client.query(query);
+    const request = rows;
+
+    return request;
   }
 }
 export default Request;

@@ -1,5 +1,19 @@
 type Subscription {
-    messageAdded(conversationId: Int!): Message!
+    messageAdded(conversation_ids: [Int!]): [Message!]
     requestAdded(ids: [Int!]): [Request]
     requestDeleted: Request
+}
+
+type UserSubscription {
+    id: Int!
+    user_id: Int!
+    subscriber: String!
+    subscriber_id: [Int!]
+    created_at: String!
+}
+
+input SubscriptionInput {
+    user_id: Int!
+    subscriber: String!
+    subscriber_id: [Int!]
 }

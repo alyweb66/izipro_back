@@ -67,21 +67,16 @@ async function createRequest(_, { input }, { dataSources }) {
     }));
 
     // calling the handleUploadedFiles function to compress the images and save them
-    const result = await handleUploadedFiles(ReadStreamArray);
-
-    const mediaInput = result.map((media) => ({
-      ...media,
-      user_id: input.user_id,
-    }));
+    const media = await handleUploadedFiles(ReadStreamArray);
 
     // create media
-    const createMedia = await dataSources.dataDB.media.createRequestMedia(mediaInput);
+    const createMedia = await dataSources.dataDB.media.createMedia(media);
     if (!createMedia) {
       throw new ApolloError('Error creating media');
     }
 
     // get the media ids from the createMedia array
-    const mediaIds = createMedia.map((obj) => obj.insert_request_media).flat();
+    const mediaIds = createMedia.map((obj) => obj.insert_media).flat();
 
     // create request_has_request_media
     const requestId = isCreatedRequest.id;
@@ -89,9 +84,10 @@ async function createRequest(_, { input }, { dataSources }) {
       requestId,
       mediaIds,
     );
+
     if (!isCreatedRequestMedia
-      || (isCreatedRequestMedia.insert_request_has_request_media === false)) {
-      throw new ApolloError('Error creating request_has_request_media');
+      || (isCreatedRequestMedia.insert_request_has_media === false)) {
+      throw new ApolloError('Error creating request_has_media');
     }
     const subscriptionResult = await dataSources.dataDB.request.getSubscritpionRequest(
       [isCreatedRequest.job_id],
@@ -99,10 +95,12 @@ async function createRequest(_, { input }, { dataSources }) {
       requestId,
     );
     debugInDevelopment('subscriptionResult', subscriptionResult);
+    // publish the request to the client
     pubsub.publish('REQUEST_CREATED', {
       requestAdded: subscriptionResult,
     });
-    debug('created media', isCreatedRequestMedia.insert_request_has_request_media);
+
+    debug('created media', isCreatedRequestMedia.insert_request_has_media);
     return isCreatedRequest;
   } catch (error) {
     debug('error', error);

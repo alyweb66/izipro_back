@@ -7,6 +7,8 @@ const debug = Debug(`${process.env.DEBUG_MODULE}:datamappers:Message`);
 class Message extends CoreDatamapper {
   tableName = 'message';
 
+  viewName = 'getMessageByUserConversation';
+
   /**
    * Finds all messages by conversation_id.
    *
@@ -14,17 +16,15 @@ class Message extends CoreDatamapper {
    * @returns {Promise<object>} The found messages.
    * @throws {Error} If user not found.
    */
-  async findByConversation(id) {
-    debug(`Finding messages by conversation id ${id}`);
-    debug(`SQL function ${this.tableName} called`);
-    // call sql function
+  async findByUserConversation(userId, conversationId, offset, limit) {
+    debug(`Finding messages by conversation_id ${conversationId} and user_id ${userId}`);
+    debug(`SQL function ${this.viewName} called`);
     const query = {
-      text: `SELECT * FROM "${this.tableName}" WHERE conversation_id = $1`,
-      values: [id],
+      text: `SELECT * FROM "${this.viewName}" WHERE conversation_id = $2 AND user_id = $1 OFFSET $3 LIMIT $4`,
+      values: [userId, conversationId, offset, limit],
     };
     const { rows } = await this.client.query(query);
     const messages = rows;
-
     return messages;
   }
 }
