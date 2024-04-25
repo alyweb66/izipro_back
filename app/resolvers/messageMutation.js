@@ -72,6 +72,9 @@ async function createMessage(_, { id, input }, { dataSources }) {
         throw new ApolloError('Error creating message_has_media');
       }
     }
+    // update conversation.updated_at
+
+    await dataSources.dataDB.conversation.updateUpdatedAtConversation(input.conversation_id);
 
     const subscriptionResult = await dataSources.dataDB.message.findByUserConversation(
       dataSources.userData.id,
