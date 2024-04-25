@@ -1,6 +1,6 @@
 ### this is what i can get back and how
 type Query {
-    users: [User!]!
+    users(ids: [Int!],  offset: Int, limit: Int): [User!]!
     user: User!
     requests: [Request!]!
     request(id: Int!): Request!

@@ -18,12 +18,19 @@ u.first_name,
 u.last_name,
 r.created_at,
 j.name AS job,
-json_agg(row_to_json((SELECT x FROM (SELECT rm.id, rm.url, rm.name) AS x))) AS "media"
+json_agg(row_to_json((SELECT x FROM (SELECT rm.id, rm.url, rm.name) AS x))) AS "media",
+json_agg(json_build_object(
+    'id', conversation.id, 
+    'user_1', conversation.user_1, 
+    'user_2', conversation.user_2, 
+    'updated_at', conversation.updated_at 
+    )) AS conversation
 FROM "request" r
 LEFT JOIN "request_has_media" rhm ON "request_id"=r."id"
 LEFT JOIN "media" rm ON rm."id"="media_id"
 JOIN "job" j ON j."id"=r."job_id"
 JOIN "user" u ON u."id"=r."user_id"
+LEFT JOIN "conversation" ON conversation."request_id"=r."id"
 GROUP BY
 r.id,
 r.title,
@@ -58,13 +65,18 @@ u.last_name,
 r.created_at,
 j.name AS job,
 json_agg(row_to_json((SELECT x FROM (SELECT rm.id, rm.url, rm.name) AS x))) AS "media",
-json_agg(json_build_object('id', conversation.id, 'user_1', conversation.user_1, 'user_2', conversation.user_2, 'updated_at', conversation.updated_at )) AS conversation
+json_agg(json_build_object(
+    'id', conversation.id, 
+    'user_1', conversation.user_1, 
+    'user_2', conversation.user_2, 
+    'updated_at', conversation.updated_at 
+    )) AS conversation
 FROM "request" r
 LEFT JOIN "request_has_media" rhm ON "request_id"=r."id"
 LEFT JOIN "media" rm ON rm."id"="media_id"
 JOIN "job" j ON j."id"=r."job_id"
 JOIN "user" u ON u."id"=r."user_id"
-JOIN "conversation" ON conversation."request_id"=r."id"
+LEFT JOIN "conversation" ON conversation."request_id"=r."id"
 GROUP BY
 r.id,
 r.title,
