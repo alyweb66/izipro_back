@@ -15,10 +15,11 @@ type User {
     denomination: String
     role: String
     requests(id: Int!, offset: Int!, limit: Int!): [Request]
-    conversation: [Conversation!]!
-    messages: [Message!]!
+    requestsConversations(offset: Int!, limit: Int!): [Request]
+    messages(id: Int!, conversationId: Int!, offset: Int!, limit: Int! ): [Message!]!
     jobs: [UserHasJob]
     settings: [UserSettings]
+    subscription: [UserSubscription]
 }
 
 

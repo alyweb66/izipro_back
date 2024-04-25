@@ -24,6 +24,9 @@ const UserSettings = readFileSync(path.join(dirname, './UserSettings.gql'), 'utf
 const UserSettingsMutation = readFileSync(path.join(dirname, './UserSettingsMutation.gql'), 'utf8');
 const UserHasHiddenClientRequest = readFileSync(path.join(dirname, './UserHasHiddenClientRequest.gql'), 'utf8');
 const UserHasHiddenClientRequestMutation = readFileSync(path.join(dirname, './UserHasHiddenClientRequestMutation.gql'), 'utf8');
+const ConversationMutation = readFileSync(path.join(dirname, './ConversationMutation.gql'), 'utf8');
+const MessageMutation = readFileSync(path.join(dirname, './MessageMutation.gql'), 'utf8');
+const SubscriptionMutation = readFileSync(path.join(dirname, './SubscriptionMutation.gql'), 'utf8');
 
 const schema = `#graphql
 scalar validateEmail
@@ -47,6 +50,9 @@ scalar validateSiret
     ${UserSettingsMutation}
     ${UserHasHiddenClientRequest}
     ${UserHasHiddenClientRequestMutation}
+    ${ConversationMutation}
+    ${MessageMutation}
+    ${SubscriptionMutation}
    
     ${Subscription}
 `;

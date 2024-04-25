@@ -4,19 +4,29 @@ import pubsub from '../middleware/pubSub.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:subscription`);
 
-function debugInDevelopment(message = '', value = '') {
+function debugInDevelopment(...args) {
   if (process.env.NODE_ENV === 'development') {
-    debug('⚠️', message, value);
+    debug('⚠️', ...args);
   }
 }
 
 const Subscription = {
-  /* messageAdded: {
+  messageAdded: {
     subscribe: withFilter(
-      () => pubsub.asyncIterator('MESSAGE_ADDED'),
-      (payload, variables) => payload.conversationId === variables.conversationId,
+      () => pubsub.asyncIterator('MESSAGE_CREATED'),
+      (payload, variables) => payload.messageAdded.some(
+        (message) => {
+          const isMessageForConversation = variables.conversation_ids.includes(
+            message.conversation_id,
+          );
+          if (isMessageForConversation) {
+            debugInDevelopment('messageAdded subscription: payload', payload, 'variables', variables);
+          }
+          return isMessageForConversation;
+        },
+      ),
     ),
-  }, */
+  },
 
   requestAdded: {
     subscribe: withFilter(

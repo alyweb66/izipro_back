@@ -1,14 +1,15 @@
 type Conversation {
-    id: Int!
-    participant_1: Int!
-    participant_2: Int!
-    messages: [Message!]!
-    created_at: String!
+    id: Int
+    user_1: Int
+    user_2: Int
+    request_id: Int
+    created_at: String
+    updated_at: String
+    messages: [Message]
 }
 
-input NewConversationInput {
-    title: String!
-    participant_1: Int!
-    participant_2: Int!
+input ConversationInput {
+    user_1: Int!
+    user_2: Int!
     request_id: Int!
 }
