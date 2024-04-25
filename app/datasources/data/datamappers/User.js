@@ -26,6 +26,20 @@ class User extends CoreDatamapper {
 
     return user;
   }
+
+  async findUsersByIds(ids) {
+    debug('Finding users by ids');
+    debug(`SQL function ${this.tableName} called`);
+    // call sql function
+    const query = {
+      text: `SELECT * FROM "${this.tableName}" WHERE id = ANY($1)`,
+      values: [ids],
+    };
+    const { rows } = await this.client.query(query);
+    const users = rows;
+console.log('users', users);
+    return users;
+  }
 }
 
 export default User;
