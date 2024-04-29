@@ -22,6 +22,7 @@ class Request extends CoreDatamapper {
     };
     const { rows } = await this.client.query(query);
     const request = rows;
+    console.log('request', request);
 
     return request;
   }
