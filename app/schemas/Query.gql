@@ -6,7 +6,7 @@ type Query {
     request(id: Int!): Request!
     conversations: [Conversation!]!
     conversation(id: Int!): Conversation!
-    messages: [Message!]!
+    messages(conversationId: Int!, offset: Int, limit: Int): [Message!]!
     message(id: Int!): Message! 
     medias: [Media!]!
     media(id: Int!): Media!
