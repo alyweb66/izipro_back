@@ -150,34 +150,27 @@ u.first_name,
 u.last_name,
 r.created_at,
 j.name AS job,
-json_agg(row_to_json((SELECT x FROM (SELECT m.id, m.url, m.name) AS x))) AS "media",
-json_agg(json_build_object('id', conversation.id, 'user_1', conversation.user_1, 'user_2', conversation.user_2, 'updated_at', conversation.updated_at)) AS conversation
+m.media,
+c.conversation
 FROM "request" r
-LEFT JOIN "request_has_media" rhm ON "request_id"=r."id"
-LEFT JOIN "media" m ON m."id"="media_id"
+LEFT JOIN (
+  SELECT "request_id", json_agg(row_to_json((SELECT x FROM (SELECT m.id, m.url, m.name) AS x))) AS media
+  FROM "request_has_media" rhm
+  JOIN "media" m ON m."id"="media_id"
+  GROUP BY "request_id"
+) m ON m."request_id"=r."id"
 LEFT JOIN "job" j ON j."id"=r."job_id"
 JOIN "user" u ON u."id"=r."user_id"
-LEFT JOIN "conversation" ON conversation."request_id"=r."id"
+LEFT JOIN (
+  SELECT "request_id", json_agg(json_build_object('id', conv.id, 'user_1', conv.user_1, 'user_2', conv.user_2, 'updated_at', conv.updated_at)) AS conversation
+  FROM "conversation" conv
+  GROUP BY "request_id"
+) c ON c."request_id"=r."id"
 WHERE r.job_id = ANY(job_ids)
 AND NOT EXISTS (
   SELECT 1 FROM "user_has_hiddingClientRequest" uhhcr
   WHERE uhhcr."request_id" = r.id AND uhhcr."user_id" = userId_id
 )
-GROUP BY
-r.id,
-r.title,
-r.urgent,
-r.message,
-r.lng,
-r.lat,
-r.range,
-r.user_id,
-r.job_id,
-r.city,
-u.first_name,
-u.last_name,
-r.created_at,
-j.name
 ORDER BY r.created_at DESC
   OFFSET ofset LIMIT lim;
 END; $$
@@ -202,7 +195,7 @@ AS $$
 BEGIN
     -- delete old values
     DELETE FROM "subscription"
-    WHERE "subscription"."subscriber" = p_subscriber;
+    WHERE "subscription"."subscriber" = p_subscriber AND "subscription"."user_id" = p_user_id;
 
     -- Insert data into the subscription table
     RETURN QUERY

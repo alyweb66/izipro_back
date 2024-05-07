@@ -20,9 +20,13 @@ const UserResolver = {
     debug(`get setting from user id: ${id}`);
     return dataSources.dataDB.userSetting.findByUser(id);
   },
-  requestsConversations({ id }, { offset, limit }, { dataSources }) {
+  async requestsConversations({ id }, { offset, limit }, { dataSources }) {
     debug(`get all requests by conversations from user id: ${id}`);
-    return dataSources.dataDB.request.getRequestByConversation(id, offset, limit);
+    const result = await dataSources.dataDB.request.getRequestByConversation(id, offset, limit);
+
+    // exclude request where user_id is the same as id
+    const requests = result.filter((request) => request.user_id !== id);
+    return requests;
   },
   async messages({ id }, { conversationId, offset, limit }, { dataSources }) {
     debug(`get all messages from conversation id: ${conversationId}`);

@@ -17,12 +17,14 @@ const Subscription = {
       (payload, variables) => payload.messageAdded.some(
         (message) => {
           debugInDevelopment('variables', variables);
-          const isMessageForConversation = variables.conversation_ids.includes(
-            message.conversation_id,
-          );
+          const isMessageForConversation = variables.conversation_ids
+           && variables.conversation_ids.includes(
+             message.conversation_id,
+           );
 
           // If isMyrequest is true, also check if message is for request
-          const isMessageForRequest = variables.isMyrequest && variables.request_ids.includes(
+          const isMessageForRequest = variables.is_request
+           && variables.request_ids && variables.request_ids.includes(
             message.request_id,
           );
 
