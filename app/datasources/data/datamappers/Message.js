@@ -27,6 +27,19 @@ class Message extends CoreDatamapper {
     const messages = rows;
     return messages;
   }
+
+  async findByConversationId(conversationId, offset, limit) {
+    debug(`Finding messages by conversation_id ${conversationId}`);
+    debug(`SQL function ${this.viewName} called`);
+    const query = {
+      text: `SELECT * FROM "${this.viewName}" WHERE conversation_id = $1 ORDER BY created_at ASC OFFSET $2 LIMIT $3 `,
+      values: [conversationId, offset, limit],
+    };
+    const { rows } = await this.client.query(query);
+    const messages = rows;
+    console.log('messages', messages);
+    return messages;
+  }
 }
 
 export default Message;

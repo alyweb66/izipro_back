@@ -16,13 +16,25 @@ const Subscription = {
       () => pubsub.asyncIterator('MESSAGE_CREATED'),
       (payload, variables) => payload.messageAdded.some(
         (message) => {
-          const isMessageForConversation = variables.conversation_ids.includes(
-            message.conversation_id,
+          debugInDevelopment('variables', variables);
+          const isMessageForConversation = variables.conversation_ids
+           && variables.conversation_ids.includes(
+             message.conversation_id,
+           );
+
+          // If isMyrequest is true, also check if message is for request
+          const isMessageForRequest = variables.is_request
+           && variables.request_ids && variables.request_ids.includes(
+            message.request_id,
           );
-          if (isMessageForConversation) {
+
+          const isMessageForUser = isMessageForConversation || isMessageForRequest;
+
+          if (isMessageForUser) {
             debugInDevelopment('messageAdded subscription: payload', payload, 'variables', variables);
           }
-          return isMessageForConversation;
+
+          return isMessageForUser;
         },
       ),
     ),

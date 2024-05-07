@@ -3,6 +3,10 @@ import Debug from 'debug';
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:query`);
 
 export default {
+  users(_, { ids, offset, limit }, { dataSources }) {
+    debug(`get all users conversations where ids: ${ids}`);
+    return dataSources.dataDB.user.findUsersByIds(ids, offset, limit);
+  },
   conversations(_, { offset, limit }, { dataSources }) {
     debug('get all conversations');
     return dataSources.dataDB.conversation.getConversationByUser(offset, limit);
@@ -11,9 +15,9 @@ export default {
     debug(`get conversation with id ${id}`);
     return dataSources.dataDB.conversation.findByPk(id);
   },
-  messages(_, { offset, limit }, { dataSources }) {
-    debug('get all messages');
-    return dataSources.dataDB.message.findAll(offset, limit);
+  messages(_, { conversationId, offset, limit }, { dataSources }) {
+    debug('get all messages by conversation_id');
+    return dataSources.dataDB.message.findByConversationId(conversationId, offset, limit);
   },
   message(_, { id }, { dataSources }) {
     debug(`get message with id ${id}`);

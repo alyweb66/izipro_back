@@ -20,16 +20,28 @@ const UserResolver = {
     debug(`get setting from user id: ${id}`);
     return dataSources.dataDB.userSetting.findByUser(id);
   },
-  requestsConversations({ id }, { offset, limit }, { dataSources }) {
+  async requestsConversations({ id }, { offset, limit }, { dataSources }) {
     debug(`get all requests by conversations from user id: ${id}`);
-    return dataSources.dataDB.request.getRequestByConversation(id, offset, limit);
+    const result = await dataSources.dataDB.request.getRequestByConversation(id, offset, limit);
+
+    // exclude request where user_id is the same as id
+    const requests = result.filter((request) => request.user_id !== id);
+    return requests;
   },
-  messages({ id }, { conversationId, offset, limit }, { dataSources }) {
+  async messages({ id }, { conversationId, offset, limit }, { dataSources }) {
     debug(`get all messages from conversation id: ${conversationId}`);
     if (dataSources.userData.id !== id) {
       throw new AuthenticationError('Unauthorized');
     }
-    return dataSources.dataDB.message.findByUserConversation(id, conversationId, offset, limit);
+    const messageDESC = await dataSources.dataDB.message.findByUserConversation(
+      id,
+      conversationId,
+      offset,
+      limit,
+    );
+    console.log('messageASC', messageDESC);
+    const messageASC = messageDESC.sort((a, b) => a.created_at - b.created_at);
+    return messageASC;
   },
   subscription({ id }, _, { dataSources }) {
     debug(`get all subscription from user id: ${id}`);
