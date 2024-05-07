@@ -6,11 +6,19 @@ import { GraphQLError } from 'graphql';
 import {
   AuthenticationError, ApolloError, UserInputError,
 } from 'apollo-server-core';
+import fs from 'fs';
+import path from 'path';
+import url from 'url';
 import handleUploadedFiles from '../middleware/handleUploadFiles.js';
 import * as sendEmail from '../middleware/sendEmail.js';
 import SirenAPI from '../datasources/SirenAPI/index.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:mutation`);
+
+// __dirname not on module, this is the way to use it.
+const fileName = url.fileURLToPath(import.meta.url);
+const dirname = path.dirname(fileName);
+const directoryPath = path.join(dirname, '..', '..', 'public', 'media');
 
 function debugInDevelopment(message = '', value = '') {
   if (process.env.NODE_ENV === 'development') {
@@ -28,6 +36,19 @@ function secureEnv() {
     return false;
   }
   return true;
+}
+
+// function to delete the files from the public folder
+function deleteFile(file) {
+  const filePath = path.join(directoryPath, file);
+
+  fs.unlink(filePath, (err) => {
+    if (err) {
+      debugInDevelopment(`Error deleting file: ${err}`);
+    } else {
+      debugInDevelopment(`File ${file} deleted successfully`);
+    }
+  });
 }
 
 /**
@@ -378,6 +399,17 @@ async function updateUser(_, { id, input }, { dataSources }) {
       }
 
       imageInput = media[0].url;
+
+      // delete the old profile picture in folder
+      fs.readdir(path.join(directoryPath), (err) => {
+        if (err) {
+          debugInDevelopment(`Error reading directory: ${err}`);
+        } else {
+          const urlObject = new URL(user.image);
+          const filename = path.basename(urlObject.pathname);
+          deleteFile(filename);
+        }
+      });
     }
 
     // Update the input image with the new url
