@@ -10,4 +10,5 @@ extend type Mutation {
     validateForgotPassword(input: ValidateForgotPasswordInput!): Boolean
     confirmRegisterEmail(input: ConfirmRegisterEmailInput!): Boolean
     changePassword(id: Int!, input: ChangePasswordInput!): Boolean
+    deleteProfilePicture(id: Int!): Boolean
 }
