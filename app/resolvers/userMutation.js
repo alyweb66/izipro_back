@@ -6,7 +6,7 @@ import { GraphQLError } from 'graphql';
 import {
   AuthenticationError, ApolloError, UserInputError,
 } from 'apollo-server-core';
-import fs from 'fs';
+import * as fs from 'node:fs/promises';
 import path from 'path';
 import url from 'url';
 import handleUploadedFiles from '../middleware/handleUploadFiles.js';
@@ -39,16 +39,21 @@ function secureEnv() {
 }
 
 // function to delete the files from the public folder
-function deleteFile(file) {
+async function deleteFile(file) {
+  console.log('file', file);
+  if (!file) {
+    debugInDevelopment('No file to delete');
+    return;
+  }
+
   const filePath = path.join(directoryPath, file);
 
-  fs.unlink(filePath, (err) => {
-    if (err) {
-      debugInDevelopment(`Error deleting file: ${err}`);
-    } else {
-      debugInDevelopment(`File ${file} deleted successfully`);
-    }
-  });
+  try {
+    await fs.unlink(filePath);
+    debugInDevelopment(`File ${file} deleted successfully`);
+  } catch (err) {
+    debugInDevelopment(`Error deleting file: ${err}`);
+  }
 }
 
 /**
@@ -401,15 +406,17 @@ async function updateUser(_, { id, input }, { dataSources }) {
       imageInput = media[0].url;
 
       // delete the old profile picture in folder
-      fs.readdir(path.join(directoryPath), (err) => {
-        if (err) {
-          debugInDevelopment(`Error reading directory: ${err}`);
-        } else {
-          const urlObject = new URL(user.image);
-          const filename = path.basename(urlObject.pathname);
-          deleteFile(filename);
-        }
-      });
+      if (user.image) {
+        await fs.readdir(path.join(directoryPath), (err) => {
+          if (err) {
+            debugInDevelopment(`Error reading directory: ${err}`);
+          } else {
+            const urlObject = new URL(user.image);
+            const filename = path.basename(urlObject.pathname);
+            deleteFile(filename);
+          }
+        });
+      }
     }
 
     // Update the input image with the new url
@@ -460,6 +467,42 @@ async function changePassword(_, { id, input }, { dataSources }) {
   }
 }
 
+async function deleteProfilePicture(_, { id }, { dataSources }) {
+  debug('deleteProfilePicture is starting');
+  try {
+    // Check if the user is logged in
+    if (dataSources.userData === null || dataSources.userData.id !== id) {
+      throw new AuthenticationError('Unauthorized');
+    }
+
+    const user = await dataSources.dataDB.user.findByPk(id);
+    if (!user) {
+      throw new ApolloError('User not found', 'NOT_FOUND');
+    }
+
+    // delete the old profile picture in folder
+    fs.readdir(path.join(directoryPath), (err) => {
+      if (err) {
+        debugInDevelopment(`Error reading directory: ${err}`);
+      } else {
+        const urlObject = new URL(user.image);
+        const filename = path.basename(urlObject.pathname);
+        deleteFile(filename);
+      }
+    });
+
+    // Update the user image to null
+    await dataSources.dataDB.user.update(id, { image: null });
+    return true;
+  } catch (err) {
+    debug(err);
+    if (err instanceof AuthenticationError) {
+      throw err;
+    }
+    throw new ApolloError('Error');
+  }
+}
+
 export default {
   createUser: createUserFunction,
   createProUser: createUserFunction,
@@ -471,4 +514,5 @@ export default {
   updateUser,
   changePassword,
   validateForgotPassword,
+  deleteProfilePicture,
 };
