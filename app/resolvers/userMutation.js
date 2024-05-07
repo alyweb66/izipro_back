@@ -6,6 +6,7 @@ import { GraphQLError } from 'graphql';
 import {
   AuthenticationError, ApolloError, UserInputError,
 } from 'apollo-server-core';
+import handleUploadedFiles from '../middleware/handleUploadFiles.js';
 import * as sendEmail from '../middleware/sendEmail.js';
 import SirenAPI from '../datasources/SirenAPI/index.js';
 
@@ -320,6 +321,7 @@ async function validateForgotPassword(_, { input }, { dataSources }) {
 
 async function updateUser(_, { id, input }, { dataSources }) {
   debug('updateUser is starting');
+  debugInDevelopment('input', input);
 
   try {
     if (dataSources.userData === null || dataSources.userData.id !== id) {
@@ -333,6 +335,7 @@ async function updateUser(_, { id, input }, { dataSources }) {
     }
 
     const user = await dataSources.dataDB.user.findByPk(id);
+
     // Check if the email has changed to send a new confirmation email
     if (input.email) {
       if (input.email !== user.email) {
@@ -343,9 +346,45 @@ async function updateUser(_, { id, input }, { dataSources }) {
         delete updateInput.email;
       }
     }
+
     if (!user) {
       throw new ApolloError('User not found', 'NOT_FOUND');
     }
+
+    // mapping the media array to createReadStream
+    let imageInput;
+    if (input.image && input.image.length > 0 && input.image[0].file) {
+      const ReadStreamArray = await Promise.all(input.image.map(async (upload) => {
+        const fileUpload = upload.file;
+        if (!fileUpload) {
+          throw new Error('File upload not complete');
+        }
+        const { createReadStream, filename, mimetype } = await fileUpload;
+        const readStream = createReadStream();
+        const file = {
+          filename,
+          mimetype,
+          buffer: readStream,
+        };
+        return file;
+      }));
+
+      // calling the handleUploadedFiles function to compress the images and save them
+      const media = await handleUploadedFiles(ReadStreamArray);
+
+      // replace input.image with the media url
+      if (!media) {
+        throw new ApolloError('Error creating media');
+      }
+
+      imageInput = media[0].url;
+    }
+
+    // Update the input image with the new url
+    if (imageInput) {
+      updateInput.image = imageInput;
+    }
+
     dataSources.dataDB.user.cache.clear();
     return dataSources.dataDB.user.update(id, updateInput);
   } catch (err) {
@@ -388,22 +427,6 @@ async function changePassword(_, { id, input }, { dataSources }) {
     throw new ApolloError('Error', 'BAD_REQUEST');
   }
 }
-
-/* // Function for chat
-async function sendMessage(_, { input }, { dataSources }) {
-  debug('sendMessage is starting');
-  try {
-    // if (dataSources.userData === null) {
-    //   throw new AuthenticationError('Unauthorized');
-    // }
-    const message = await dataSources.dataDB.message.create(input);
-    PubSub.publish('MESSAGE_SENT', { messageSent: message });
-    return message;
-  } catch (err) {
-    debug(err);
-    throw new ApolloError('Error');
-  }
-} */
 
 export default {
   createUser: createUserFunction,
