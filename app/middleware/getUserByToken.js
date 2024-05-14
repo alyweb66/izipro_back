@@ -69,18 +69,63 @@ export default async function getUserByToken(req, res, dataSources) {
           serverLogout(null, null, { res });
           throw new ApolloError('Error token', 'BAD_REQUEST');
         }
-        const newToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1m' });
+        const newToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
+
+        // get expiration date of verifyRefreshToken to add this date to the cookie expiration date
+        const tokenData = jwt.decode(user.refresh_token);
+        const now = Math.floor(Date.now() / 1000); // current time in seconds
+        const expDate = (tokenData.exp - now) * 1000;
+        console.log('expDate', expDate);
+
+        // if token is expired
+        if (expDate < 0) {
+          serverLogout(null, null, { res });
+        }
+
         // Add the new token to the cookies
-        const TokenCookie = cookie.serialize(
-          'auth-token',
-          newToken,
-          { httpOnly: true, sameSite: 'strict', secure: secureEnv() },
-        );
-        const refreshTokenCookie = cookie.serialize(
-          'refresh-token',
-          refreshToken,
-          { httpOnly: true, sameSite: 'strict', secure: secureEnv() },
-        );
+        let TokenCookie;
+        let refreshTokenCookie;
+        if (verifyRefreshToken.activeSession) {
+          TokenCookie = cookie.serialize(
+            'auth-token',
+            newToken,
+            {
+              httpOnly: true,
+              sameSite: 'strict',
+              secure: secureEnv(),
+              maxAge: expDate,
+            },
+          );
+          refreshTokenCookie = cookie.serialize(
+            'refresh-token',
+            refreshToken,
+            {
+              httpOnly: true,
+              sameSite: 'strict',
+              secure: secureEnv(),
+              maxAge: expDate,
+            },
+          );
+        } else {
+          TokenCookie = cookie.serialize(
+            'auth-token',
+            newToken,
+            {
+              httpOnly: true,
+              sameSite: 'strict',
+              secure: secureEnv(),
+            },
+          );
+          refreshTokenCookie = cookie.serialize(
+            'refresh-token',
+            refreshToken,
+            {
+              httpOnly: true,
+              sameSite: 'strict',
+              secure: secureEnv(),
+            },
+          );
+        }
 
         res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
         const userData = { id: user.id, role: user.role };
