@@ -70,11 +70,21 @@ async function createUserFunction(_, { input }, { dataSources }) {
   // Check if user exists
     const existingUser = await dataSources.dataDB.user.findUserByEmail(input.email);
     if (existingUser) {
-      throw new ApolloError('Email ou mot de passe incorrect', 'BAD_REQUEST');
+      throw new ApolloError('incorrect email or password', 'BAD_REQUEST');
     }
 
     // Hash the password using bcrypt
     const hashedPassword = await bcrypt.hash(input.password, 10);
+
+    // Check if siret is already in the database
+    if (input.siret) {
+      const existingSiret = await dataSources.dataDB.user.findBySiret(input.siret);
+      console.log('existingSiret', existingSiret);
+      if (existingSiret) {
+        debugInDevelopment('Siret already exists in the database');
+        return { __typename: 'ExistingSiret', error: 'Siret already exists in the database' };
+      }
+    }
 
     // Check if the siret is valid
     const siret = Number(input.siret);
@@ -119,7 +129,7 @@ async function createUserFunction(_, { input }, { dataSources }) {
       throw new ApolloError('Error creating user setting', 'BAD_REQUEST');
     }
 
-    return createdUser;
+    return { __typename: 'User', ...createdUser };
   } catch (err) {
     debug(err);
     throw new GraphQLError('Error');
