@@ -37,8 +37,25 @@ class User extends CoreDatamapper {
     };
     const { rows } = await this.client.query(query);
     const users = rows;
-console.log('users', users);
+    console.log('users', users);
     return users;
+  }
+
+  async findBySiret(siret) {
+    debug('Finding users by siret');
+    debug(`SQL function ${this.tableName} called`);
+    // call sql function
+    const query = {
+      text: `SELECT * FROM "${this.tableName}" WHERE siret = $1`,
+      values: [siret],
+    };
+    const { rows } = await this.client.query(query);
+    const siretResult = rows;
+    console.log('siret', siretResult);
+    if (siretResult.length > 0 && siretResult[0].siret) {
+      return true;
+    }
+    return false;
   }
 }
 

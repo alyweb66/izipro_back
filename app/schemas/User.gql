@@ -24,6 +24,15 @@ type User {
     subscription: [UserSubscription]
 }
 
+type UserResult{
+    User: User
+    ExistingSiret: ExistingSiret
+}
+
+type ExistingSiret {
+    error: String!
+}
+
 
 type AuthPayload {
     token: String!
