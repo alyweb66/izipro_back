@@ -6,10 +6,19 @@ import { GraphQLError } from 'graphql';
 import {
   AuthenticationError, ApolloError, UserInputError,
 } from 'apollo-server-core';
+import * as fs from 'node:fs/promises';
+import path from 'path';
+import url from 'url';
+import handleUploadedFiles from '../middleware/handleUploadFiles.js';
 import * as sendEmail from '../middleware/sendEmail.js';
 import SirenAPI from '../datasources/SirenAPI/index.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:mutation`);
+
+// __dirname not on module, this is the way to use it.
+const fileName = url.fileURLToPath(import.meta.url);
+const dirname = path.dirname(fileName);
+const directoryPath = path.join(dirname, '..', '..', 'public', 'media');
 
 function debugInDevelopment(message = '', value = '') {
   if (process.env.NODE_ENV === 'development') {
@@ -27,6 +36,24 @@ function secureEnv() {
     return false;
   }
   return true;
+}
+
+// function to delete the files from the public folder
+async function deleteFile(file) {
+  console.log('file', file);
+  if (!file) {
+    debugInDevelopment('No file to delete');
+    return;
+  }
+
+  const filePath = path.join(directoryPath, file);
+
+  try {
+    await fs.unlink(filePath);
+    debugInDevelopment(`File ${file} deleted successfully`);
+  } catch (err) {
+    debugInDevelopment(`Error deleting file: ${err}`);
+  }
 }
 
 /**
@@ -162,7 +189,7 @@ async function login(_, { input }, { dataSources, res }) {
     let refreshToken;
     debugInDevelopment('input.activeSession', input.activeSession);
     if (input.activeSession) {
-      refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
+      refreshToken = jwt.sign({ id: user.id, role: user.role, activeSession: true }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
     } else {
       refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
     }
@@ -173,28 +200,58 @@ async function login(_, { input }, { dataSources, res }) {
     debugInDevelopment('saveRefreshToken', saveRefreshToken);
 
     // Set the token as a cookie
-    const TokenCookie = cookie.serialize(
-      'auth-token',
-      token,
-      {
-        httpOnly: true,
-        sameSite: 'strict',
-        secure: secureEnv(),
-        domain: 'localhost',
-        path: '/',
-      },
-    );
-    const refreshTokenCookie = cookie.serialize(
-      'refresh-token',
-      refreshToken,
-      {
-        httpOnly: true,
-        sameSite: 'strict',
-        secure: secureEnv(),
-        domain: 'localhost',
-        path: '/',
-      },
-    );
+    let TokenCookie;
+    let refreshTokenCookie;
+    // if activeSession is true, the cookie will be set for 30 days
+    if (input.activeSession) {
+      TokenCookie = cookie.serialize(
+        'auth-token',
+        token,
+        {
+          httpOnly: true,
+          sameSite: 'strict',
+          secure: secureEnv(),
+          domain: 'localhost',
+          path: '/',
+          maxAge: 24 * 60 * 60,
+        },
+      );
+      refreshTokenCookie = cookie.serialize(
+        'refresh-token',
+        refreshToken,
+        {
+          httpOnly: true,
+          sameSite: 'strict',
+          secure: secureEnv(),
+          domain: 'localhost',
+          path: '/',
+          maxAge: 24 * 60 * 60,
+        },
+      );
+    } else {
+      TokenCookie = cookie.serialize(
+        'auth-token',
+        token,
+        {
+          httpOnly: true,
+          sameSite: 'strict',
+          secure: secureEnv(),
+          domain: 'localhost',
+          path: '/',
+        },
+      );
+      refreshTokenCookie = cookie.serialize(
+        'refresh-token',
+        refreshToken,
+        {
+          httpOnly: true,
+          sameSite: 'strict',
+          secure: secureEnv(),
+          domain: 'localhost',
+          path: '/',
+        },
+      );
+    }
 
     res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
     return true;
@@ -230,6 +287,7 @@ async function logout(_, { id }, { dataSources, res }) {
     // eslint-disable-next-line no-param-reassign
     dataSources.userData = null;
     res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
+
     return true;
   } catch (err) {
     debug(err);
@@ -320,6 +378,7 @@ async function validateForgotPassword(_, { input }, { dataSources }) {
 
 async function updateUser(_, { id, input }, { dataSources }) {
   debug('updateUser is starting');
+  debugInDevelopment('input', input);
 
   try {
     if (dataSources.userData === null || dataSources.userData.id !== id) {
@@ -333,6 +392,7 @@ async function updateUser(_, { id, input }, { dataSources }) {
     }
 
     const user = await dataSources.dataDB.user.findByPk(id);
+
     // Check if the email has changed to send a new confirmation email
     if (input.email) {
       if (input.email !== user.email) {
@@ -343,9 +403,58 @@ async function updateUser(_, { id, input }, { dataSources }) {
         delete updateInput.email;
       }
     }
+
     if (!user) {
       throw new ApolloError('User not found', 'NOT_FOUND');
     }
+
+    // mapping the media array to createReadStream
+    let imageInput;
+    if (input.image && input.image.length > 0 && input.image[0].file) {
+      const ReadStreamArray = await Promise.all(input.image.map(async (upload) => {
+        const fileUpload = upload.file;
+        if (!fileUpload) {
+          throw new Error('File upload not complete');
+        }
+        const { createReadStream, filename, mimetype } = await fileUpload;
+        const readStream = createReadStream();
+        const file = {
+          filename,
+          mimetype,
+          buffer: readStream,
+        };
+        return file;
+      }));
+
+      // calling the handleUploadedFiles function to compress the images and save them
+      const media = await handleUploadedFiles(ReadStreamArray);
+
+      // replace input.image with the media url
+      if (!media) {
+        throw new ApolloError('Error creating media');
+      }
+
+      imageInput = media[0].url;
+
+      // delete the old profile picture in folder
+      if (user.image) {
+        await fs.readdir(path.join(directoryPath), (err) => {
+          if (err) {
+            debugInDevelopment(`Error reading directory: ${err}`);
+          } else {
+            const urlObject = new URL(user.image);
+            const filename = path.basename(urlObject.pathname);
+            deleteFile(filename);
+          }
+        });
+      }
+    }
+
+    // Update the input image with the new url
+    if (imageInput) {
+      updateInput.image = imageInput;
+    }
+
     dataSources.dataDB.user.cache.clear();
     return dataSources.dataDB.user.update(id, updateInput);
   } catch (err) {
@@ -389,21 +498,41 @@ async function changePassword(_, { id, input }, { dataSources }) {
   }
 }
 
-/* // Function for chat
-async function sendMessage(_, { input }, { dataSources }) {
-  debug('sendMessage is starting');
+async function deleteProfilePicture(_, { id }, { dataSources }) {
+  debug('deleteProfilePicture is starting');
   try {
-    // if (dataSources.userData === null) {
-    //   throw new AuthenticationError('Unauthorized');
-    // }
-    const message = await dataSources.dataDB.message.create(input);
-    PubSub.publish('MESSAGE_SENT', { messageSent: message });
-    return message;
+    // Check if the user is logged in
+    if (dataSources.userData === null || dataSources.userData.id !== id) {
+      throw new AuthenticationError('Unauthorized');
+    }
+
+    const user = await dataSources.dataDB.user.findByPk(id);
+    if (!user) {
+      throw new ApolloError('User not found', 'NOT_FOUND');
+    }
+
+    // delete the old profile picture in folder
+    fs.readdir(path.join(directoryPath), (err) => {
+      if (err) {
+        debugInDevelopment(`Error reading directory: ${err}`);
+      } else {
+        const urlObject = new URL(user.image);
+        const filename = path.basename(urlObject.pathname);
+        deleteFile(filename);
+      }
+    });
+
+    // Update the user image to null
+    await dataSources.dataDB.user.update(id, { image: null });
+    return true;
   } catch (err) {
     debug(err);
+    if (err instanceof AuthenticationError) {
+      throw err;
+    }
     throw new ApolloError('Error');
   }
-} */
+}
 
 export default {
   createUser: createUserFunction,
@@ -416,4 +545,5 @@ export default {
   updateUser,
   changePassword,
   validateForgotPassword,
+  deleteProfilePicture,
 };
