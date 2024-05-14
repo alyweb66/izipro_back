@@ -39,7 +39,6 @@ const UserResolver = {
       offset,
       limit,
     );
-    console.log('messageASC', messageDESC);
     const messageASC = messageDESC.sort((a, b) => a.created_at - b.created_at);
     return messageASC;
   },

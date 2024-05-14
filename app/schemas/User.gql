@@ -1,5 +1,5 @@
 directive @length(max: Int!) on INPUT_FIELD_DEFINITION
-
+scalar Upload
 
 type User {
     id: Int!
@@ -14,6 +14,8 @@ type User {
     siret: String
     denomination: String
     role: String
+    image: String
+    description: String
     requests(id: Int!, offset: Int!, limit: Int!): [Request]
     requestsConversations(offset: Int!, limit: Int!): [Request]
     messages(id: Int!, conversationId: Int!, offset: Int!, limit: Int! ): [Message!]!
@@ -59,6 +61,8 @@ input UpdateUserInput {
     first_name: String @length(max: 50)
     last_name: String @length(max: 50)
     email: validateEmail
+    image: Upload
+    description: String @length(max: 200)
     address: String @length(max: 100)
     postal_code: validatePostalCode
     city: String @length(max: 50)
