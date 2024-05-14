@@ -189,7 +189,7 @@ async function login(_, { input }, { dataSources, res }) {
     let refreshToken;
     debugInDevelopment('input.activeSession', input.activeSession);
     if (input.activeSession) {
-      refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
+      refreshToken = jwt.sign({ id: user.id, role: user.role, activeSession: true }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
     } else {
       refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
     }
@@ -200,28 +200,58 @@ async function login(_, { input }, { dataSources, res }) {
     debugInDevelopment('saveRefreshToken', saveRefreshToken);
 
     // Set the token as a cookie
-    const TokenCookie = cookie.serialize(
-      'auth-token',
-      token,
-      {
-        httpOnly: true,
-        sameSite: 'strict',
-        secure: secureEnv(),
-        domain: 'localhost',
-        path: '/',
-      },
-    );
-    const refreshTokenCookie = cookie.serialize(
-      'refresh-token',
-      refreshToken,
-      {
-        httpOnly: true,
-        sameSite: 'strict',
-        secure: secureEnv(),
-        domain: 'localhost',
-        path: '/',
-      },
-    );
+    let TokenCookie;
+    let refreshTokenCookie;
+    // if activeSession is true, the cookie will be set for 30 days
+    if (input.activeSession) {
+      TokenCookie = cookie.serialize(
+        'auth-token',
+        token,
+        {
+          httpOnly: true,
+          sameSite: 'strict',
+          secure: secureEnv(),
+          domain: 'localhost',
+          path: '/',
+          maxAge: 24 * 60 * 60,
+        },
+      );
+      refreshTokenCookie = cookie.serialize(
+        'refresh-token',
+        refreshToken,
+        {
+          httpOnly: true,
+          sameSite: 'strict',
+          secure: secureEnv(),
+          domain: 'localhost',
+          path: '/',
+          maxAge: 24 * 60 * 60,
+        },
+      );
+    } else {
+      TokenCookie = cookie.serialize(
+        'auth-token',
+        token,
+        {
+          httpOnly: true,
+          sameSite: 'strict',
+          secure: secureEnv(),
+          domain: 'localhost',
+          path: '/',
+        },
+      );
+      refreshTokenCookie = cookie.serialize(
+        'refresh-token',
+        refreshToken,
+        {
+          httpOnly: true,
+          sameSite: 'strict',
+          secure: secureEnv(),
+          domain: 'localhost',
+          path: '/',
+        },
+      );
+    }
 
     res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
     return true;
@@ -257,6 +287,7 @@ async function logout(_, { id }, { dataSources, res }) {
     // eslint-disable-next-line no-param-reassign
     dataSources.userData = null;
     res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
+
     return true;
   } catch (err) {
     debug(err);
