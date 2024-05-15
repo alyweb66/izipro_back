@@ -5,6 +5,7 @@ import {
 import fs from 'fs';
 import path from 'path';
 import url from 'url';
+import { networkInterfaces } from 'os';
 import pubsub from '../middleware/pubSub.js';
 import handleUploadedFiles from '../middleware/handleUploadFiles.js';
 
@@ -116,14 +117,17 @@ async function deleteRequest(_, { input }, { dataSources }) {
       throw new AuthenticationError('Unauthorized');
     }
 
-    const isDeletedRequest = await dataSources.dataDB.request.delete(input.id);
+    const newInput = { deleted_at: new Date() };
+    console.log('newInput', newInput);
+
+    const isDeletedRequest = await dataSources.dataDB.request.update(input.id, newInput);
 
     if (!isDeletedRequest) {
       throw new ApolloError('Error deleting request');
     }
 
     // read the public folder and delete all the files
-    fs.readdir(path.join(directoryPath), (err) => {
+    /* fs.readdir(path.join(directoryPath), (err) => {
       if (err) {
         debugInDevelopment(`Error reading directory: ${err}`);
       } else {
@@ -131,7 +135,7 @@ async function deleteRequest(_, { input }, { dataSources }) {
           deleteFile(file);
         });
       }
-    });
+    }); */
 
     return true;
   } catch (error) {

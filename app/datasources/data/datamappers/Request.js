@@ -12,16 +12,17 @@ class Request extends CoreDatamapper {
 
   QueryFunc = 'getRequestByJob';
 
-  async getRequestByUserId(userIds, offset, limit) {
+  async getRequestByUserId(userId, offset, limit) {
     debug('Finding request by user id');
     debug(`SQL function ${this.viewNameByConversation} called`);
     // call sql function
     const query = {
-      text: `SELECT * FROM "${this.viewNameByConversation}" WHERE user_id = $1 OFFSET $2 LIMIT $3`,
-      values: [userIds, offset, limit],
+      text: `SELECT * FROM "${this.viewNameByConversation}" WHERE user_id = $1 AND deleted_at IS NULL OFFSET $2 LIMIT $3`,
+      values: [userId, offset, limit],
     };
     const { rows } = await this.client.query(query);
     const request = rows;
+    console.log('request', request);
 
     return request;
   }

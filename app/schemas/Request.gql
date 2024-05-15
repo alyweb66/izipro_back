@@ -18,6 +18,7 @@ type Request {
     media: [Media]
     created_at: String!
     conversation:[Conversation]
+    deleted_at: String
 }
 
 input CreateRequestInput {
@@ -36,5 +37,4 @@ input CreateRequestInput {
 input DeleteRequestInput {
     id: Int!
     user_id: Int!
-    image_names: [String]
 }

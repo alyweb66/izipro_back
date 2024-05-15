@@ -63,6 +63,7 @@ r.job_id,
 u.first_name,
 u.last_name,
 r.created_at,
+r.deleted_at,
 j.name AS job,
 rm.media,
 c.conversation

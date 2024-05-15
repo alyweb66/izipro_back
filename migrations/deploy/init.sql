@@ -21,21 +21,22 @@ CREATE TABLE "user"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "first_name" TEXT CHECK (LENGTH("first_name") <= 50),
    "last_name" TEXT CHECK (LENGTH("last_name") <= 50),
-   "email" email NOT NULL UNIQUE CHECK (LENGTH("email") <= 50),
+   "email" email UNIQUE CHECK (LENGTH("email") <= 50),
    "verified_email" BOOLEAN NOT NULL DEFAULT FALSE,
    "address" TEXT CHECK (LENGTH("address") <= 100),
    "postal_code" postal_code_domain,
    "city" TEXT CHECK (LENGTH("city") <= 50),
    "lat" NUMERIC,
    "lng" NUMERIC,
-   "password" TEXT NOT NULL UNIQUE,
+   "password" TEXT UNIQUE,
    "remember_token" TEXT,
    "refresh_token" TEXT,
    "siret" BIGINT UNIQUE CHECK (LENGTH("siret"::TEXT) = 14),
    "denomination" TEXT CHECK (LENGTH("denomination") <= 50),
    "image" TEXT,
-   "description" TEXT CHECK (LENGTH("descritpion") <= 200),
+   "description" TEXT CHECK (LENGTH("description") <= 200),
    "role" TEXT NOT NULL,
+   "deleted_at" timestamptz,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );
@@ -94,6 +95,7 @@ CREATE TABLE "request"(
    "range" INT NOT NULL,
    "user_id" INT NOT NULL REFERENCES "user"(id),
    "job_id" INT NOT NULL REFERENCES "job"(id),
+   "deleted_at" timestamptz,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );
