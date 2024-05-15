@@ -1,7 +1,7 @@
 import Debug from 'debug';
 import { ApolloError } from 'apollo-server-core';
 import cookie from 'cookie';
-import pubSub from './pubSub.js';
+// import pubSub from './pubSub.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:mutation`);
 
@@ -34,7 +34,6 @@ export default async function serverLogout(_, __, { res }) {
 
     res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
 
-    pubSub.publish('LOGOUT', { logout: true });
     return true;
   } catch (err) {
     debug(err);

@@ -47,8 +47,10 @@ export default async function getUserByToken(req, res, dataSources) {
     if (tokenError instanceof jwt.TokenExpiredError) {
       // If the error is token expired, refresh the token
       debug('refreshToken is starting');
+
       try {
         const verifyRefreshToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+
         if (!verifyRefreshToken) {
           debugInDevelopment('refreshToken: verifyRefreshToken failed');
           throw new ApolloError('Error token', 'BAD_REQUEST');
@@ -69,13 +71,12 @@ export default async function getUserByToken(req, res, dataSources) {
           serverLogout(null, null, { res });
           throw new ApolloError('Error token', 'BAD_REQUEST');
         }
-        const newToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
+        const newToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1m' });
 
         // get expiration date of verifyRefreshToken to add this date to the cookie expiration date
         const tokenData = jwt.decode(user.refresh_token);
         const now = Math.floor(Date.now() / 1000); // current time in seconds
         const expDate = (tokenData.exp - now) * 1000;
-        console.log('expDate', expDate);
 
         // if token is expired
         if (expDate < 0) {
@@ -93,7 +94,7 @@ export default async function getUserByToken(req, res, dataSources) {
               httpOnly: true,
               sameSite: 'strict',
               secure: secureEnv(),
-              maxAge: expDate,
+              maxAge: tokenData.exp,
             },
           );
           refreshTokenCookie = cookie.serialize(
@@ -103,7 +104,7 @@ export default async function getUserByToken(req, res, dataSources) {
               httpOnly: true,
               sameSite: 'strict',
               secure: secureEnv(),
-              maxAge: expDate,
+              maxAge: tokenData.exp,
             },
           );
         } else {
