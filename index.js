@@ -32,7 +32,7 @@ import getUserByToken from './app/middleware/getUserByToken.js';
 
 // class DataDB from dataSources
 import DataDB from './app/datasources/data/index.js';
-import serverLogout from './app/middleware/serverLogout.js';
+// import serverLogout from './app/middleware/serverLogout.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:httpserver`);
 
@@ -118,10 +118,10 @@ const server = new ApolloServer({
     clearOnMutation: true,
   }),
 });
-app.use((req, res, next) => {
+/* app.use((req, res, next) => {
   console.log('Request headers:', req.headers);
   next();
-});
+}); */
 await server.start();
 
 app.use(
@@ -149,8 +149,10 @@ app.use(
         dataSources.userData = userData;
       } else {
         debug('no cookie in headers');
+        /* if (req.body.operationName !== ('Login' || 'Register' || 'ProRegister')) {
+          serverLogout(null, null, { res });
+        } */
         dataSources.userData = null;
-        serverLogout(null, null, { res });
         debugInDevelopment('dataSources', dataSources);
       }
       return {
