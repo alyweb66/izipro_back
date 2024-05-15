@@ -406,7 +406,7 @@ async function updateUser(_, { id, input }, { dataSources }) {
     // Check if the email has changed to send a new confirmation email
     if (input.email) {
       if (input.email !== user.email) {
-        const token = jwt.sign({ email: input.email, userId: id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ email: input.email, userId: id }, process.env.JWT_SECRET, { expiresIn: '4h' });
         await dataSources.dataDB.user.update(id, { remember_token: token });
         await sendEmail.confirmEmail(input.email, token);
         debug('Email has changed');

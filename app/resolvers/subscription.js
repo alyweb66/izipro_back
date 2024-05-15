@@ -12,10 +12,6 @@ function debugInDevelopment(...args) {
 
 const Subscription = {
 
-  logout: {
-    subscribe: () => pubsub.asyncIterator('LOGOUT'),
-  },
-
   messageAdded: {
     subscribe: withFilter(
       () => pubsub.asyncIterator('MESSAGE_CREATED'),
