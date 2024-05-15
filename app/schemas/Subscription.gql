@@ -1,9 +1,9 @@
 type Subscription {
     messageAdded(conversation_ids: [Int!], request_ids: [Int], is_request: Boolean ): [Message!]
     requestAdded(ids: [Int!]): [Request]
-    logout: Boolean
     requestDeleted: Request
 }
+
 
 type UserSubscription {
     id: Int!
