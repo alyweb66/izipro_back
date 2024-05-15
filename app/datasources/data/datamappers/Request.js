@@ -6,7 +6,7 @@ const debug = Debug(`${process.env.DEBUG_MODULE}:datamappers:request`);
 class Request extends CoreDatamapper {
   tableName = 'request';
 
-  viewName = 'getRequest';
+  viewName = 'getRequestConversation';
 
   viewNameByConversation = 'getRequestByConversation';
 
@@ -68,10 +68,23 @@ class Request extends CoreDatamapper {
         ) OFFSET $2 LIMIT $3`,
       values: [userId, offset, limit],
     };
+
     const { rows } = await this.client.query(query);
     const request = rows;
 
-    return request;
+    // exclude request id who is in the user_has_hiddingClientRequest table
+    const query2 = {
+      text: 'SELECT * FROM "user_has_hiddingClientRequest" WHERE user_id = $1',
+      values: [userId],
+    };
+    const { rows: rows2 } = await this.client.query(query2);
+    const hiddenRequests = rows2;
+    // filter the request
+    const requestWithoutHidden = request.filter(
+      (requestQuery) => !hiddenRequests.some((hidden) => hidden.request_id === requestQuery.id),
+    );
+
+    return requestWithoutHidden;
   }
 }
 export default Request;
