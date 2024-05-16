@@ -196,18 +196,23 @@ RETURNS TABLE(
 )
 AS $$
 BEGIN
-    -- delete old values
-    DELETE FROM "subscription"
-    WHERE "subscription"."subscriber" = p_subscriber AND "subscription"."user_id" = p_user_id;
-
-    -- Insert data into the subscription table
-    RETURN QUERY
-    INSERT INTO "subscription" ("user_id", "subscriber", "subscriber_id")
-    VALUES (p_user_id, p_subscriber, p_subscriber_id)
-    RETURNING *;
+    -- Check if a row already exists for this user and subscriber
+    IF EXISTS (SELECT 1 FROM "subscription" WHERE "subscription"."subscriber" = p_subscriber AND "subscription"."user_id" = p_user_id) THEN
+        -- Update the existing row
+        RETURN QUERY
+        UPDATE "subscription"
+        SET "subscriber_id" = p_subscriber_id
+        WHERE "subscription"."subscriber" = p_subscriber AND  "subscription"."user_id" = p_user_id
+        RETURNING *;
+    ELSE
+        -- Insert a new row
+        RETURN QUERY
+        INSERT INTO "subscription" ("user_id", "subscriber", "subscriber_id")
+        VALUES (p_user_id, p_subscriber, p_subscriber_id)
+        RETURNING *;
+    END IF;
 END;
 $$ LANGUAGE plpgsql;
-
 
 
 COMMIT;
