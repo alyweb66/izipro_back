@@ -65,8 +65,8 @@ mutation Mutation($input: CreateUserInput!) {
 
 {
   "input": {
-    "email": "cucu@gmail.com",
-    "password": "Tutu12345*"
+    "email": "seasexandsun87@live.fr",
+    "password": "12Pierrick1987*"
   }
 }
 
@@ -75,18 +75,24 @@ POST {{endpoint}}
 Content-Type: application/json
 X-REQUEST-TYPE: GraphQL
 
-mutation Mutation($input: CreateProUserInput!) {
-  createProUser(input: $input) {
-    id,
-    email,
-  }
+mutation ProRegister($input: CreateProUserInput!) {
+    createProUser(input: $input) {
+       ... on User {
+           id,
+           email,
+       }
+
+       ... on ExistingSiret {
+           error
+       }
+    }
 }
 
 {
   "input": {
     "email": "alemany.pierrick@gmail.com",
-    "password": "Tutu12345*",
-    "siret": 50056940503239
+    "password": "12Pierrick1987*",
+    "siret": 30613890001294
   }
 }
 
