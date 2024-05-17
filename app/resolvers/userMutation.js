@@ -272,6 +272,7 @@ async function login(_, { input }, { dataSources, res }) {
 }
 
 async function logout(_, { id }, { dataSources, res }) {
+  console.log('logoutId', id);
   debug('logout is starting');
   try {
     // Controle if it's the good user who want to logout
@@ -318,8 +319,27 @@ async function deleteUser(_, { id }, { dataSources, res }) {
     if (!user) {
       throw new ApolloError('User not found', 'NOT_FOUND');
     }
-    dataSources.dataDB.user.delete(id);
-    logout(null, null, { res });
+
+    const cleanUser = {
+      first_name: null,
+      last_name: null,
+      email: null,
+      address: null,
+      postal_code: null,
+      city: null,
+      lat: null,
+      lng: null,
+      password: null,
+      remember_token: null,
+      refresh_token: null,
+      siret: null,
+      denomination: null,
+      image: null,
+      deleted_at: new Date(),
+    };
+
+    dataSources.dataDB.user.update(id, cleanUser);
+    logout(null, { id }, { dataSources, res });
     return true;
   } catch (err) {
     debug(err);

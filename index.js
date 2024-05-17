@@ -82,14 +82,14 @@ wsServer.on('connection', (ws) => {
   });
 });
 
-/* // Log mutation or query data
+// Log mutation or query data
 const logMutationData = (req, res, next) => {
   if (req.method === 'POST') {
     console.log('Mutation data:', req.body);
   }
   next();
 };
-app.use(logMutationData); */
+app.use(logMutationData);
 
 // Hand in the schema we just created and have the
 // WebSocketServer start listening.
