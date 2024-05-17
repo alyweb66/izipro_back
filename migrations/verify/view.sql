@@ -2,6 +2,7 @@
 
 BEGIN;
 
-SELECT * FROM getRequest WHERE false;
+SELECT * FROM getRequestByConversation WHERE false;
+SELECT * FROM getMessageByUserConversation WHERE false;
 
 ROLLBACK;
