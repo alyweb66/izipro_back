@@ -2,6 +2,7 @@
 
 BEGIN;
 
-DROP VIEW "getRequest";
+DROP VIEW "getRequestByConversation";
+DROP VIEW "getMessageByUserConversation";
 
 COMMIT;

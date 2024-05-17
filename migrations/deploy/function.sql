@@ -128,6 +128,7 @@ job_id INT,
 city TEXT,
 first_name TEXT,
 last_name TEXT,
+deleted_at TIMESTAMP WITH TIME ZONE,
 created_at TIMESTAMP WITH TIME ZONE,
 job TEXT,
 media JSON,
@@ -148,6 +149,7 @@ r.job_id,
 r.city,
 u.first_name,
 u.last_name,
+r.deleted_at,
 r.created_at,
 j.name AS job,
 m.media,
@@ -167,6 +169,7 @@ LEFT JOIN (
   GROUP BY "request_id"
 ) c ON c."request_id"=r."id"
 WHERE r.job_id = ANY(job_ids)
+AND r.deleted_at IS NULL
 AND NOT EXISTS (
   SELECT 1 FROM "user_has_hiddingClientRequest" uhhcr
   WHERE uhhcr."request_id" = r.id AND uhhcr."user_id" = userId_id
@@ -193,18 +196,23 @@ RETURNS TABLE(
 )
 AS $$
 BEGIN
-    -- delete old values
-    DELETE FROM "subscription"
-    WHERE "subscription"."subscriber" = p_subscriber AND "subscription"."user_id" = p_user_id;
-
-    -- Insert data into the subscription table
-    RETURN QUERY
-    INSERT INTO "subscription" ("user_id", "subscriber", "subscriber_id")
-    VALUES (p_user_id, p_subscriber, p_subscriber_id)
-    RETURNING *;
+    -- Check if a row already exists for this user and subscriber
+    IF EXISTS (SELECT 1 FROM "subscription" WHERE "subscription"."subscriber" = p_subscriber AND "subscription"."user_id" = p_user_id) THEN
+        -- Update the existing row
+        RETURN QUERY
+        UPDATE "subscription"
+        SET "subscriber_id" = p_subscriber_id
+        WHERE "subscription"."subscriber" = p_subscriber AND  "subscription"."user_id" = p_user_id
+        RETURNING *;
+    ELSE
+        -- Insert a new row
+        RETURN QUERY
+        INSERT INTO "subscription" ("user_id", "subscriber", "subscriber_id")
+        VALUES (p_user_id, p_subscriber, p_subscriber_id)
+        RETURNING *;
+    END IF;
 END;
 $$ LANGUAGE plpgsql;
-
 
 
 COMMIT;

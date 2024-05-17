@@ -6,22 +6,23 @@ const debug = Debug(`${process.env.DEBUG_MODULE}:datamappers:request`);
 class Request extends CoreDatamapper {
   tableName = 'request';
 
-  viewName = 'getRequest';
+  viewName = 'getRequestConversation';
 
   viewNameByConversation = 'getRequestByConversation';
 
   QueryFunc = 'getRequestByJob';
 
-  async getRequestByUserId(userIds, offset, limit) {
+  async getRequestByUserId(userId, offset, limit) {
     debug('Finding request by user id');
     debug(`SQL function ${this.viewNameByConversation} called`);
     // call sql function
     const query = {
-      text: `SELECT * FROM "${this.viewNameByConversation}" WHERE user_id = $1 OFFSET $2 LIMIT $3`,
-      values: [userIds, offset, limit],
+      text: `SELECT * FROM "${this.viewNameByConversation}" WHERE user_id = $1 AND deleted_at IS NULL OFFSET $2 LIMIT $3`,
+      values: [userId, offset, limit],
     };
     const { rows } = await this.client.query(query);
     const request = rows;
+    console.log('request', request);
 
     return request;
   }
@@ -67,10 +68,23 @@ class Request extends CoreDatamapper {
         ) OFFSET $2 LIMIT $3`,
       values: [userId, offset, limit],
     };
+
     const { rows } = await this.client.query(query);
     const request = rows;
 
-    return request;
+    // exclude request id who is in the user_has_hiddingClientRequest table
+    const query2 = {
+      text: 'SELECT * FROM "user_has_hiddingClientRequest" WHERE user_id = $1',
+      values: [userId],
+    };
+    const { rows: rows2 } = await this.client.query(query2);
+    const hiddenRequests = rows2;
+    // filter the request
+    const requestWithoutHidden = request.filter(
+      (requestQuery) => !hiddenRequests.some((hidden) => hidden.request_id === requestQuery.id),
+    );
+
+    return requestWithoutHidden;
   }
 }
 export default Request;
