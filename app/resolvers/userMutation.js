@@ -468,18 +468,12 @@ async function updateUser(_, { id, input }, { dataSources }) {
 
       // delete the old profile picture in folder
       if (user.image) {
-        await fs.readdir(path.join(directoryPath), (err) => {
-          if (err) {
-            debugInDevelopment(`Error reading directory: ${err}`);
-          } else {
-            const urlObject = new URL(user.image);
-            const filename = path.basename(urlObject.pathname);
-            deleteFile(filename);
-          }
-        });
+        const urlObject = new URL(user.image);
+        const filename = path.basename(urlObject.pathname);
+
+        deleteFile(filename);
       }
     }
-
     // Update the input image with the new url
     if (imageInput) {
       updateInput.image = imageInput;
@@ -542,15 +536,12 @@ async function deleteProfilePicture(_, { id }, { dataSources }) {
     }
 
     // delete the old profile picture in folder
-    fs.readdir(path.join(directoryPath), (err) => {
-      if (err) {
-        debugInDevelopment(`Error reading directory: ${err}`);
-      } else {
-        const urlObject = new URL(user.image);
-        const filename = path.basename(urlObject.pathname);
-        deleteFile(filename);
-      }
-    });
+    if (user.image) {
+      const urlObject = new URL(user.image);
+      const filename = path.basename(urlObject.pathname);
+
+      deleteFile(filename);
+    }
 
     // Update the user image to null
     await dataSources.dataDB.user.update(id, { image: null });

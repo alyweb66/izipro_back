@@ -38,8 +38,10 @@ async function handleUploadedFiles(media) {
       }
       // Get file name without extension
       const fileNameWithoutExtension = path.parse(file.filename).name;
+
       // Generating a unique file name
       const uniqueFileName = `${fileNameWithoutExtension}_${Date.now()}${path.extname(file.filename)}`;
+
       // Saving or further processing the compressed image or pdf
       if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg') {
         await sharp(compressedBuffer).toFile(`./public/media/${uniqueFileName}`);
