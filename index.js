@@ -75,21 +75,21 @@ const wsServer = new WebSocketServer({
 });
 
 // Handle incoming connections
-wsServer.on('connection', (ws) => {
+/* wsServer.on('connection', (ws) => {
   console.log('A new client Connected!');
   ws.on('message', (message) => {
     console.log('received: %s', message);
   });
-});
+}); */
 
 // Log mutation or query data
-const logMutationData = (req, res, next) => {
+/* const logMutationData = (req, res, next) => {
   if (req.method === 'POST') {
     console.log('Mutation data:', req.body);
   }
   next();
 };
-app.use(logMutationData);
+app.use(logMutationData); */
 
 // Hand in the schema we just created and have the
 // WebSocketServer start listening.
