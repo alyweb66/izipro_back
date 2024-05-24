@@ -320,6 +320,15 @@ async function deleteUser(_, { id }, { dataSources, res }) {
       throw new ApolloError('User not found', 'NOT_FOUND');
     }
 
+    // delete the old profile picture in folder
+    if (user.image) {
+      const urlObject = new URL(user.image);
+      const filename = path.basename(urlObject.pathname);
+
+      deleteFile(filename);
+    }
+
+    // Clean the user object
     const cleanUser = {
       first_name: null,
       last_name: null,

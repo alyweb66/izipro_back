@@ -32,7 +32,7 @@ async function handleUploadedFiles(media) {
       if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg') {
         const buffer = await getBuffer(file.buffer);
         compressedBuffer = await sharp(buffer)
-          .resize({ width: 800, height: 800, withoutEnlargement: true })
+          // .resize({ width: 800, height: 800, withoutEnlargement: true })
           .jpeg({ quality: 80 })
           .toBuffer();
       }
