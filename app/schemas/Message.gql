@@ -11,7 +11,7 @@ type Message {
 }
 
 input NewMessageInput {
-    content: String!
+    content: String! @length(max: 500)
     user_id: Int!
     conversation_id: Int!
     media: [Upload]
