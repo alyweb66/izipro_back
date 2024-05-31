@@ -114,7 +114,7 @@ CREATE TABLE "conversation"(
 
 CREATE TABLE "message"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "content" TEXT,
+   "content" TEXT CHECK (LENGTH("content") <= 500),
    "user_id" INT NOT NULL REFERENCES "user"(id),
    "conversation_id" INT NOT NULL REFERENCES "conversation"(id) ON DELETE CASCADE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
