@@ -76,7 +76,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
     await dataSources.dataDB.conversation.updateUpdatedAtConversation(input.conversation_id);
 
     const subscriptionResult = await dataSources.dataDB.message.findByUserConversation(
-      dataSources.userData.id,
+      // dataSources.userData.id,
       input.conversation_id,
       0,
       1,

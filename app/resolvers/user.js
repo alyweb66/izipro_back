@@ -34,12 +34,12 @@ console.log('result', result);
       throw new AuthenticationError('Unauthorized');
     }
     const messageDESC = await dataSources.dataDB.message.findByUserConversation(
-      id,
       conversationId,
       offset,
       limit,
     );
     const messageASC = messageDESC.sort((a, b) => a.created_at - b.created_at);
+    console.log('messageASC', messageASC);
     return messageASC;
   },
   subscription({ id }, _, { dataSources }) {
