@@ -14,6 +14,7 @@ type Request {
     job_id: Int!
     first_name: String!
     last_name: String!
+    image: String
     job: String
     media: [Media]
     created_at: String!
@@ -24,8 +25,8 @@ type Request {
 input CreateRequestInput {
     urgent: Boolean!
     title: String! @length(max: 255)
-    message: String!
-    city: String!
+    message: String! @length(max: 500)
+    city: String! @length(max: 50)
     lng: Float!
     lat: Float!
     range: Int!
