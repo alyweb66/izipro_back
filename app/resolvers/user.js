@@ -23,7 +23,7 @@ const UserResolver = {
   async requestsConversations({ id }, { offset, limit }, { dataSources }) {
     debug(`get all requests by conversations from user id: ${id}`);
     const result = await dataSources.dataDB.request.getRequestByConversation(id, offset, limit);
-
+console.log('result', result);
     // exclude request where user_id is the same as id
     const requests = result.filter((request) => request.user_id !== id);
     return requests;
@@ -34,12 +34,12 @@ const UserResolver = {
       throw new AuthenticationError('Unauthorized');
     }
     const messageDESC = await dataSources.dataDB.message.findByUserConversation(
-      id,
       conversationId,
       offset,
       limit,
     );
     const messageASC = messageDESC.sort((a, b) => a.created_at - b.created_at);
+    console.log('messageASC', messageASC);
     return messageASC;
   },
   subscription({ id }, _, { dataSources }) {

@@ -16,12 +16,13 @@ class Message extends CoreDatamapper {
    * @returns {Promise<object>} The found messages.
    * @throws {Error} If user not found.
    */
-  async findByUserConversation(userId, conversationId, offset, limit) {
-    debug(`Finding messages by conversation_id ${conversationId} and user_id ${userId}`);
+  async findByUserConversation(conversationId, offset, limit) {
+    console.log('offset', offset, 'limit', limit);
+    debug(`Finding messages by conversation_id ${conversationId}`);
     debug(`SQL function ${this.viewName} called`);
     const query = {
-      text: `SELECT * FROM "${this.viewName}" WHERE conversation_id = $2 AND user_id = $1 OFFSET $3 LIMIT $4`,
-      values: [userId, conversationId, offset, limit],
+      text: `SELECT * FROM "${this.viewName}" WHERE conversation_id = $1 OFFSET $2 LIMIT $3`,
+      values: [conversationId, offset, limit],
     };
     const { rows } = await this.client.query(query);
     const messages = rows;
