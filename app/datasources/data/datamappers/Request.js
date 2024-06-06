@@ -37,7 +37,6 @@ class Request extends CoreDatamapper {
     };
     const { rows } = await this.client.query(query);
     const requestsByJob = rows;
-    console.log('requestsByJob', requestsByJob);
     return requestsByJob;
   }
 

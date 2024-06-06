@@ -66,15 +66,17 @@ export default {
     );
     // filter out the requests that are not from the client and where there are already a
     // conversation between the client and the user
-    const clientRequests = result.filter((request) => (
+   /*  const clientRequests = result.filter((request) => (
       request.user_id !== dataSources.userData.id)
     && (request.conversation === null || request.conversation.every(
       (conversation) => conversation.user_1 !== dataSources.userData.id
       && conversation.user_2 !== dataSources.userData.id,
     )
-    ));
+    )); */
 
-    return clientRequests;
+    // if clientRequests length is less than limit, refetch the requests
+console.log('requestByJob', result);
+    return result;
   },
 
 };
