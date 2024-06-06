@@ -70,7 +70,7 @@ class Request extends CoreDatamapper {
 
     const { rows } = await this.client.query(query);
     const request = rows;
-
+console.log('request', request);
     // exclude request id who is in the user_has_hiddingClientRequest table
     const query2 = {
       text: 'SELECT * FROM "user_has_hiddingClientRequest" WHERE user_id = $1',
