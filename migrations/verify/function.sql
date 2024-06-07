@@ -9,5 +9,7 @@ SELECT * FROM delete_orphaned_request_media_func();
 SELECT * FROM delete_orphaned_request_media;
 SELECT * FROM insert_user_has_job(null, null);
 SELECT * FROM insert_subscription(null, null);
+SELECT * FROM getRequestSubscription(null);
+SELECT * FROM getRequestByJob(null);
 
 ROLLBACK;
