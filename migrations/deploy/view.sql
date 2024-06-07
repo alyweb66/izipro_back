@@ -4,49 +4,47 @@ BEGIN;
 
 
 CREATE OR REPLACE VIEW "getRequestByConversation" AS
-SELECT
-    r.id,
-    r.title,
-    r.urgent,
-    r.message,
-    r.lng,
-    r.lat,
-    r.city,
-    r.range,
-    r.user_id,
-    r.job_id,
-    u.first_name,
-    u.last_name,
-    u.image,
-    r.created_at,
-    r.deleted_at,
-    j.name AS job,
-    rm.media,
-    c.conversation
-FROM "request" r
+WITH req_with_max_updated_at AS (
+    SELECT r.*, 
+           COALESCE(MAX(c.updated_at), r.created_at) AS max_updated_at
+    FROM "request" r
+    LEFT JOIN "conversation" c ON c."request_id" = r."id"
+    GROUP BY r.id
+)
+SELECT 
+r.id, r.title, 
+r.urgent, 
+r.message, 
+r.lng, 
+r.lat, 
+r.city, 
+r.range, 
+r.user_id, 
+r.job_id, 
+u.first_name, 
+u.last_name, 
+u.image, 
+r.created_at, 
+r.deleted_at, 
+j.name AS job, 
+rm.media, 
+c.conversation
+FROM req_with_max_updated_at r
 JOIN "job" j ON j."id" = r."job_id"
 JOIN "user" u ON u."id" = r."user_id"
 LEFT JOIN (
-    SELECT "request_id", json_agg(row_to_json((SELECT x FROM (SELECT media.id, media.url, media.name) AS x))) AS media
+    SELECT "request_id", json_agg(row_to_json((SELECT x FROM (SELECT media.id, media.url, media.name) AS x))) AS media 
     FROM "request_has_media"
     JOIN "media" ON "media"."id" = "request_has_media"."media_id"
     GROUP BY "request_id"
 ) rm ON rm."request_id" = r."id"
 LEFT JOIN (
-    SELECT "request_id", json_agg(json_build_object(
-        'id', id, 
-        'user_1', user_1, 
-        'user_2', user_2, 
-        'updated_at', updated_at 
-    )) AS conversation
+    SELECT "request_id", json_agg(json_build_object('id', id, 'user_1', user_1, 'user_2', user_2, 'updated_at', updated_at)) AS conversation 
     FROM "conversation"
     GROUP BY "request_id"
 ) c ON c."request_id" = r."id"
-ORDER BY (
-    SELECT max(updated_at)
-    FROM "conversation"
-    WHERE "conversation"."request_id" = r."id"
-) DESC;
+ORDER BY r.max_updated_at DESC;
+
 
 
 CREATE OR REPLACE VIEW "getMessageByUserConversation" AS
