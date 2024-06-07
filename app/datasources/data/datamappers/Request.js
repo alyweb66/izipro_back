@@ -12,6 +12,8 @@ class Request extends CoreDatamapper {
 
   QueryFunc = 'getRequestByJob';
 
+  QuerySubFunc = 'getRequestSubscription';
+
   async getRequestByUserId(userId, offset, limit) {
     debug('Finding request by user id');
     debug(`SQL function ${this.viewNameByConversation} called`);
@@ -42,10 +44,10 @@ class Request extends CoreDatamapper {
 
   async getSubscritpionRequest(jobId, userId, requestId, offset = 0, limit = 1) {
     debug('Finding request by job id');
-    debug(`SQL function ${this.QueryFunc} called`);
+    debug(`SQL function ${this.QuerySubFunc} called`);
     // call sql function
     const query = {
-      text: `SELECT * FROM ${this.QueryFunc} ($1, $2, $4, $5)
+      text: `SELECT * FROM ${this.QuerySubFunc} ($1, $2, $4, $5)
       WHERE id = $3`,
       values: [jobId, userId, requestId, offset, limit],
     };
