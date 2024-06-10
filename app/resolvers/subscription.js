@@ -46,7 +46,8 @@ const Subscription = {
       () => pubsub.asyncIterator('REQUEST_CREATED'),
       (payload, variables) => {
         debugInDevelopment('requestAdded subscription: payload', payload, 'variables', variables);
-        return payload.requestAdded.some((request) => variables.ids.includes(request.job_id));
+        return variables.ids
+        && payload.requestAdded.some((request) => variables.ids.includes(request.job_id));
       },
     ),
   },
