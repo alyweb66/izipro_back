@@ -12,8 +12,9 @@ type Request {
     range: Int!
     user_id: Int!
     job_id: Int!
-    first_name: String!
-    last_name: String!
+    first_name: String
+    last_name: String
+    denomination: String
     image: String
     job: String
     media: [Media]
