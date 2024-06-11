@@ -64,10 +64,10 @@ export default {
       offset,
       limit,
     );
-    // filter out the requests that are not from the client
-    const clientRequests = result.filter((request) => request.user_id !== dataSources.userData.id);
 
-    return clientRequests;
+    // if clientRequests length is less than limit, refetch the requests
+console.log('requestByJob', result);
+    return result;
   },
 
 };
