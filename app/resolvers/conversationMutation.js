@@ -12,7 +12,9 @@ async function createConversation(_, { id, input }, { dataSources }) {
     if (dataSources.userData.id !== id) {
       throw new AuthenticationError('Unauthorized');
     }
-    const conversation = await dataSources.dataDB.conversation.create(input);
+    // create a new variable to store the updated input object
+    const updatedInput = { ...input, updated_at: new Date() };
+    const conversation = await dataSources.dataDB.conversation.create(updatedInput);
     if (!conversation) {
       throw new ApolloError('Error creating conversation');
     }

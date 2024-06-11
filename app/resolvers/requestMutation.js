@@ -2,17 +2,16 @@ import Debug from 'debug';
 import {
   AuthenticationError, ApolloError,
 } from 'apollo-server-core';
-import fs from 'fs';
+/* import fs from 'fs';
 import path from 'path';
-import url from 'url';
-import { networkInterfaces } from 'os';
+import url from 'url'; */
 import pubsub from '../middleware/pubSub.js';
 import handleUploadedFiles from '../middleware/handleUploadFiles.js';
 
 // __dirname not on module, this is the way to use it.
-const fileName = url.fileURLToPath(import.meta.url);
+/* const fileName = url.fileURLToPath(import.meta.url);
 const dirname = path.dirname(fileName);
-const directoryPath = path.join(dirname, '..', '..', 'public', 'media');
+const directoryPath = path.join(dirname, '..', '..', 'public', 'media'); */
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:mutation`);
 
@@ -22,7 +21,7 @@ function debugInDevelopment(message = '', value = '') {
   }
 }
 // function to delete the files from the public folder
-function deleteFile(file) {
+/* function deleteFile(file) {
   const filePath = path.join(directoryPath, file);
 
   fs.unlink(filePath, (err) => {
@@ -32,7 +31,7 @@ function deleteFile(file) {
       debugInDevelopment(`File ${file} deleted successfully`);
     }
   });
-}
+} */
 
 // function to create the request
 async function createRequest(_, { input }, { dataSources }) {
@@ -102,7 +101,7 @@ async function createRequest(_, { input }, { dataSources }) {
     });
 
     debug('created media', isCreatedRequestMedia.insert_request_has_media);
-    return isCreatedRequest;
+    return subscriptionResult[0];
   } catch (error) {
     debug('error', error);
     throw new Error(error);
