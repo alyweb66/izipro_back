@@ -41,6 +41,29 @@ class Message extends CoreDatamapper {
     console.log('messages', messages);
     return messages;
   }
+
+  async updateViewedMessage(ids) {
+    // map the ids to placeholders
+    const idPlaceholders = ids.map((_, index) => `$${index + 1}`).join(', ');
+    const values = [...ids];
+
+    const preparedQuery = {
+      text: `
+        UPDATE "${this.tableName}" SET
+        viewed = true,
+        updated_at = now()
+        WHERE id IN (${idPlaceholders})
+        RETURNING *
+      `,
+      values,
+    };
+
+    const result = await this.client.query(preparedQuery);
+    const { rows } = result;
+    console.log('update rows', rows);
+
+    return rows;
+  }
 }
 
 export default Message;

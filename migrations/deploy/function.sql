@@ -166,7 +166,11 @@ BEGIN
     LEFT JOIN "job" j ON j."id" = r."job_id"
     JOIN "user" u ON u."id" = r."user_id"
     LEFT JOIN (
-        SELECT "request_id", json_agg(json_build_object('id', conv.id, 'user_1', conv.user_1, 'user_2', conv.user_2, 'updated_at', conv.updated_at)) AS conversation
+        SELECT "request_id", json_agg(json_build_object('id', conv.id,
+         'user_1', conv.user_1, 
+         'user_2', conv.user_2, 
+         'request_id', conv.request_id, 
+         'updated_at', conv.updated_at)) AS conversation
         FROM "conversation" conv
         GROUP BY "request_id"
     ) c ON c."request_id" = r."id"
@@ -238,7 +242,12 @@ BEGIN
     LEFT JOIN "job" j ON j."id" = r."job_id"
     JOIN "user" u ON u."id" = r."user_id"
     LEFT JOIN (
-        SELECT "request_id", json_agg(json_build_object('id', conv.id, 'user_1', conv.user_1, 'user_2', conv.user_2, 'updated_at', conv.updated_at)) AS conversation
+        SELECT "request_id", json_agg(json_build_object(
+            'id', conv.id, 
+            'user_1', conv.user_1, 
+            'user_2', conv.user_2, 
+            'request_id', conv.request_id,
+            'updated_at', conv.updated_at)) AS conversation
         FROM "conversation" conv
         GROUP BY "request_id"
     ) c ON c."request_id" = r."id"

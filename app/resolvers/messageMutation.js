@@ -96,4 +96,21 @@ async function createMessage(_, { id, input }, { dataSources }) {
   }
 }
 
-export default { createMessage };
+async function updateViewedMessage(_, { input }, { dataSources }) {
+  debug('update viewed message');
+  debugInDevelopment('input', input);
+
+  try {
+    const isUpdatedMessage = await dataSources.dataDB.message.updateViewedMessage(input.id);
+    if (!isUpdatedMessage) {
+      throw new ApolloError('Error updating message');
+    }
+console.log('isUpdatedMessage', isUpdatedMessage);
+    return true;
+  } catch (error) {
+    debug('error', error);
+    throw new Error(error);
+  }
+}
+
+export default { createMessage, updateViewedMessage };

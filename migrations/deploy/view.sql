@@ -40,7 +40,12 @@ LEFT JOIN (
     GROUP BY "request_id"
 ) rm ON rm."request_id" = r."id"
 LEFT JOIN (
-    SELECT "request_id", json_agg(json_build_object('id', id, 'user_1', user_1, 'user_2', user_2, 'updated_at', updated_at)) AS conversation 
+    SELECT "request_id", json_agg(json_build_object(
+        'id', id, 
+        'user_1', user_1, 
+        'user_2', user_2,
+        'request_id', request_id, 
+        'updated_at', updated_at)) AS conversation 
     FROM "conversation"
     GROUP BY "request_id"
 ) c ON c."request_id" = r."id"
@@ -55,6 +60,7 @@ m.content,
 m.user_id,
 m.conversation_id,
 m.created_at,
+m.viewed,
 c.request_id,
 json_agg(row_to_json((SELECT x FROM (SELECT rm.id, rm.url, rm.name) AS x))) AS "media"
 FROM "message" m
@@ -68,6 +74,7 @@ m.user_id,
 m.conversation_id,
 c.request_id,
 m.created_at,
+m.viewed,
 m.updated_at
 ORDER BY m.created_at DESC;
 
