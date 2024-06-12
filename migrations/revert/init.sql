@@ -5,6 +5,7 @@ BEGIN;
 DROP TABLE "user_has_hiddingClientRequest";
 DROP TABLE "user_has_user";
 DROP TABLE "user_has_job";
+DROP TABLE "user_has_viewedRequest";
 DROP TABLE "message_has_media" CASCADE;
 DROP TABLE "request_has_media" CASCADE;
 DROP TABLE "message";

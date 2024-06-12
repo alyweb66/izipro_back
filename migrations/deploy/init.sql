@@ -117,6 +117,7 @@ CREATE TABLE "message"(
    "content" TEXT CHECK (LENGTH("content") <= 500),
    "user_id" INT NOT NULL REFERENCES "user"(id),
    "conversation_id" INT NOT NULL REFERENCES "conversation"(id) ON DELETE CASCADE,
+   "viewed" BOOLEAN NOT NULL DEFAULT FALSE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );
@@ -173,6 +174,14 @@ CREATE TABLE "user_has_job"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "user_id" INT NOT NULL REFERENCES "user"(id),
    "job_id" INT NOT NULL REFERENCES "job"(id),
+   "created_at" timestamptz NOT NULL DEFAULT now(),
+   "updated_at" timestamptz
+);
+
+CREATE TABLE "user_has_viewedRequest"(
+   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   "user_id" INT NOT NULL REFERENCES "user"(id),
+   "request_id" INT NOT NULL REFERENCES "request"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );
