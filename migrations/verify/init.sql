@@ -3,7 +3,7 @@
 BEGIN;
 
 SELECT * FROM "user_has_hiddingClientRequest" WHERE false;
-SELECT * FROM "user_has_viewedRequest" WHERE false;
+SELECT * FROM "user_has_notViewedRequest" WHERE false;
 SELECT * FROM "user" WHERE false;
 SELECT * FROM "subscription" WHERE false;
 SELECT * FROM "user_setting" WHERE false;

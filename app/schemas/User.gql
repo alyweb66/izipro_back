@@ -19,6 +19,7 @@ type User {
     requests(id: Int!, offset: Int!, limit: Int!): [Request]
     requestsConversations(offset: Int!, limit: Int!): [Request]
     messages(conversationId: Int!, offset: Int!, limit: Int! ): [Message!]!
+    userHasNotViewedRequest: [UserHasNotViewedRequest]
     jobs: [UserHasJob]
     settings: [UserSettings]
     subscription: [UserSubscription]
