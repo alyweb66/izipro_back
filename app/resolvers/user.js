@@ -46,6 +46,10 @@ const UserResolver = {
     debug(`get all subscription from user id: ${id}`);
     return dataSources.dataDB.subscription.findByUser(id);
   },
+  userHasNotViewedRequest({ id }, _, { dataSources }) {
+    debug(`get all has viewed request from user id: ${id}`);
+    return dataSources.dataDB.userHasNotViewedRequest.findByUser(id);
+  },
 };
 
 export default UserResolver;

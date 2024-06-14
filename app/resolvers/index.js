@@ -8,6 +8,7 @@ import Category from './category.js';
 import Job from './job.js';
 import Mutation from './mutation.js';
 import Subscription from './subscription.js';
+import UserHasNotViewedRequest from './userHasNotViewedRequest.js';
 import {
   validateEmail, validatePassword, validatePostalCode, validateSiret,
 } from '../validations/validationScalars.js';
@@ -27,5 +28,6 @@ export default {
   Conversation,
   Category,
   Job,
+  UserHasNotViewedRequest,
 
 };

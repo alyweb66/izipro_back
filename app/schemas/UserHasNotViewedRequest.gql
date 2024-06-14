@@ -1,0 +1,12 @@
+type UserHasNotViewedRequest {
+    id: Int!
+    user_id: Int!
+    request_id: Int!
+    created_at: String
+    updated_at: String
+}
+
+input UserHasNotViewedRequestInput {
+    user_id: Int!
+    request_id: [Int!]
+}

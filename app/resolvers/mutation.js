@@ -6,6 +6,7 @@ import userHiddenClientRequestMutation from './userHiddenClientRequestMutation.j
 import conversationMutation from './conversationMutation.js';
 import messageMutation from './messageMutation.js';
 import subscriptionMutation from './subscriptionMutation.js';
+import userHasViewedRequestMutation from './userHasNotViewedRequestMutation.js';
 
 export default {
   ...requestMutation,
@@ -16,5 +17,6 @@ export default {
   ...conversationMutation,
   ...messageMutation,
   ...subscriptionMutation,
+  ...userHasViewedRequestMutation,
 
 };

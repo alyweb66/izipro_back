@@ -178,7 +178,7 @@ CREATE TABLE "user_has_job"(
    "updated_at" timestamptz
 );
 
-CREATE TABLE "user_has_viewedRequest"(
+CREATE TABLE "user_has_notViewedRequest"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "user_id" INT NOT NULL REFERENCES "user"(id),
    "request_id" INT NOT NULL REFERENCES "request"(id),
