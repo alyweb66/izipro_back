@@ -46,7 +46,7 @@ LEFT JOIN (
         'user_1', user_1, 
         'user_2', user_2,
         'request_id', request_id, 
-        'viewed_message', viewed_message,
+        'sender', sender,
         'updated_at', updated_at)) AS conversation 
     FROM "conversation"
     GROUP BY "request_id"
