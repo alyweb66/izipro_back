@@ -3,6 +3,7 @@ type Conversation {
     user_1: Int
     user_2: Int
     request_id: Int
+    viewed_message: Boolean
     created_at: String
     updated_at: String
     messages: [Message]

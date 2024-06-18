@@ -18,6 +18,7 @@ type Request {
     image: String
     job: String
     media: [Media]
+    viewed_conv: Boolean
     created_at: String!
     conversation:[Conversation]
     deleted_at: String

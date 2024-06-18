@@ -20,7 +20,8 @@ r.lat,
 r.city, 
 r.range, 
 r.user_id, 
-r.job_id, 
+r.job_id,
+r.viewed_conv, 
 u.first_name, 
 u.last_name,
 u.denomination, 
@@ -45,6 +46,7 @@ LEFT JOIN (
         'user_1', user_1, 
         'user_2', user_2,
         'request_id', request_id, 
+        'viewed_message', viewed_message,
         'updated_at', updated_at)) AS conversation 
     FROM "conversation"
     GROUP BY "request_id"
