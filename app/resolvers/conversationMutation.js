@@ -25,4 +25,19 @@ async function createConversation(_, { id, input }, { dataSources }) {
   }
 }
 
-export default { createConversation };
+async function updateConversation(_, { input }, { dataSources }) {
+  debug('update conversation');
+
+  try {
+    // create a new variable to store the updated input object
+    const conversation = await dataSources.dataDB.conversation.updateConversation(input.id);
+    if (!conversation) {
+      throw new ApolloError('Error updating conversation');
+    }
+    return true;
+  } catch (error) {
+    debug('error', error);
+    throw new ApolloError('Error updating conversation');
+  }
+}
+export default { createConversation, updateConversation };

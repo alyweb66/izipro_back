@@ -172,7 +172,7 @@ BEGIN
          'user_1', conv.user_1, 
          'user_2', conv.user_2, 
          'request_id', conv.request_id,
-         'viewed_message', conv.viewed_message,
+         'sender', conv.sender,
          'updated_at', conv.updated_at)) AS conversation
         FROM "conversation" conv
         GROUP BY "request_id"
@@ -228,10 +228,10 @@ BEGIN
         r.user_id,
         r.job_id,
         r.city,
-        r.viewed_conv,
         u.first_name,
         u.last_name,
         u.denomination,
+        r.viewed_conv,
         r.deleted_at,
         r.created_at,
         j.name AS job,
@@ -252,7 +252,7 @@ BEGIN
             'user_1', conv.user_1, 
             'user_2', conv.user_2, 
             'request_id', conv.request_id,
-            'viewed_message', conv.viewed_message,
+            'sender', conv.sender,
             'updated_at', conv.updated_at)) AS conversation
         FROM "conversation" conv
         GROUP BY "request_id"
@@ -273,7 +273,7 @@ END; $$
 LANGUAGE plpgsql;
 
 
--- Fonction de déclencheur pour mettre à jour viewed_conv dans la table request
+/* -- Fonction de déclencheur pour mettre à jour viewed_conv dans la table request
 CREATE OR REPLACE FUNCTION update_viewed_conv()
 RETURNS trigger AS $$
 BEGIN
@@ -353,7 +353,7 @@ EXECUTE FUNCTION update_viewed_conv();
 CREATE TRIGGER trg_update_viewed_message
 AFTER INSERT OR UPDATE ON message
 FOR EACH ROW
-EXECUTE FUNCTION update_viewed_message();
+EXECUTE FUNCTION update_viewed_message(); */
 
 /* -- Fonction de déclencheur pour mettre à jour viewed_conv dans la table request
 CREATE OR REPLACE FUNCTION update_viewed_conv()
