@@ -33,13 +33,21 @@ class Request extends CoreDatamapper {
     debug('Finding request by job id');
     debug(`SQL function ${this.QueryFunc} called`);
     // call sql function
-    const query = {
-      text: `SELECT * FROM ${this.QueryFunc} ($1, $2, $3, $4)`,
-      values: [jobId, userId, offset, limit],
-    };
-    const { rows } = await this.client.query(query);
-    const requestsByJob = rows;
-    return requestsByJob;
+    try {
+      const query = {
+        text: `SELECT * FROM ${this.QueryFunc} ($1, $2, $3, $4)`,
+        values: [jobId, userId, offset, limit],
+      };
+      const { rows } = await this.client.query(query);
+      const requestsByJob = rows;
+      console.log('requestsByJob', requestsByJob);
+      return requestsByJob;
+    } catch (error) {
+      console.log('error', error);
+    }
+    
+    // Add the following return statement
+    return null;
   }
 
   async getSubscritpionRequest(jobId, userId, requestId, offset = 0, limit = 1) {
@@ -72,7 +80,7 @@ class Request extends CoreDatamapper {
 
     const { rows } = await this.client.query(query);
     const request = rows;
-console.log('request', request);
+    console.log('request', request);
     // exclude request id who is in the user_has_hiddingClientRequest table
     const query2 = {
       text: 'SELECT * FROM "user_has_hiddingClientRequest" WHERE user_id = $1',

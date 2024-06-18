@@ -95,6 +95,7 @@ CREATE TABLE "request"(
    "range" INT NOT NULL,
    "user_id" INT NOT NULL REFERENCES "user"(id),
    "job_id" INT NOT NULL REFERENCES "job"(id),
+   "viewed_conv" BOOLEAN NOT NULL DEFAULT FALSE,
    "deleted_at" timestamptz,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
@@ -105,6 +106,7 @@ CREATE TABLE "conversation"(
    "user_1" INT NOT NULL REFERENCES "user"(id),
    "user_2" INT NOT NULL REFERENCES "user"(id),
    "request_id" INT NOT NULL REFERENCES "request"(id),
+   "viewed_message" BOOLEAN NOT NULL DEFAULT FALSE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
    /* Check if the two participants are different */
