@@ -12,6 +12,8 @@ class Request extends CoreDatamapper {
 
   QueryFunc = 'getRequestByJob';
 
+  QueryFuncByConversation = 'getMyConversationRequest';
+
   QuerySubFunc = 'getRequestSubscription';
 
   async getRequestByUserId(userId, offset, limit) {
@@ -24,7 +26,6 @@ class Request extends CoreDatamapper {
     };
     const { rows } = await this.client.query(query);
     const request = rows;
-    console.log('request', request);
 
     return request;
   }
@@ -40,12 +41,12 @@ class Request extends CoreDatamapper {
       };
       const { rows } = await this.client.query(query);
       const requestsByJob = rows;
-      console.log('requestsByJob', requestsByJob);
+
       return requestsByJob;
     } catch (error) {
       console.log('error', error);
     }
-    
+
     // Add the following return statement
     return null;
   }
@@ -67,33 +68,21 @@ class Request extends CoreDatamapper {
 
   async getRequestByConversation(userId, offset = 0, limit = 3) {
     debug('Finding request by user conversation');
-    debug(`SQL function ${this.viewNameByConversation} called`);
+    debug(`SQL function ${this.QueryFuncByConversation} called`);
     // call sql function
-    const query = {
-      text: `SELECT * FROM "${this.viewNameByConversation}" WHERE EXISTS (
-        SELECT 1
-        FROM json_array_elements(conversation) AS conv
-        WHERE conv->>'user_1' = $1 OR conv->>'user_2' = $1
-        ) OFFSET $2 LIMIT $3`,
-      values: [userId, offset, limit],
-    };
+    try {
+      const query = {
+        text: `SELECT * FROM ${this.QueryFuncByConversation}($1, $2, $3)`,
+        values: [userId, offset, limit],
+      };
 
-    const { rows } = await this.client.query(query);
-    const request = rows;
-    console.log('request', request);
-    // exclude request id who is in the user_has_hiddingClientRequest table
-    const query2 = {
-      text: 'SELECT * FROM "user_has_hiddingClientRequest" WHERE user_id = $1',
-      values: [userId],
-    };
-    const { rows: rows2 } = await this.client.query(query2);
-    const hiddenRequests = rows2;
-    // filter the request
-    const requestWithoutHidden = request.filter(
-      (requestQuery) => !hiddenRequests.some((hidden) => hidden.request_id === requestQuery.id),
-    );
+      const { rows } = await this.client.query(query);
 
-    return requestWithoutHidden;
+      return rows;
+    } catch (error) {
+      debug('error', error);
+    }
+    return null;
   }
 }
 export default Request;

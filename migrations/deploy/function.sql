@@ -280,7 +280,7 @@ BEGIN
     FOR subscribers IN SELECT * FROM subscription WHERE subscriber = 'jobRequest' AND subscriber_id @> ARRAY[NEW.job_id]
     LOOP
         IF subscribers.user_id != NEW.user_id THEN
-            INSERT INTO "user_has_notViewedRequest"(user_id, request_id, created_at, updated_at)
+            INSERT INTO "user_has_notViewedRequest"(user_id, request_id, created_at)
             VALUES (subscribers.user_id, NEW.id, NOW(), NOW());
         END IF;
     END LOOP;
@@ -292,6 +292,101 @@ CREATE TRIGGER request_inserted
 AFTER INSERT ON request
 FOR EACH ROW
 EXECUTE FUNCTION add_not_viewed_request();
+
+
+-- Function to get request by conversation for myConversation
+CREATE OR REPLACE FUNCTION getMyConversationRequest(user_id_param INT, offset_param INT, limit_param INT)
+RETURNS TABLE (
+    id INT,
+    title TEXT,
+    urgent BOOLEAN,
+    message TEXT,
+    lng NUMERIC,
+    lat NUMERIC,
+    city TEXT,
+    range INT,
+    user_id INT,
+    job_id INT,
+    first_name TEXT,
+    last_name TEXT,
+    denomination TEXT,
+    image TEXT,
+    created_at TIMESTAMP WITH TIME ZONE,
+    deleted_at TIMESTAMP WITH TIME ZONE,
+    job TEXT,
+    media JSON,
+    conversation JSON
+) AS $$
+BEGIN
+    RETURN QUERY
+    WITH req_with_max_updated_at AS (
+        SELECT r.*, 
+               COALESCE(MAX(c.updated_at), r.created_at) AS max_updated_at
+        FROM "request" r
+        LEFT JOIN "conversation" c ON c."request_id" = r."id"
+        GROUP BY r.id
+    ), 
+    req_with_conversation AS (
+        SELECT 
+        r.id, r.title, 
+        r.urgent, 
+        r.message, 
+        r.lng, 
+        r.lat, 
+        r.city, 
+        r.range, 
+        r.user_id, 
+        r.job_id,
+        u.first_name, 
+        u.last_name,
+        u.denomination, 
+        u.image, 
+        r.created_at, 
+        r.deleted_at, 
+        j.name AS job, 
+        rm.media, 
+        c.conversation
+        FROM req_with_max_updated_at r
+        JOIN "job" j ON j."id" = r."job_id"
+        JOIN "user" u ON u."id" = r."user_id"
+        LEFT JOIN (
+            SELECT "request_id", json_agg(row_to_json((SELECT x FROM (SELECT media.id, media.url, media.name) AS x))) AS media 
+            FROM "request_has_media"
+            JOIN "media" ON "media"."id" = "request_has_media"."media_id"
+            GROUP BY "request_id"
+        ) rm ON rm."request_id" = r."id"
+        LEFT JOIN (
+            SELECT "request_id", json_agg(json_build_object(
+                'id', "conversation".id, 
+                'user_1', "conversation".user_1, 
+                'user_2', "conversation".user_2,
+                'request_id', "conversation".request_id, 
+                'sender', "conversation".sender,
+                'updated_at', "conversation".updated_at)) AS conversation 
+            FROM "conversation"
+            GROUP BY "request_id"
+        ) c ON c."request_id" = r."id"
+        ORDER BY r.max_updated_at DESC
+    )
+    SELECT 
+    rq.id, rq.title, rq.urgent, rq.message, rq.lng, rq.lat, rq.city, rq.range, 
+    rq.user_id, rq.job_id, rq.first_name, rq.last_name, rq.denomination, rq.image, 
+    rq.created_at, rq.deleted_at, rq.job, rq.media, rq.conversation
+    FROM req_with_conversation rq
+    WHERE EXISTS (
+        SELECT 1
+        FROM json_array_elements(rq.conversation) AS conv
+        WHERE conv->>'user_1' = user_id_param::TEXT OR conv->>'user_2' = user_id_param::TEXT
+    )
+	AND rq.user_id != user_id_param
+    AND NOT EXISTS (
+        SELECT 1
+        FROM "user_has_hiddingClientRequest" uhcr
+        WHERE uhcr.user_id = user_id_param AND uhcr.request_id = rq.id
+    )
+    OFFSET offset_param LIMIT limit_param;
+END;
+$$ LANGUAGE plpgsql;
 
 
 
