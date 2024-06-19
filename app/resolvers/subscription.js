@@ -19,13 +19,13 @@ const Subscription = {
         (message) => {
           debugInDevelopment('variables', variables);
           const isMessageForConversation = variables.conversation_ids
-           && variables.conversation_ids.includes(
-             message.conversation_id,
-           );
+            && variables.conversation_ids.includes(
+              message.conversation_id,
+            );
 
           // If isMyrequest is true, also check if message is for request
           const isMessageForRequest = variables.is_request
-           && variables.request_ids && variables.request_ids.includes(
+            && variables.request_ids && variables.request_ids.includes(
             message.request_id,
           );
 
@@ -46,8 +46,12 @@ const Subscription = {
       () => pubsub.asyncIterator('REQUEST_CREATED'),
       (payload, variables) => {
         debugInDevelopment('requestAdded subscription: payload', payload, 'variables', variables);
-        return variables.ids
-        && payload.requestAdded.some((request) => variables.ids.includes(request.job_id));
+        return (
+          Array.isArray(variables.job_ids) // Vérifie que job_ids est un tableau
+          && variables.job_ids.length > 0 // Vérifie que job_ids n'est pas vide
+          && payload.requestAdded.some((request) => variables.job_ids.includes(request.job_id)
+            && variables.user_id !== request.user_id)
+        );
       },
     ),
   },

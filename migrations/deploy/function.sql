@@ -272,167 +272,26 @@ BEGIN
 END; $$
 LANGUAGE plpgsql;
 
-
-/* -- Fonction de déclencheur pour mettre à jour viewed_conv dans la table request
-CREATE OR REPLACE FUNCTION update_viewed_conv()
-RETURNS trigger AS $$
+-- Function to insert a new row in the user_has_notViewedRequest table when a new request is inserted
+CREATE OR REPLACE FUNCTION add_not_viewed_request() RETURNS TRIGGER AS $$
+DECLARE
+    subscribers RECORD;
 BEGIN
-    -- Si un nouveau message est inséré ou un message existant est mis à jour et n'est pas vu, mettre à jour viewed_conv à false pour la requête correspondante
-    IF NEW.viewed = FALSE THEN
-        UPDATE request
-        SET viewed_conv = FALSE
-        WHERE id IN (
-            SELECT r.id
-            FROM request r
-            JOIN conversation c ON r.id = c.request_id
-            WHERE c.id = NEW.conversation_id
-        );
-    -- Si un message existant est mis à jour et est vu, vérifier si tous les messages sont vus pour cette requête et mettre à jour viewed_conv à true si c'est le cas
-    ELSE
-        IF NOT EXISTS (
-            SELECT 1
-            FROM message m
-            JOIN conversation c ON m.conversation_id = c.id
-            WHERE c.request_id IN (
-                SELECT r.id
-                FROM request r
-                JOIN conversation c ON r.id = c.request_id
-                WHERE c.id = NEW.conversation_id
-            )
-            AND m.viewed = FALSE
-        ) THEN
-            UPDATE request
-            SET viewed_conv = TRUE
-            WHERE id IN (
-                SELECT r.id
-                FROM request r
-                JOIN conversation c ON r.id = c.request_id
-                WHERE c.id = NEW.conversation_id
-            );
+    FOR subscribers IN SELECT * FROM subscription WHERE subscriber = 'jobRequest' AND subscriber_id @> ARRAY[NEW.job_id]
+    LOOP
+        IF subscribers.user_id != NEW.user_id THEN
+            INSERT INTO "user_has_notViewedRequest"(user_id, request_id, created_at, updated_at)
+            VALUES (subscribers.user_id, NEW.id, NOW(), NOW());
         END IF;
-    END IF;
-
+    END LOOP;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Fonction de déclencheur pour mettre à jour viewed_message dans la table conversation
-CREATE OR REPLACE FUNCTION update_viewed_message()
-RETURNS trigger AS $$
-BEGIN
-    -- Si un nouveau message est inséré ou un message existant est mis à jour et n'est pas vu, mettre à jour viewed_message à false pour la conversation correspondante
-    IF NEW.viewed = FALSE THEN
-        UPDATE conversation
-        SET viewed_message = FALSE
-        WHERE id = NEW.conversation_id;
-    -- Si un message existant est mis à jour et est vu, vérifier si tous les messages sont vus pour cette conversation et mettre à jour viewed_message à true si c'est le cas
-    ELSE
-        IF NOT EXISTS (
-            SELECT 1
-            FROM message
-            WHERE conversation_id = NEW.conversation_id
-            AND viewed = FALSE
-        ) THEN
-            UPDATE conversation
-            SET viewed_message = TRUE
-            WHERE id = NEW.conversation_id;
-        END IF;
-    END IF;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Déclencheur pour mettre à jour viewed_conv dans request après une mise à jour sur la table message
-CREATE TRIGGER trg_update_viewed_conv
-AFTER INSERT OR UPDATE ON message
+CREATE TRIGGER request_inserted
+AFTER INSERT ON request
 FOR EACH ROW
-EXECUTE FUNCTION update_viewed_conv();
-
--- Déclencheur pour mettre à jour viewed_message dans conversation après une mise à jour sur la table message
-CREATE TRIGGER trg_update_viewed_message
-AFTER INSERT OR UPDATE ON message
-FOR EACH ROW
-EXECUTE FUNCTION update_viewed_message(); */
-
-/* -- Fonction de déclencheur pour mettre à jour viewed_conv dans la table request
-CREATE OR REPLACE FUNCTION update_viewed_conv()
-RETURNS trigger AS $$
-BEGIN
-    -- Si un message n'est pas vu, mettre à jour viewed_conv à false pour la requête correspondante
-    UPDATE request
-    SET viewed_conv = FALSE
-    WHERE id IN (
-        SELECT r.id
-        FROM request r
-        JOIN conversation c ON r.id = c.request_id
-        WHERE c.id = NEW.conversation_id
-    );
-
-    -- Sinon, vérifier si tous les messages sont vus pour cette requête et mettre à jour viewed_conv à true si c'est le cas
-    IF NOT EXISTS (
-        SELECT 1
-        FROM message m
-        JOIN conversation c ON m.conversation_id = c.id
-        WHERE c.request_id IN (
-            SELECT r.id
-            FROM request r
-            JOIN conversation c ON r.id = c.request_id
-            WHERE c.id = NEW.conversation_id
-        )
-        AND m.viewed = FALSE
-    ) THEN
-        UPDATE request
-        SET viewed_conv = TRUE
-        WHERE id IN (
-            SELECT r.id
-            FROM request r
-            JOIN conversation c ON r.id = c.request_id
-            WHERE c.id = NEW.conversation_id
-        );
-    END IF;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Fonction de déclencheur pour mettre à jour viewed_message dans la table conversation
-CREATE OR REPLACE FUNCTION update_viewed_message()
-RETURNS trigger AS $$
-BEGIN
-    -- Si un message n'est pas vu, mettre à jour viewed_message à false pour la conversation correspondante
-    UPDATE conversation
-    SET viewed_message = FALSE
-    WHERE id = NEW.conversation_id;
-
-    -- Sinon, vérifier si tous les messages sont vus pour cette conversation et mettre à jour viewed_message à true si c'est le cas
-    IF NOT EXISTS (
-        SELECT 1
-        FROM message
-        WHERE conversation_id = NEW.conversation_id
-        AND viewed = FALSE
-    ) THEN
-        UPDATE conversation
-        SET viewed_message = TRUE
-        WHERE id = NEW.conversation_id;
-    END IF;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Déclencheur pour mettre à jour viewed_conv dans request après une mise à jour sur la table message
-CREATE TRIGGER trg_update_viewed_conv
-AFTER INSERT OR UPDATE message
-FOR EACH ROW
-EXECUTE FUNCTION update_viewed_conv();
-
--- Déclencheur pour mettre à jour viewed_message dans conversation après une mise à jour sur la table message
-CREATE TRIGGER trg_update_viewed_message
-AFTER INSERT OR UPDATE message
-FOR EACH ROW
-EXECUTE FUNCTION update_viewed_message();
- */
+EXECUTE FUNCTION add_not_viewed_request();
 
 
 
