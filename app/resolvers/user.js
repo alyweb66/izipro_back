@@ -25,7 +25,7 @@ const UserResolver = {
     const result = await dataSources.dataDB.request.getRequestByConversation(id, offset, limit);
     // exclude request where user_id is the same as id
     const requests = result.filter((request) => request.user_id !== id);
-    console.log('result', requests);
+    console.log('resultClientRequest', requests);
     return requests;
   },
   async messages({ id }, { conversationId, offset, limit }, { dataSources }) {
