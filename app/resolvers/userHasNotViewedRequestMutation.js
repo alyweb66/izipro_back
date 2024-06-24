@@ -17,12 +17,12 @@ async function userHasNotViewedRequest(_, { input }, { dataSources }) {
     if (dataSources.userData.id !== input.user_id) {
       throw new ApolloError('Unauthorized');
     }
-    // create hidden client request
-    const isCreatedHiddenClientRequest = await
+
+    const isCreatedNotViewedRequest = await
     dataSources.dataDB.userHasNotViewedRequest.createNotViewedRequest(
       input,
     );
-    if (!isCreatedHiddenClientRequest) {
+    if (!isCreatedNotViewedRequest) {
       throw new ApolloError('Error creating viewed request');
     }
 
@@ -41,12 +41,12 @@ async function deleteNotViewedRequest(_, { input }, { dataSources }) {
     if (dataSources.userData.id !== input.user_id) {
       throw new ApolloError('Unauthorized');
     }
-    // delete hidden client request
-    const isDeletedHiddenClientRequest = await
+
+    const isDeletedNotViewedRequest = await
     dataSources.dataDB.userHasNotViewedRequest.deleteNotViewedRequest(
       input,
     );
-    if (!isDeletedHiddenClientRequest) {
+    if (!isDeletedNotViewedRequest) {
       throw new ApolloError('Error deleting viewed request');
     }
 

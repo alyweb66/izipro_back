@@ -389,6 +389,47 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+CREATE OR REPLACE FUNCTION add_to_not_viewed() RETURNS TRIGGER AS $$
+DECLARE
+  sub_user_id INT;
+  req_id INT;
+BEGIN
+  -- Get the request_id from the conversation
+	SELECT request_id FROM conversation WHERE id = NEW.conversation_id INTO req_id;
+
+  -- Debugging: Log the retrieved request_id
+  RAISE NOTICE 'Request ID: %', req_id;
+
+  -- Loop through subscribers
+  FOR sub_user_id IN (
+    SELECT user_id 
+    FROM subscription 
+    WHERE subscriber IN ('request', 'conversation', 'clientConversation') 
+      AND (
+        (subscriber = 'request' AND req_id = ANY(subscriber_id)) OR
+        (subscriber <> 'request' AND NEW.conversation_id = ANY(subscriber_id))
+      )
+  ) LOOP
+    -- Debugging: Log the current sub_user_id
+    RAISE NOTICE 'Subscriber User ID: %', sub_user_id;
+
+    IF sub_user_id <> NEW.user_id THEN
+      -- Debugging: Log the insertion statement
+      RAISE NOTICE 'Inserting into user_has_notViewedConversation: user_id=%, conversation_id=%', sub_user_id, NEW.conversation_id;
+
+      INSERT INTO "user_has_notViewedConversation"(user_id, conversation_id, created_at) 
+      VALUES (sub_user_id, NEW.conversation_id, NOW());
+    END IF;
+  END LOOP;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER message_inserted
+AFTER INSERT ON message
+FOR EACH ROW
+EXECUTE FUNCTION add_to_not_viewed();
 
 COMMIT;
 

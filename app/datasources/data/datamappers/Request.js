@@ -16,7 +16,7 @@ class Request extends CoreDatamapper {
 
   QuerySubFunc = 'getRequestSubscription';
 
-  async getRequestByUserId(userId, offset, limit) {
+  async getRequestByUserId(userId, offset, limit = null) {
     debug('Finding request by user id');
     debug(`SQL function ${this.viewNameByConversation} called`);
     // call sql function
@@ -26,6 +26,38 @@ class Request extends CoreDatamapper {
     };
     const { rows } = await this.client.query(query);
     const request = rows;
+
+    return request;
+  }
+
+  async getRequestByRequestId(requestId) {
+    debug(`Finding request by request id: ${requestId}`);
+    debug(`SQL function ${this.viewNameByConversation} called`);
+    // call sql function
+    const query = {
+      text: `SELECT * FROM "${this.viewNameByConversation}" WHERE id = $1`,
+      values: [requestId],
+    };
+    const { rows } = await this.client.query(query);
+    const request = rows[0];
+    console.log('request', request);
+
+    return request;
+  }
+
+  async getRequestsConvId(userId) {
+    debug('Finding all conversation id of request by user id');
+    debug(`SQL function ${this.tableName} called`);
+    // call sql function
+    const query = {
+      text: `SELECT conversation.id FROM "${this.tableName}" 
+      JOIN conversation ON conversation.request_id = request.id
+      WHERE user_id = $1`,
+      values: [userId],
+    };
+    const { rows } = await this.client.query(query);
+    const idArray = rows.map((row) => row.id);
+    const request = idArray;
 
     return request;
   }

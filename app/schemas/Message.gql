@@ -7,7 +7,6 @@ type Message {
     conversation_id: Int!
     request_id: Int!
     created_at: String!
-    viewed: Boolean!
     media: [Media]
 }
 

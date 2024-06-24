@@ -61,7 +61,6 @@ m.content,
 m.user_id,
 m.conversation_id,
 m.created_at,
-m.viewed,
 c.request_id,
 json_agg(row_to_json((SELECT x FROM (SELECT rm.id, rm.url, rm.name) AS x))) AS "media"
 FROM "message" m
@@ -75,7 +74,6 @@ m.user_id,
 m.conversation_id,
 c.request_id,
 m.created_at,
-m.viewed,
 m.updated_at
 ORDER BY m.created_at DESC;
 

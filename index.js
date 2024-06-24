@@ -75,12 +75,12 @@ const wsServer = new WebSocketServer({
 });
 
 // Handle incoming connections
-wsServer.on('connection', (ws) => {
+/* wsServer.on('connection', (ws) => {
   console.log('A new client Connected!');
   ws.on('message', (message) => {
     console.log('received: %s', message);
   });
-});
+}); */
 
 // Log mutation or query data
 /* const logMutationData = (req, res, next) => {

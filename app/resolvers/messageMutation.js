@@ -99,7 +99,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
   }
 }
 
-async function updateViewedMessage(_, { input }, { dataSources }) {
+/* async function updateViewedMessage(_, { input }, { dataSources }) {
   debug('update viewed message');
   debugInDevelopment('input', input);
 
@@ -114,6 +114,6 @@ async function updateViewedMessage(_, { input }, { dataSources }) {
     debug('error', error);
     throw new Error(error);
   }
-}
+} */
 
-export default { createMessage, updateViewedMessage };
+export default { createMessage };
