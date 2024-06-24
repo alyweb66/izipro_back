@@ -117,7 +117,6 @@ async function deleteRequest(_, { input }, { dataSources }) {
     }
 
     const newInput = { deleted_at: new Date() };
-    console.log('newInput', newInput);
 
     const isDeletedRequest = await dataSources.dataDB.request.update(input.id, newInput);
 
