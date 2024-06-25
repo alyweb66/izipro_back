@@ -20,17 +20,31 @@ class Conversation extends CoreDatamapper {
     return request;
   }
 
-  async updateUpdatedAtConversation(conversationId) {
+  async updateUpdatedAtConversation(conversationId, userId) {
     debug('Updating updated_at conversation');
     debug(`SQL function ${this.tableName} called`);
     // call sql function
     const query = {
-      text: `UPDATE "${this.tableName}" SET updated_at = NOW() WHERE id = $1`,
-      values: [conversationId],
+      text: `UPDATE "${this.tableName}" SET updated_at = NOW(), sender = $2 WHERE id = $1`,
+      values: [conversationId, userId],
     };
     const { rowCount } = await this.client.query(query);
     const request = rowCount;
 console.log('requestupdatedat', request);
+    return request;
+  }
+
+  async updateConversation(id) {
+    debug('Updating conversation');
+    debug(`SQL function ${this.tableName} called`);
+    // call sql function
+    const query = {
+      text: `UPDATE "${this.tableName}" SET sender = 0 WHERE id = $1`,
+      values: [id],
+    };
+    const { rowCount } = await this.client.query(query);
+    const request = rowCount;
+
     return request;
   }
 }

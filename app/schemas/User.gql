@@ -16,9 +16,13 @@ type User {
     role: String
     image: String
     description: String
-    requests(id: Int!, offset: Int!, limit: Int!): [Request]
+    requests(id: Int!, offset: Int!, limit: Int): [Request]
+    request(requestId: Int!): Request
+    conversationRequestIds: [Int]
     requestsConversations(offset: Int!, limit: Int!): [Request]
     messages(conversationId: Int!, offset: Int!, limit: Int! ): [Message!]!
+    userHasNotViewedRequest: [UserHasNotViewedRequest]
+    userHasNotViewedConversation: [UserHasNotViewedConversation]
     jobs: [UserHasJob]
     settings: [UserSettings]
     subscription: [UserSubscription]

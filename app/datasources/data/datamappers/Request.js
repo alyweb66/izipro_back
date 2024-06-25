@@ -12,9 +12,11 @@ class Request extends CoreDatamapper {
 
   QueryFunc = 'getRequestByJob';
 
+  QueryFuncByConversation = 'getMyConversationRequest';
+
   QuerySubFunc = 'getRequestSubscription';
 
-  async getRequestByUserId(userId, offset, limit) {
+  async getRequestByUserId(userId, offset, limit = null) {
     debug('Finding request by user id');
     debug(`SQL function ${this.viewNameByConversation} called`);
     // call sql function
@@ -24,7 +26,38 @@ class Request extends CoreDatamapper {
     };
     const { rows } = await this.client.query(query);
     const request = rows;
+
+    return request;
+  }
+
+  async getRequestByRequestId(requestId) {
+    debug(`Finding request by request id: ${requestId}`);
+    debug(`SQL function ${this.viewNameByConversation} called`);
+    // call sql function
+    const query = {
+      text: `SELECT * FROM "${this.viewNameByConversation}" WHERE id = $1`,
+      values: [requestId],
+    };
+    const { rows } = await this.client.query(query);
+    const request = rows[0];
     console.log('request', request);
+
+    return request;
+  }
+
+  async getRequestsConvId(userId) {
+    debug('Finding all conversation id of request by user id');
+    debug(`SQL function ${this.tableName} called`);
+    // call sql function
+    const query = {
+      text: `SELECT conversation.id FROM "${this.tableName}" 
+      JOIN conversation ON conversation.request_id = request.id
+      WHERE user_id = $1`,
+      values: [userId],
+    };
+    const { rows } = await this.client.query(query);
+    const idArray = rows.map((row) => row.id);
+    const request = idArray;
 
     return request;
   }
@@ -33,13 +66,21 @@ class Request extends CoreDatamapper {
     debug('Finding request by job id');
     debug(`SQL function ${this.QueryFunc} called`);
     // call sql function
-    const query = {
-      text: `SELECT * FROM ${this.QueryFunc} ($1, $2, $3, $4)`,
-      values: [jobId, userId, offset, limit],
-    };
-    const { rows } = await this.client.query(query);
-    const requestsByJob = rows;
-    return requestsByJob;
+    try {
+      const query = {
+        text: `SELECT * FROM ${this.QueryFunc} ($1, $2, $3, $4)`,
+        values: [jobId, userId, offset, limit],
+      };
+      const { rows } = await this.client.query(query);
+      const requestsByJob = rows;
+
+      return requestsByJob;
+    } catch (error) {
+      console.log('error', error);
+    }
+
+    // Add the following return statement
+    return null;
   }
 
   async getSubscritpionRequest(jobId, userId, requestId, offset = 0, limit = 1) {
@@ -59,33 +100,21 @@ class Request extends CoreDatamapper {
 
   async getRequestByConversation(userId, offset = 0, limit = 3) {
     debug('Finding request by user conversation');
-    debug(`SQL function ${this.viewNameByConversation} called`);
+    debug(`SQL function ${this.QueryFuncByConversation} called`);
     // call sql function
-    const query = {
-      text: `SELECT * FROM "${this.viewNameByConversation}" WHERE EXISTS (
-        SELECT 1
-        FROM json_array_elements(conversation) AS conv
-        WHERE conv->>'user_1' = $1 OR conv->>'user_2' = $1
-        ) OFFSET $2 LIMIT $3`,
-      values: [userId, offset, limit],
-    };
+    try {
+      const query = {
+        text: `SELECT * FROM ${this.QueryFuncByConversation}($1, $2, $3)`,
+        values: [userId, offset, limit],
+      };
 
-    const { rows } = await this.client.query(query);
-    const request = rows;
-console.log('request', request);
-    // exclude request id who is in the user_has_hiddingClientRequest table
-    const query2 = {
-      text: 'SELECT * FROM "user_has_hiddingClientRequest" WHERE user_id = $1',
-      values: [userId],
-    };
-    const { rows: rows2 } = await this.client.query(query2);
-    const hiddenRequests = rows2;
-    // filter the request
-    const requestWithoutHidden = request.filter(
-      (requestQuery) => !hiddenRequests.some((hidden) => hidden.request_id === requestQuery.id),
-    );
+      const { rows } = await this.client.query(query);
 
-    return requestWithoutHidden;
+      return rows;
+    } catch (error) {
+      debug('error', error);
+    }
+    return null;
   }
 }
 export default Request;

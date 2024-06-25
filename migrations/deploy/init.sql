@@ -95,6 +95,7 @@ CREATE TABLE "request"(
    "range" INT NOT NULL,
    "user_id" INT NOT NULL REFERENCES "user"(id),
    "job_id" INT NOT NULL REFERENCES "job"(id),
+   "viewed_conv" BOOLEAN NOT NULL DEFAULT FALSE,
    "deleted_at" timestamptz,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
@@ -105,6 +106,7 @@ CREATE TABLE "conversation"(
    "user_1" INT NOT NULL REFERENCES "user"(id),
    "user_2" INT NOT NULL REFERENCES "user"(id),
    "request_id" INT NOT NULL REFERENCES "request"(id),
+   "sender" INT NOT NULL DEFAULT 0,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
    /* Check if the two participants are different */
@@ -173,6 +175,22 @@ CREATE TABLE "user_has_job"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "user_id" INT NOT NULL REFERENCES "user"(id),
    "job_id" INT NOT NULL REFERENCES "job"(id),
+   "created_at" timestamptz NOT NULL DEFAULT now(),
+   "updated_at" timestamptz
+);
+
+CREATE TABLE "user_has_notViewedRequest"(
+   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   "user_id" INT NOT NULL REFERENCES "user"(id),
+   "request_id" INT NOT NULL REFERENCES "request"(id),
+   "created_at" timestamptz NOT NULL DEFAULT now(),
+   "updated_at" timestamptz
+);
+
+CREATE TABLE "user_has_notViewedConversation"(
+   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   "user_id" INT NOT NULL REFERENCES "user"(id),
+   "conversation_id" INT NOT NULL REFERENCES "conversation"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );

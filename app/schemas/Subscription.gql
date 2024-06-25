@@ -1,6 +1,6 @@
 type Subscription {
     messageAdded(conversation_ids: [Int!], request_ids: [Int], is_request: Boolean ): [Message!]
-    requestAdded(ids: [Int!]): [Request]
+    requestAdded(job_ids: [Int!], user_id: Int!): [Request]
     requestDeleted: Request
 }
 

@@ -1,0 +1,6 @@
+extend type Mutation {
+  # UserHasHiddenClientRequest mutations
+  userHasNotViewedRequest(input: UserHasNotViewedRequestInput!): Boolean
+  deleteNotViewedRequest(input: UserHasNotViewedRequestInput!): Boolean
+  
+}

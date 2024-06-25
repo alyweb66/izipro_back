@@ -1,0 +1,12 @@
+type UserHasNotViewedConversation {
+    id: Int!
+    user_id: Int!
+    conversation_id: Int!
+    created_at: String
+    updated_at: String
+}
+
+input UserHasNotViewedConversationInput {
+    user_id: Int!
+    conversation_id: [Int!]
+}

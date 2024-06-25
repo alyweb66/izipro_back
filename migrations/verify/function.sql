@@ -11,5 +11,7 @@ SELECT * FROM insert_user_has_job(null, null);
 SELECT * FROM insert_subscription(null, null);
 SELECT * FROM getRequestSubscription(null);
 SELECT * FROM getRequestByJob(null);
+SELECT * FROM getMyConversationRequest(null);
+SELECT * FROM add_not_viewed_request(null);
 
 ROLLBACK;
