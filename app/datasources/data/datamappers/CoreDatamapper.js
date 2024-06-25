@@ -74,7 +74,6 @@ class CoreDatamapper {
   async findByUser(userId) {
     debug('add new entities to dataLoader');
     const record = await this.findByUserIdsLoader.load(userId);
-    console.log('subscritpion', record);
     return record || null;
   }
 

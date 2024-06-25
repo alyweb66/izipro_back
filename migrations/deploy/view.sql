@@ -20,7 +20,7 @@ r.lat,
 r.city, 
 r.range, 
 r.user_id, 
-r.job_id, 
+r.job_id,
 u.first_name, 
 u.last_name,
 u.denomination, 
@@ -40,7 +40,13 @@ LEFT JOIN (
     GROUP BY "request_id"
 ) rm ON rm."request_id" = r."id"
 LEFT JOIN (
-    SELECT "request_id", json_agg(json_build_object('id', id, 'user_1', user_1, 'user_2', user_2, 'updated_at', updated_at)) AS conversation 
+    SELECT "request_id", json_agg(json_build_object(
+        'id', id, 
+        'user_1', user_1, 
+        'user_2', user_2,
+        'request_id', request_id, 
+        'sender', sender,
+        'updated_at', updated_at)) AS conversation 
     FROM "conversation"
     GROUP BY "request_id"
 ) c ON c."request_id" = r."id"

@@ -10,6 +10,10 @@ const UserResolver = {
     debug(`get all request from user id: ${id}, offset ${offset}, limit ${limit}`);
     return dataSources.dataDB.request.getRequestByUserId(id, offset, limit);
   },
+  request({ id }, { requestId }, { dataSources }) {
+    debug(`get request by id: ${id}`);
+    return dataSources.dataDB.request.getRequestByRequestId(requestId);
+  },
   jobs({ id }, _, { dataSources }) {
     dataSources.dataDB.userHasJob.cache.clear();
     debug(`get all jobs from user id: ${id}`);
@@ -25,7 +29,6 @@ const UserResolver = {
     const result = await dataSources.dataDB.request.getRequestByConversation(id, offset, limit);
     // exclude request where user_id is the same as id
     const requests = result.filter((request) => request.user_id !== id);
-    console.log('result', requests);
     return requests;
   },
   async messages({ id }, { conversationId, offset, limit }, { dataSources }) {
@@ -45,6 +48,18 @@ const UserResolver = {
   subscription({ id }, _, { dataSources }) {
     debug(`get all subscription from user id: ${id}`);
     return dataSources.dataDB.subscription.findByUser(id);
+  },
+  userHasNotViewedRequest({ id }, _, { dataSources }) {
+    debug(`get all has viewed request from user id: ${id}`);
+    return dataSources.dataDB.userHasNotViewedRequest.findByUser(id);
+  },
+  userHasNotViewedConversation({ id }, _, { dataSources }) {
+    debug(`get all has viewed conversation from user id: ${id}`);
+    return dataSources.dataDB.userHasNotViewedConversation.findByUser(id);
+  },
+  conversationRequestIds({ id }, _, { dataSources }) {
+    debug(`get all conversation id from user id: ${id}`);
+    return dataSources.dataDB.request.getRequestsConvId(id);
   },
 };
 
