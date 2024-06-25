@@ -393,34 +393,67 @@ CREATE OR REPLACE FUNCTION add_to_not_viewed() RETURNS TRIGGER AS $$
 DECLARE
   sub_user_id INT;
   req_id INT;
+  found BOOLEAN := FALSE;
 BEGIN
   -- Get the request_id from the conversation
-	SELECT request_id FROM conversation WHERE id = NEW.conversation_id INTO req_id;
+  SELECT request_id FROM conversation WHERE id = NEW.conversation_id INTO req_id;
 
   -- Debugging: Log the retrieved request_id
   RAISE NOTICE 'Request ID: %', req_id;
 
-  -- Loop through subscribers
+  -- Loop through subscribers for 'conversation' and 'clientConversation' first
   FOR sub_user_id IN (
     SELECT user_id 
     FROM subscription 
-    WHERE subscriber IN ('request', 'conversation', 'clientConversation') 
-      AND (
-        (subscriber = 'request' AND req_id = ANY(subscriber_id)) OR
-        (subscriber <> 'request' AND NEW.conversation_id = ANY(subscriber_id))
-      )
+    WHERE subscriber IN ('conversation', 'clientConversation') 
+      AND NEW.conversation_id = ANY(subscriber_id)
   ) LOOP
+    found := TRUE;
     -- Debugging: Log the current sub_user_id
     RAISE NOTICE 'Subscriber User ID: %', sub_user_id;
 
     IF sub_user_id <> NEW.user_id THEN
-      -- Debugging: Log the insertion statement
-      RAISE NOTICE 'Inserting into user_has_notViewedConversation: user_id=%, conversation_id=%', sub_user_id, NEW.conversation_id;
+      -- Check if the pair (sub_user_id, NEW.conversation_id) already exists
+      IF NOT EXISTS (
+        SELECT 1 FROM "user_has_notViewedConversation" 
+        WHERE user_id = sub_user_id AND conversation_id = NEW.conversation_id
+      ) THEN
+        -- Debugging: Log the insertion statement
+        RAISE NOTICE 'Inserting into user_has_notViewedConversation: user_id=%, conversation_id=%', sub_user_id, NEW.conversation_id;
 
-      INSERT INTO "user_has_notViewedConversation"(user_id, conversation_id, created_at) 
-      VALUES (sub_user_id, NEW.conversation_id, NOW());
+        INSERT INTO "user_has_notViewedConversation"(user_id, conversation_id, created_at) 
+        VALUES (sub_user_id, NEW.conversation_id, NOW());
+      END IF;
     END IF;
   END LOOP;
+
+  -- If no subscribers were found for 'conversation' and 'clientConversation', check 'request'
+  IF NOT found THEN
+    FOR sub_user_id IN (
+      SELECT user_id 
+      FROM subscription 
+      WHERE subscriber = 'request' 
+        AND req_id = ANY(subscriber_id)
+    ) LOOP
+      -- Debugging: Log the current sub_user_id
+      RAISE NOTICE 'Subscriber User ID: %', sub_user_id;
+
+      IF sub_user_id <> NEW.user_id THEN
+        -- Check if the pair (sub_user_id, NEW.conversation_id) already exists
+        IF NOT EXISTS (
+          SELECT 1 FROM "user_has_notViewedConversation" 
+          WHERE user_id = sub_user_id AND conversation_id = NEW.conversation_id
+        ) THEN
+          -- Debugging: Log the insertion statement
+          RAISE NOTICE 'Inserting into user_has_notViewedConversation: user_id=%, conversation_id=%', sub_user_id, NEW.conversation_id;
+
+          INSERT INTO "user_has_notViewedConversation"(user_id, conversation_id, created_at) 
+          VALUES (sub_user_id, NEW.conversation_id, NOW());
+        END IF;
+      END IF;
+    END LOOP;
+  END IF;
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
