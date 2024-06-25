@@ -348,6 +348,26 @@ async function deleteUser(_, { id }, { dataSources, res }) {
     };
 
     dataSources.dataDB.user.update(id, cleanUser);
+
+    // delete all subscriptions of the user
+    const deletedSubscription = await dataSources.dataDB.subscription.deleteByUserId(id);
+    if (!deletedSubscription) {
+      throw new ApolloError('Error deleting subscription', 'BAD_REQUEST');
+    }
+
+    // delete all notViewedConversation of the user
+    const deletedNotViewedConversation = await
+    dataSources.dataDB.notViewedConversation.deleteByUserId(id);
+    if (!deletedNotViewedConversation) {
+      throw new ApolloError('Error deleting notViewedConversation', 'BAD_REQUEST');
+    }
+
+    // delete user setting
+    const deletedUserSetting = await dataSources.dataDB.userSetting.deleteByUserId(id);
+    if (!deletedUserSetting) {
+      throw new ApolloError('Error deleting user setting', 'BAD_REQUEST');
+    }
+
     logout(null, { id }, { dataSources, res });
     return true;
   } catch (err) {
