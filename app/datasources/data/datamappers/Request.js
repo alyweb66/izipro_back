@@ -19,7 +19,7 @@ class Request extends CoreDatamapper {
   async getRequestByUserId(userId, offset, limit = null) {
     debug('Finding request by user id');
     debug(`SQL function ${this.viewNameByConversation} called`);
-    // call sql function
+
     const query = {
       text: `SELECT * FROM "${this.viewNameByConversation}" WHERE user_id = $1 AND deleted_at IS NULL OFFSET $2 LIMIT $3`,
       values: [userId, offset, limit],
@@ -40,7 +40,6 @@ class Request extends CoreDatamapper {
     };
     const { rows } = await this.client.query(query);
     const request = rows[0];
-    console.log('request', request);
 
     return request;
   }
@@ -48,7 +47,7 @@ class Request extends CoreDatamapper {
   async getRequestsConvId(userId) {
     debug('Finding all conversation id of request by user id');
     debug(`SQL function ${this.tableName} called`);
-    // call sql function
+
     const query = {
       text: `SELECT conversation.id FROM "${this.tableName}" 
       JOIN conversation ON conversation.request_id = request.id
@@ -65,7 +64,7 @@ class Request extends CoreDatamapper {
   async getRequestByJobId(jobId, userId, offset, limit) {
     debug('Finding request by job id');
     debug(`SQL function ${this.QueryFunc} called`);
-    // call sql function
+
     try {
       const query = {
         text: `SELECT * FROM ${this.QueryFunc} ($1, $2, $3, $4)`,
@@ -76,17 +75,16 @@ class Request extends CoreDatamapper {
 
       return requestsByJob;
     } catch (error) {
-      console.log('error', error);
+      debug(error);
     }
 
-    // Add the following return statement
     return null;
   }
 
   async getSubscritpionRequest(jobId, userId, requestId, offset = 0, limit = 1) {
     debug('Finding request by job id');
     debug(`SQL function ${this.QuerySubFunc} called`);
-    // call sql function
+
     const query = {
       text: `SELECT * FROM ${this.QuerySubFunc} ($1, $2, $4, $5)
       WHERE id = $3`,
@@ -101,7 +99,7 @@ class Request extends CoreDatamapper {
   async getRequestByConversation(userId, offset = 0, limit = 3) {
     debug('Finding request by user conversation');
     debug(`SQL function ${this.QueryFuncByConversation} called`);
-    // call sql function
+
     try {
       const query = {
         text: `SELECT * FROM ${this.QueryFuncByConversation}($1, $2, $3)`,

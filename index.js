@@ -50,10 +50,43 @@ app.use(express.json());
 const filename = url.fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
-app.use('/public', express.static(path.join(dirname, 'public')));
+// Initialize cache and dataSources once
+const cache = new InMemoryLRUCache({
+  maxSize: 2 ** 20 * 100,
+  clearOnMutation: true,
+});
+const dataSources = { dataDB: new DataDB({ cache }) };
 
 // middleware to handle file uploads
 app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
+
+// Middleware to get user data and attach to request
+app.use(async (req, res, next) => {
+  try {
+    if (req.headers.cookie) {
+      req.userData = await getUserByToken(req, res, dataSources);
+    } else {
+      req.userData = null;
+    }
+
+    // Attach userData to dataSources
+    dataSources.userData = req.userData;
+  } catch (error) {
+    debug('error', error);
+    req.userData = null;
+  }
+  next();
+});
+// Authentication Middleware
+const authenticate = (req, res, next) => {
+  if (!req.userData) {
+    return res.status(403).send('Access denied');
+  }
+  return next();
+};
+
+// Protect static files route with authentication
+app.use('/public', authenticate, express.static(path.join(dirname, 'public')));
 
 // The `listen` method launches a web server.
 const httpServer = http.createServer(app);
@@ -69,12 +102,11 @@ const schema = makeExecutableSchema({
 const wsServer = new WebSocketServer({
   // This is the `httpServer` we created in a previous step.
   server: httpServer,
-  // Pass a different path here if app.use
   // serves expressMiddleware at a different path
   path: '/subscriptions',
 });
 
-// Handle incoming connections
+// Log incoming connections
 /* wsServer.on('connection', (ws) => {
   console.log('A new client Connected!');
   ws.on('message', (message) => {
@@ -113,10 +145,7 @@ const server = new ApolloServer({
       },
     },
   ],
-  cache: new InMemoryLRUCache({
-    maxSize: 2 ** 20 * 100,
-    clearOnMutation: true,
-  }),
+  cache,
 });
 /* app.use((req, res, next) => {
   console.log('Request headers:', req.headers);
@@ -132,16 +161,15 @@ app.use(
   }),
   // bodyParser.json({ limit: '50mb' }),
   expressMiddleware(server, {
-    context: async ({ req, res }) => {
-      // Get the user token from the headers.
-      let userData = null;
-
-      const { cache } = server;
-      const dataSources = {
+    context: async ({ req, res }) => ({ res, req, dataSources })
+    // let userData = null;
+    //  const { cache } = server;
+    /* const dataSources = {
         dataDB: new DataDB({ cache }),
-        userData,
-      };
+        userData: req.userData,
+      }; */
 
+    /* // Get the user token from the headers.
       if (req.headers.cookie !== undefined) {
         debug('cookie in headers');
         userData = await getUserByToken(req, res, dataSources);
@@ -149,18 +177,12 @@ app.use(
         dataSources.userData = userData;
       } else {
         debug('no cookie in headers');
-        /* if (req.body.operationName !== ('Login' || 'Register' || 'ProRegister')) {
-          serverLogout(null, null, { res });
-        } */
+
         dataSources.userData = null;
         debugInDevelopment('dataSources', dataSources);
-      }
-      return {
-        res,
-        req,
-        dataSources,
-      };
-    },
+      } */
+
+    ,
   }),
 );
 

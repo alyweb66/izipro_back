@@ -42,7 +42,6 @@ const UserResolver = {
       limit,
     );
     const messageASC = messageDESC.sort((a, b) => a.created_at - b.created_at);
-    console.log('messageASC', messageASC);
     return messageASC;
   },
   subscription({ id }, _, { dataSources }) {

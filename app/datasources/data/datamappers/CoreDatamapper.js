@@ -162,7 +162,6 @@ class CoreDatamapper {
 
     const result = await this.client.query(preparedQuery);
     const row = result.rows[0];
-    console.log('update row', row);
 
     return row;
   }
@@ -175,6 +174,17 @@ class CoreDatamapper {
    */
   async delete(id) {
     const result = await this.client.query(`DELETE FROM "${this.tableName}" WHERE id = $1`, [id]);
+    return !!result.rowCount;
+  }
+
+  /**
+   * delete an existing entity
+   *
+   * @param {number} id - id of the entity to modify
+   * @returns an boolean
+   */
+  async deleteByUserId(userId) {
+    const result = await this.client.query(`DELETE FROM "${this.tableName}" WHERE user_id = $1`, [userId]);
     return !!result.rowCount;
   }
 

@@ -30,7 +30,7 @@ class Conversation extends CoreDatamapper {
     };
     const { rowCount } = await this.client.query(query);
     const request = rowCount;
-console.log('requestupdatedat', request);
+
     return request;
   }
 

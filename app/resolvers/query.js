@@ -65,8 +65,6 @@ export default {
       limit,
     );
 
-    // if clientRequests length is less than limit, refetch the requests
-console.log('requestByJob', result);
     return result;
   },
 
