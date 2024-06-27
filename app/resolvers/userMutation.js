@@ -40,7 +40,6 @@ function secureEnv() {
 
 // function to delete the files from the public folder
 async function deleteFile(file) {
-  console.log('file', file);
   if (!file) {
     debugInDevelopment('No file to delete');
     return;
@@ -79,7 +78,7 @@ async function createUserFunction(_, { input }, { dataSources }) {
     // Check if siret is already in the database
     if (input.siret) {
       const existingSiret = await dataSources.dataDB.user.findBySiret(input.siret);
-      console.log('existingSiret', existingSiret);
+
       if (existingSiret) {
         debugInDevelopment('Siret already exists in the database');
         return { __typename: 'ExistingSiret', error: 'Siret already exists in the database' };
@@ -193,7 +192,7 @@ async function login(_, { input }, { dataSources, res }) {
       throw new ApolloError('EIncorrect email or password', 'BAD_REQUEST');
     }
     // Create a token
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
+    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1m' });
 
     // activeSession or not that is the question
     let refreshToken;
@@ -272,7 +271,6 @@ async function login(_, { input }, { dataSources, res }) {
 }
 
 async function logout(_, { id }, { dataSources, res }) {
-  console.log('logoutId', id);
   debug('logout is starting');
   try {
     // Controle if it's the good user who want to logout
@@ -348,6 +346,26 @@ async function deleteUser(_, { id }, { dataSources, res }) {
     };
 
     dataSources.dataDB.user.update(id, cleanUser);
+
+    // delete all subscriptions of the user
+    const deletedSubscription = await dataSources.dataDB.subscription.deleteByUserId(id);
+    if (!deletedSubscription) {
+      throw new ApolloError('Error deleting subscription', 'BAD_REQUEST');
+    }
+
+    // delete all notViewedConversation of the user
+    const deletedNotViewedConversation = await
+    dataSources.dataDB.notViewedConversation.deleteByUserId(id);
+    if (!deletedNotViewedConversation) {
+      throw new ApolloError('Error deleting notViewedConversation', 'BAD_REQUEST');
+    }
+
+    // delete user setting
+    const deletedUserSetting = await dataSources.dataDB.userSetting.deleteByUserId(id);
+    if (!deletedUserSetting) {
+      throw new ApolloError('Error deleting user setting', 'BAD_REQUEST');
+    }
+
     logout(null, { id }, { dataSources, res });
     return true;
   } catch (err) {

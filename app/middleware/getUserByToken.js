@@ -60,12 +60,14 @@ export default async function getUserByToken(req, res, dataSources) {
         dataSources.dataDB.user.cache.clear();
 
         const user = await dataSources.dataDB.user.findByPk(verifyRefreshToken.id);
-
+         console.log('user', user);
         if (!user) {
           debugInDevelopment('refreshToken: user failed');
           serverLogout(null, null, { res });
           throw new ApolloError('User not found', 'BAD_REQUEST');
         }
+         console.log('refreshToken', refreshToken);
+         console.log('user.refresh_token', user.refresh_token);
         if (user.refresh_token !== refreshToken) {
           debugInDevelopment('refreshToken: refresh_token failed', verifyRefreshToken);
           serverLogout(null, null, { res });
@@ -83,6 +85,14 @@ export default async function getUserByToken(req, res, dataSources) {
           serverLogout(null, null, { res });
         }
 
+        const cookieOptions = {
+          httpOnly: true,
+          sameSite: 'strict',
+          secure: secureEnv(),
+          domain: 'localhost',
+          path: '/',
+        };
+
         // Add the new token to the cookies
         let TokenCookie;
         let refreshTokenCookie;
@@ -91,9 +101,7 @@ export default async function getUserByToken(req, res, dataSources) {
             'auth-token',
             newToken,
             {
-              httpOnly: true,
-              sameSite: 'strict',
-              secure: secureEnv(),
+              ...cookieOptions,
               maxAge: tokenData.exp,
             },
           );
@@ -101,9 +109,7 @@ export default async function getUserByToken(req, res, dataSources) {
             'refresh-token',
             refreshToken,
             {
-              httpOnly: true,
-              sameSite: 'strict',
-              secure: secureEnv(),
+              ...cookieOptions,
               maxAge: tokenData.exp,
             },
           );
@@ -112,18 +118,14 @@ export default async function getUserByToken(req, res, dataSources) {
             'auth-token',
             newToken,
             {
-              httpOnly: true,
-              sameSite: 'strict',
-              secure: secureEnv(),
+              ...cookieOptions,
             },
           );
           refreshTokenCookie = cookie.serialize(
             'refresh-token',
             refreshToken,
             {
-              httpOnly: true,
-              sameSite: 'strict',
-              secure: secureEnv(),
+              ...cookieOptions,
             },
           );
         }
@@ -138,7 +140,7 @@ export default async function getUserByToken(req, res, dataSources) {
           const userData = null;
           return userData;
         }
-        debug('Failed to verify refresh token');
+        debug('Failed to verify refresh token', refreshTokenError);
         throw new ApolloError('refresh token expired', 'BAD_REQUEST');
       }
     }
