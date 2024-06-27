@@ -4,6 +4,9 @@ import Debug from 'debug';
 import { ApolloError, AuthenticationError } from 'apollo-server-core';
 import serverLogout from './serverLogout.js';
 import pubsub from './pubSub.js';
+import RefreshToken from '../datasources/data/datamappers/refreshToken.js';
+
+const refreshTokenInstance = new RefreshToken();
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:getUserByToken`);
 
@@ -12,12 +15,7 @@ function debugInDevelopment(message = '', value = '') {
     debug('⚠️', message, value);
   }
 }
-/* function sameSiteEnv() {
-  if (process.env.NODE_ENV === 'development') {
-    return 'none';
-  }
-  return 'strict';
-} */
+
 function secureEnv() {
   if (process.env.NODE_ENV === 'development') {
     return false;
@@ -63,20 +61,18 @@ export default async function getUserByToken(req, res, dataSources) {
           debugInDevelopment('refreshToken: verifyRefreshToken failed');
           throw new ApolloError('Error token', 'BAD_REQUEST');
         }
-        // clear user cash
+        // clear user cache
         dataSources.dataDB.user.cache.clear();
 
-        const user = await dataSources.dataDB.user.findByPk(verifyRefreshToken.id);
+        const user = await refreshTokenInstance.getRefreshTokenByUserId(verifyRefreshToken.id);
 
-        console.log('user', user);
         if (!user) {
           debugInDevelopment('refreshToken: user failed');
           subscribeToLogout(verifyRefreshToken.id);
           serverLogout(null, null, { res });
           throw new ApolloError('User not found', 'BAD_REQUEST');
         }
-        console.log('refreshToken', refreshToken);
-        console.log('user.refresh_token', user.refresh_token);
+
         if (user.refresh_token !== refreshToken) {
           debugInDevelopment('refreshToken: refresh_token failed', verifyRefreshToken);
           subscribeToLogout(user.id);

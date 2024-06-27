@@ -192,7 +192,7 @@ async function login(_, { input }, { dataSources, res }) {
       throw new ApolloError('EIncorrect email or password', 'BAD_REQUEST');
     }
     // Create a token
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1m' });
+    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
 
     // activeSession or not that is the question
     let refreshToken;
