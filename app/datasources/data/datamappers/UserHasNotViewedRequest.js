@@ -22,7 +22,6 @@ class UserHasNotViewedRequest extends CoreDatamapper {
 
     const result = await this.client.query(preparedQuery);
     const { rows } = result;
-    console.log('update rows', rows);
 
     return rows;
   }
@@ -43,7 +42,6 @@ class UserHasNotViewedRequest extends CoreDatamapper {
 
     const result = await this.client.query(preparedQuery);
     const { rows } = result;
-    console.log('delete rows', rows);
 
     return rows;
   }
