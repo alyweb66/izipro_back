@@ -37,7 +37,7 @@ class User extends CoreDatamapper {
     };
     const { rows } = await this.client.query(query);
     const users = rows;
-    console.log('users', users);
+
     return users;
   }
 
@@ -51,7 +51,7 @@ class User extends CoreDatamapper {
     };
     const { rows } = await this.client.query(query);
     const siretResult = rows;
-    console.log('siret', siretResult);
+
     if (siretResult.length > 0 && siretResult[0].siret) {
       return true;
     }
