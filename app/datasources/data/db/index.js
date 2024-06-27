@@ -4,6 +4,13 @@ import pkg from 'pg';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:database`);
 
+function debugInDevelopment(message = '', value = '') {
+  if (process.env.NODE_ENV === 'development') {
+    debug('⚠️', message, value);
+  }
+}
+
+
 const { Pool } = pkg;
 const pool = new Pool();
 // Use the connection pool to connect to the database.
@@ -30,7 +37,7 @@ export default {
    * @returns {Promise} A Promise that resolves with the result of the query.
    */
   async query(...params) {
-    debug(...params);
+    debugInDevelopment(...params);
     queryCount += 1;
     debug(`Req n°${queryCount}`);
 
