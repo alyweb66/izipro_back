@@ -20,7 +20,7 @@ AS $$
 BEGIN
     -- delete old values
     DELETE FROM "subscription"
-    WHERE "subscription"."subscriber" = p_subscriber;
+    WHERE "subscription"."subscriber" = p_subscriber AND "subscription"."user_id" = p_user_id;
 
     -- Insert data into the subscription table
     RETURN QUERY
@@ -433,6 +433,7 @@ BEGIN
     FROM subscription 
     WHERE subscriber IN ('conversation', 'clientConversation') 
       AND NEW.conversation_id = ANY(subscriber_id)
+	  AND user_id <> NEW.user_id -- Exclude the sender's user_id
   ) LOOP
     found := TRUE;
     -- Debugging: Log the current sub_user_id
@@ -479,6 +480,7 @@ BEGIN
         END IF;
       END IF;
     END LOOP;
+
     ELSE
       -- Debugging: Log that no req_id was found
       RAISE NOTICE 'No request_id found for conversation_id: %', NEW.conversation_id;

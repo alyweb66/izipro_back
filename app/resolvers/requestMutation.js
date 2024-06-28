@@ -94,6 +94,26 @@ async function createRequest(_, { input }, { dataSources }) {
       dataSources.userData.id,
       requestId,
     );
+
+    // get subscription for request
+    const subscription = await dataSources.dataDB.subscription.findByUser(dataSources.userData.id);
+
+    // get the subscriber_id for request
+    const subscriberIds = subscription
+      .filter((sub) => sub.subscriber === 'request')
+      .flatMap((sub) => sub.subscriber_id);
+
+    // add request_id in the array of subscriber_id
+    subscriberIds.push(requestId);
+    // update subscription for request
+    const isUpdatedSubscription = await dataSources.dataDB.subscription.createSubscription(
+      dataSources.userData.id,
+      'request',
+      subscriberIds,
+    );
+
+    debug('isUpdatedSubscription', isUpdatedSubscription);
+
     debugInDevelopment('subscriptionResult', subscriptionResult);
     // publish the request to the client
     pubsub.publish('REQUEST_CREATED', {
