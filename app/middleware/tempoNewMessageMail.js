@@ -3,7 +3,7 @@ import { newMessageEmail } from './sendEmail.js';
 export default async function checkViewedBeforeSendEmail(message, dataSources) {
   const userId = await
   dataSources.dataDB.userHasNotViewedConversation.getUserByConversationId(message.conversation_id);
-console.log('userId', userId);
+
   if (!userId) {
     return false;
   }
