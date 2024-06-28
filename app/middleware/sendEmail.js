@@ -95,4 +95,25 @@ export async function newMessageEmail(user, request, message) {
   await transporter.sendMail(mailOptions);
 }
 
+export async function newRequestEmail(user, request) {
+  console.log('email sending');
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: `${user.email}`,
+    subject: 'Nouvelle demande',
+    html: `
+      <img src="${logo}" alt="logo" style="width: 100px; height: 100px; margin-bottom: 20px;"/>
+      <h1 style="fontSize: 1.2rem">Nouvelle demande</h1>
+      <h2 style="fontSize: 1rem"> Demande : <span style="color: #028eef">${request.title}</span></h2>
+
+      <p>Bonjour,</p>
+      <p>Vous avez reçu une nouvelle demande le ${new Date(Number(request.created_at)).toLocaleString('fr-FR', { hour12: false })} de <span style="color: #f37c04;">${user.role === 'pro' ? user.denomination : `${user.first_name} ${user.last_name}`} </span></p>
+      <p>Description:</p>
+      <p>${request.description}</p>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
+
 export default { sendPasswordResetEmail, confirmEmail, changePasswordEmail };

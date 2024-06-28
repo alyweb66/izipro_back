@@ -7,6 +7,7 @@ import path from 'path';
 import url from 'url'; */
 import pubsub from '../middleware/pubSub.js';
 import handleUploadedFiles from '../middleware/handleUploadFiles.js';
+import checkViewedBeforeSendRequestEmail from '../middleware/tempoNewClientRequest.js';
 
 // __dirname not on module, this is the way to use it.
 /* const fileName = url.fileURLToPath(import.meta.url);
@@ -89,6 +90,7 @@ async function createRequest(_, { input }, { dataSources }) {
       || (isCreatedRequestMedia.insert_request_has_media === false)) {
       throw new ApolloError('Error creating request_has_media');
     }
+    // get the request with media and conversation
     const subscriptionResult = await dataSources.dataDB.request.getSubscritpionRequest(
       [isCreatedRequest.job_id],
       dataSources.userData.id,
@@ -111,6 +113,11 @@ async function createRequest(_, { input }, { dataSources }) {
       'request',
       subscriberIds,
     );
+
+    // send email to users that have not viewed the request after 5 min
+    setTimeout(() => {
+      checkViewedBeforeSendRequestEmail(subscriptionResult[0], dataSources);
+    }, 1000);
 
     debug('isUpdatedSubscription', isUpdatedSubscription);
 
