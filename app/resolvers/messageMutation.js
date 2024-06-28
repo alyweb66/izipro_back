@@ -4,6 +4,7 @@ import {
 } from 'apollo-server-core';
 import handleUploadedFiles from '../middleware/handleUploadFiles.js';
 import pubsub from '../middleware/pubSub.js';
+import checkViewedBeforeSendEmail from '../middleware/tempoNewMessageMail.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:messageMutation`);
 
@@ -75,7 +76,6 @@ async function createMessage(_, { id, input }, { dataSources }) {
 
     await dataSources.dataDB.conversation.updateUpdatedAtConversation(
       input.conversation_id,
-      dataSources.userData.id,
     );
 
     const message = await dataSources.dataDB.message.findByUserConversation(
@@ -84,6 +84,11 @@ async function createMessage(_, { id, input }, { dataSources }) {
       0,
       1,
     );
+
+    // send email to users that have not viewed the conversation after 5 min
+    setTimeout(() => {
+      checkViewedBeforeSendEmail(message[0], dataSources);
+    }, 60000);
 
     debugInDevelopment('subscriptionResult', message);
     // publish the request to the client
