@@ -89,7 +89,7 @@ const authenticate = (req, res, next) => {
 
 // Protect static files route with authentication
 app.use('/public', authenticate, express.static(path.join(dirname, 'public')));
-
+app.use('/logo', express.static(path.join(dirname, 'logo')));
 // The `listen` method launches a web server.
 const httpServer = http.createServer(app);
 
