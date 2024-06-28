@@ -40,7 +40,7 @@ CREATE TABLE "user"(
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );
-
+-- 4 subscriber : request, jobrequest, clientConversation, conversation
 CREATE TABLE "subscription"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "user_id" INT NOT NULL REFERENCES "user"(id),

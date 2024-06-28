@@ -45,6 +45,37 @@ class UserHasNotViewedRequest extends CoreDatamapper {
 
     return rows;
   }
+
+  async getUserNotViewedConv(requestId) {
+    debug('get user not viewed request');
+    const query = {
+      text: `
+     SELECT 
+        "user"."id",
+        "user"."email",
+        "user"."first_name",
+        "user"."last_name",
+        "user_setting"."range",
+        "user"."lng",
+        "user"."lat",
+        "user"."denomination"
+      FROM 
+        "${this.tableName}"
+      LEFT JOIN 
+        "user" ON "user"."id" = "user_has_notViewedRequest"."user_id"
+      LEFT JOIN 
+        "user_setting" ON "user_setting"."user_id" = "user"."id"
+      WHERE 
+        "request_id" = $1;
+  `,
+      values: [requestId],
+    };
+
+    const result = await this.client.query(query);
+    const { rows } = result;
+
+    return rows;
+  }
 }
 
 export default UserHasNotViewedRequest;
