@@ -79,7 +79,7 @@ export default async function getUserByToken(req, res, dataSources) {
           serverLogout(null, null, { res });
           throw new ApolloError('Error token', 'BAD_REQUEST');
         }
-        const newToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1m' });
+        const newToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
 
         // get expiration date of verifyRefreshToken to add this date to the cookie expiration date
         const tokenData = jwt.decode(user.refresh_token);

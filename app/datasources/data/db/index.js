@@ -10,7 +10,6 @@ function debugInDevelopment(message = '', value = '') {
   }
 }
 
-
 const { Pool } = pkg;
 const pool = new Pool();
 // Use the connection pool to connect to the database.
