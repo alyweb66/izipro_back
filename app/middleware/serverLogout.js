@@ -1,7 +1,7 @@
 import Debug from 'debug';
 import { ApolloError } from 'apollo-server-core';
 import cookie from 'cookie';
-// import pubSub from './pubSub.js';
+// import pubsub from './pubSub.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:mutation`);
 
@@ -16,6 +16,10 @@ export default async function serverLogout(_, __, { res }) {
   debug('serverLogout is starting');
 
   try {
+    // console.log('userId', userId);
+    // const user = { id: userId, value: true };
+    // publish the request to the client
+
     const pastDate = new Date(0);
     const TokenCookie = cookie.serialize(
       'auth-token',

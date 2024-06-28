@@ -3,6 +3,10 @@ import cookie from 'cookie';
 import Debug from 'debug';
 import { ApolloError, AuthenticationError } from 'apollo-server-core';
 import serverLogout from './serverLogout.js';
+import pubsub from './pubSub.js';
+import RefreshToken from '../datasources/data/datamappers/refreshToken.js';
+
+const refreshTokenInstance = new RefreshToken();
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:getUserByToken`);
 
@@ -11,17 +15,19 @@ function debugInDevelopment(message = '', value = '') {
     debug('⚠️', message, value);
   }
 }
-/* function sameSiteEnv() {
-  if (process.env.NODE_ENV === 'development') {
-    return 'none';
-  }
-  return 'strict';
-} */
+
 function secureEnv() {
   if (process.env.NODE_ENV === 'development') {
     return false;
   }
   return true;
+}
+
+function subscribeToLogout(userId) {
+  const subValue = { id: userId, value: true };
+  pubsub.publish('LOGOUT', {
+    logout: subValue,
+  });
 }
 
 export default async function getUserByToken(req, res, dataSources) {
@@ -47,33 +53,33 @@ export default async function getUserByToken(req, res, dataSources) {
     if (tokenError instanceof jwt.TokenExpiredError) {
       // If the error is token expired, refresh the token
       debug('refreshToken is starting');
-
+      let verifyRefreshToken;
       try {
-        const verifyRefreshToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+        verifyRefreshToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
         if (!verifyRefreshToken) {
           debugInDevelopment('refreshToken: verifyRefreshToken failed');
           throw new ApolloError('Error token', 'BAD_REQUEST');
         }
-
-        // clear user cash
+        // clear user cache
         dataSources.dataDB.user.cache.clear();
 
-        const user = await dataSources.dataDB.user.findByPk(verifyRefreshToken.id);
-         console.log('user', user);
+        const user = await refreshTokenInstance.getRefreshTokenByUserId(verifyRefreshToken.id);
+
         if (!user) {
           debugInDevelopment('refreshToken: user failed');
+          subscribeToLogout(verifyRefreshToken.id);
           serverLogout(null, null, { res });
           throw new ApolloError('User not found', 'BAD_REQUEST');
         }
-         console.log('refreshToken', refreshToken);
-         console.log('user.refresh_token', user.refresh_token);
+
         if (user.refresh_token !== refreshToken) {
           debugInDevelopment('refreshToken: refresh_token failed', verifyRefreshToken);
+          subscribeToLogout(user.id);
           serverLogout(null, null, { res });
           throw new ApolloError('Error token', 'BAD_REQUEST');
         }
-        const newToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1m' });
+        const newToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
 
         // get expiration date of verifyRefreshToken to add this date to the cookie expiration date
         const tokenData = jwt.decode(user.refresh_token);
@@ -82,6 +88,7 @@ export default async function getUserByToken(req, res, dataSources) {
 
         // if token is expired
         if (expDate < 0) {
+          subscribeToLogout(user.id);
           serverLogout(null, null, { res });
         }
 
@@ -134,8 +141,10 @@ export default async function getUserByToken(req, res, dataSources) {
         const userData = { id: user.id, role: user.role };
         return userData;
       } catch (refreshTokenError) {
+        const userId = verifyRefreshToken.id;
         // If the error is token expired or user not found, i clear the cookies
         if (refreshTokenError instanceof jwt.TokenExpiredError) {
+          subscribeToLogout(userId);
           serverLogout(null, null, { res });
           const userData = null;
           return userData;

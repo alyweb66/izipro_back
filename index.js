@@ -62,18 +62,20 @@ app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
 
 // Middleware to get user data and attach to request
 app.use(async (req, res, next) => {
-  try {
-    if (req.headers.cookie) {
-      req.userData = await getUserByToken(req, res, dataSources);
-    } else {
+  if (!req.userData) {
+    try {
+      if (req.headers.cookie) {
+        req.userData = await getUserByToken(req, res, dataSources);
+      } else {
+        req.userData = null;
+      }
+
+      // Attach userData to dataSources
+      dataSources.userData = req.userData;
+    } catch (error) {
+      debug('error', error);
       req.userData = null;
     }
-
-    // Attach userData to dataSources
-    dataSources.userData = req.userData;
-  } catch (error) {
-    debug('error', error);
-    req.userData = null;
   }
   next();
 });
