@@ -56,6 +56,16 @@ const Subscription = {
     ),
   },
 
+  logout: {
+    subscribe: withFilter(
+      () => pubsub.asyncIterator('LOGOUT'),
+      (payload, variables) => {
+        debugInDevelopment('logout subscription: payload', payload, 'variables', variables);
+        return variables.user_id === payload.logout.id;
+      },
+    ),
+  },
+
 };
 
 export default Subscription;

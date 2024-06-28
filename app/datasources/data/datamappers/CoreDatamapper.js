@@ -189,7 +189,7 @@ class CoreDatamapper {
   }
 
   // function to create a cache key and configure cache
-  cacheQuery(preparedQuery, ttl) {
+  cacheQuery(preparedQuery, ttl = 1) {
     const cacheKey = createHash('sha1').update(JSON.stringify(preparedQuery)).digest('base64');
     debug(`cacheKey: ${cacheKey}`);
     return this.cache.get(cacheKey).then((entry) => {

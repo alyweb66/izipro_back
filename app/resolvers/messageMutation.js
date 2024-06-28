@@ -78,17 +78,17 @@ async function createMessage(_, { id, input }, { dataSources }) {
       dataSources.userData.id,
     );
 
-    const subscriptionResult = await dataSources.dataDB.message.findByUserConversation(
+    const message = await dataSources.dataDB.message.findByUserConversation(
       // dataSources.userData.id,
       input.conversation_id,
       0,
       1,
     );
 
-    debugInDevelopment('subscriptionResult', subscriptionResult);
+    debugInDevelopment('subscriptionResult', message);
     // publish the request to the client
     pubsub.publish('MESSAGE_CREATED', {
-      messageAdded: subscriptionResult,
+      messageAdded: message,
     });
 
     debug('created media undefined if no media', isCreatedMessageMedia);

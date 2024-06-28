@@ -1,9 +1,14 @@
 type Subscription {
     messageAdded(conversation_ids: [Int!], request_ids: [Int], is_request: Boolean ): [Message!]
     requestAdded(job_ids: [Int!], user_id: Int!): [Request]
+    logout(user_id: Int!): Logout
     requestDeleted: Request
 }
 
+type Logout {
+    id: Int!
+    value: Boolean!
+}
 
 type UserSubscription {
     id: Int!
