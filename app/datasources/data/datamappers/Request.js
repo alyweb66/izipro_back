@@ -51,7 +51,7 @@ class Request extends CoreDatamapper {
     const query = {
       text: `SELECT conversation.id FROM "${this.tableName}" 
       JOIN conversation ON conversation.request_id = request.id
-      WHERE user_id = $1`,
+      WHERE request.user_id = $1`,
       values: [userId],
     };
     const { rows } = await this.client.query(query);

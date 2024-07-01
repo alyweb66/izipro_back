@@ -6,23 +6,27 @@ import {
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:user`);
 
 const UserResolver = {
-  requests({ id }, { offset, limit }, { dataSources }) {
+  async requests({ id }, { offset, limit }, { dataSources }) {
     debug(`get all request from user id: ${id}, offset ${offset}, limit ${limit}`);
-    return dataSources.dataDB.request.getRequestByUserId(id, offset, limit);
+    const requests = await dataSources.dataDB.request.getRequestByUserId(id, offset, limit);
+    return requests;
   },
-  request({ id }, { requestId }, { dataSources }) {
+  async request({ id }, { requestId }, { dataSources }) {
     debug(`get request by id: ${id}`);
-    return dataSources.dataDB.request.getRequestByRequestId(requestId);
+    const request = await dataSources.dataDB.request.getRequestByRequestId(requestId);
+    return request;
   },
-  jobs({ id }, _, { dataSources }) {
+  async jobs({ id }, _, { dataSources }) {
     dataSources.dataDB.userHasJob.cache.clear();
     debug(`get all jobs from user id: ${id}`);
-    return dataSources.dataDB.userHasJob.findByUser(id);
+    const jobs = await dataSources.dataDB.userHasJob.findByUser(id);
+    return jobs;
   },
-  settings({ id }, _, { dataSources }) {
+  async settings({ id }, _, { dataSources }) {
     dataSources.dataDB.userSetting.cache.clear();
     debug(`get setting from user id: ${id}`);
-    return dataSources.dataDB.userSetting.findByUser(id);
+    const setting = await dataSources.dataDB.userSetting.findByUser(id);
+    return setting;
   },
   async requestsConversations({ id }, { offset, limit }, { dataSources }) {
     debug(`get all requests by conversations from user id: ${id}`);
@@ -44,21 +48,27 @@ const UserResolver = {
     const messageASC = messageDESC.sort((a, b) => a.created_at - b.created_at);
     return messageASC;
   },
-  subscription({ id }, _, { dataSources }) {
+  async subscription({ id }, _, { dataSources }) {
     debug(`get all subscription from user id: ${id}`);
-    return dataSources.dataDB.subscription.findByUser(id);
+    const sub = await dataSources.dataDB.subscription.findByUser(id);
+    return sub;
   },
-  userHasNotViewedRequest({ id }, _, { dataSources }) {
+  async userHasNotViewedRequest({ id }, _, { dataSources }) {
     debug(`get all has viewed request from user id: ${id}`);
-    return dataSources.dataDB.userHasNotViewedRequest.findByUser(id);
+    dataSources.dataDB.userHasNotViewedRequest.cache.clear();
+    const notViewed = await dataSources.dataDB.userHasNotViewedRequest.findByUser(id);
+    return notViewed;
   },
-  userHasNotViewedConversation({ id }, _, { dataSources }) {
-    debug(`get all has viewed conversation from user id: ${id}`);
-    return dataSources.dataDB.userHasNotViewedConversation.findByUser(id);
+  async userHasNotViewedConversation({ id }, _, { dataSources }) {
+    debug(`get all has not viewed conversation from user id: ${id}`);
+    dataSources.dataDB.userHasNotViewedConversation.findByUserIdsLoader.clear(id);
+    const notConvViewed = await dataSources.dataDB.userHasNotViewedConversation.findByUser(id);
+    return notConvViewed;
   },
-  conversationRequestIds({ id }, _, { dataSources }) {
+  async conversationRequestIds({ id }, _, { dataSources }) {
     debug(`get all conversation id from user id: ${id}`);
-    return dataSources.dataDB.request.getRequestsConvId(id);
+    const conv = await dataSources.dataDB.request.getRequestsConvId(id);
+    return conv;
   },
 };
 

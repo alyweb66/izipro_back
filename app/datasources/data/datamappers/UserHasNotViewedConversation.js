@@ -25,6 +25,22 @@ class UserHasNotViewedConversation extends CoreDatamapper {
 
     return rows;
   }
+
+  async getUserByConversationId(conversationId) {
+    debug('get user by conversation id');
+    const query = {
+      text: `
+    SELECT user_id FROM "${this.tableName}"
+    WHERE conversation_id = $1
+  `,
+      values: [conversationId],
+    };
+
+    const result = await this.client.query(query);
+    const { rows } = result;
+
+    return rows;
+  }
 }
 
 export default UserHasNotViewedConversation;

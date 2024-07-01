@@ -7,6 +7,7 @@ import path from 'path';
 import url from 'url'; */
 import pubsub from '../middleware/pubSub.js';
 import handleUploadedFiles from '../middleware/handleUploadFiles.js';
+import checkViewedBeforeSendRequestEmail from '../middleware/processNewClientRequestMail.js';
 
 // __dirname not on module, this is the way to use it.
 /* const fileName = url.fileURLToPath(import.meta.url);
@@ -89,11 +90,37 @@ async function createRequest(_, { input }, { dataSources }) {
       || (isCreatedRequestMedia.insert_request_has_media === false)) {
       throw new ApolloError('Error creating request_has_media');
     }
+    // get the request with media and conversation
     const subscriptionResult = await dataSources.dataDB.request.getSubscritpionRequest(
       [isCreatedRequest.job_id],
       dataSources.userData.id,
       requestId,
     );
+
+    // get subscription for request
+    const subscription = await dataSources.dataDB.subscription.findByUser(dataSources.userData.id);
+
+    // get the subscriber_id for request
+    const subscriberIds = subscription
+      .filter((sub) => sub.subscriber === 'request')
+      .flatMap((sub) => sub.subscriber_id);
+
+    // add request_id in the array of subscriber_id
+    subscriberIds.push(requestId);
+    // update subscription for request
+    const isUpdatedSubscription = await dataSources.dataDB.subscription.createSubscription(
+      dataSources.userData.id,
+      'request',
+      subscriberIds,
+    );
+
+    // send email to users that have not viewed the request after 5 min
+    setTimeout(() => {
+      checkViewedBeforeSendRequestEmail(subscriptionResult[0], dataSources);
+    }, 60000);
+
+    debug('isUpdatedSubscription', isUpdatedSubscription);
+
     debugInDevelopment('subscriptionResult', subscriptionResult);
     // publish the request to the client
     pubsub.publish('REQUEST_CREATED', {
