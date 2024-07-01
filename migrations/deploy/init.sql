@@ -40,7 +40,7 @@ CREATE TABLE "user"(
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );
-
+-- 4 subscriber : request, jobrequest, clientConversation, conversation
 CREATE TABLE "subscription"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "user_id" INT NOT NULL REFERENCES "user"(id),
@@ -106,7 +106,6 @@ CREATE TABLE "conversation"(
    "user_1" INT NOT NULL REFERENCES "user"(id),
    "user_2" INT NOT NULL REFERENCES "user"(id),
    "request_id" INT NOT NULL REFERENCES "request"(id),
-   "sender" INT NOT NULL DEFAULT 0,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
    /* Check if the two participants are different */

@@ -25,7 +25,7 @@ async function createConversation(_, { id, input }, { dataSources }) {
   }
 }
 
-async function updateConversation(_, { input }, { dataSources }) {
+/* async function updateConversation(_, { input }, { dataSources }) {
   debug('update conversation');
 
   try {
@@ -39,5 +39,5 @@ async function updateConversation(_, { input }, { dataSources }) {
     debug('error', error);
     throw new ApolloError('Error updating conversation');
   }
-}
-export default { createConversation, updateConversation };
+} */
+export default { createConversation };

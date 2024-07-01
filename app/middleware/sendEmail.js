@@ -1,5 +1,7 @@
 import nodemailer from 'nodemailer';
 
+const logo = 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Fanta_logo_%282009%29.jpg';
+
 // Configure the SMTP carrier for sending emails
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
@@ -15,6 +17,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Email to send the password reset link
 export async function sendPasswordResetEmail(email, resetToken) {
   const mailOptions = {
     from: process.env.EMAIL_USER,
@@ -33,6 +36,7 @@ export async function sendPasswordResetEmail(email, resetToken) {
   await transporter.sendMail(mailOptions);
 }
 
+// Email to send the account confirmation link
 export async function confirmEmail(email, confirmToken) {
   const mailOptions = {
     from: process.env.EMAIL_USER,
@@ -51,18 +55,62 @@ export async function confirmEmail(email, confirmToken) {
   await transporter.sendMail(mailOptions);
 }
 
+// Email to send the password change confirmation
 export async function changePasswordEmail(email) {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: `${email}`,
     subject: 'Changement de mot de passe',
     html: `
+    <img src="
       <h1>Confirmation de changement de mot de passe</h1>
 
       <p>Bonjour,</p>
       <p>Votre mot de passe a bien été changé :</p>
       
       <p>Si vous n'êtes pas l'auteur de cette action, veuillez nous contacter</p>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
+
+// Email to send the new message notification
+export async function newMessageEmail(user, request, message) {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: `${user.email}`,
+    subject: 'Nouveau message',
+    html: `
+      <img src="${logo}" alt="logo" style="width: 100px; height: 100px; margin-bottom: 20px;"/>
+      <h1 style="fontSize: 1.2rem">Nouveau message</h1>
+      <h2 style="fontSize: 1rem"> Demande concernée : <span style="color: #028eef">${request.title}</span></h2>
+
+      <p>Bonjour,</p>
+      <p>Vous avez reçu un nouveau message le ${new Date(Number(message.created_at)).toLocaleString('fr-FR', { hour12: false })} de <span style="color: #f37c04;">${user.role === 'pro' ? user.denomination : `${user.first_name} ${user.last_name}`} </span></p>
+      <p>Message:</p>
+      <p>${message.content ? message.content : 'Connectez vous pour consulter les images ou documents'}</p>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
+
+// Email to send the new request notification
+export async function newRequestEmail(user, request) {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: `${user.email}`,
+    subject: 'Nouvelle demande',
+    html: `
+      <img src="${logo}" alt="logo" style="width: 100px; height: 100px; margin-bottom: 20px;"/>
+      <h1 style="fontSize: 1.2rem">Nouvelle demande</h1>
+      <h2 style="fontSize: 1rem"> Demande : <span style="color: #028eef">${request.title}</span></h2>
+
+      <p>Bonjour,</p>
+      <p>Vous avez reçu une nouvelle demande le ${new Date(Number(request.created_at)).toLocaleString('fr-FR', { hour12: false })} de <span style="color: #f37c04;">${user.role === 'pro' ? user.denomination : `${user.first_name} ${user.last_name}`} </span></p>
+      <p>Description:</p>
+      <p>${request.message}</p>
     `,
   };
 

@@ -20,13 +20,13 @@ class Conversation extends CoreDatamapper {
     return request;
   }
 
-  async updateUpdatedAtConversation(conversationId, userId) {
+  async updateUpdatedAtConversation(conversationId) {
     debug('Updating updated_at conversation');
     debug(`SQL function ${this.tableName} called`);
     // call sql function
     const query = {
-      text: `UPDATE "${this.tableName}" SET updated_at = NOW(), sender = $2 WHERE id = $1`,
-      values: [conversationId, userId],
+      text: `UPDATE "${this.tableName}" SET updated_at = NOW() WHERE id = $1`,
+      values: [conversationId],
     };
     const { rowCount } = await this.client.query(query);
     const request = rowCount;
@@ -34,7 +34,7 @@ class Conversation extends CoreDatamapper {
     return request;
   }
 
-  async updateConversation(id) {
+  /*  async updateConversation(id) {
     debug('Updating conversation');
     debug(`SQL function ${this.tableName} called`);
     // call sql function
@@ -46,7 +46,7 @@ class Conversation extends CoreDatamapper {
     const request = rowCount;
 
     return request;
-  }
+  } */
 }
 
 export default Conversation;

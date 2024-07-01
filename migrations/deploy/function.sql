@@ -1,6 +1,35 @@
 -- Deploy izi:function to pg
 
 BEGIN;
+
+-- Function to insert a new row in the subscription table and return table
+CREATE OR REPLACE FUNCTION insert_subscription(
+    p_user_id INT,
+    p_subscriber TEXT,
+    p_subscriber_id INT[]
+)
+RETURNS TABLE(
+    id INT,
+    user_id INT,
+    subscriber TEXT,
+    subscriber_id INT[],
+    created_at timestamptz,
+    updated_at timestamptz
+)
+AS $$
+BEGIN
+    -- delete old values
+    DELETE FROM "subscription"
+    WHERE "subscription"."subscriber" = p_subscriber AND "subscription"."user_id" = p_user_id;
+
+    -- Insert data into the subscription table
+    RETURN QUERY
+    INSERT INTO "subscription" ("user_id", "subscriber", "subscriber_id")
+    VALUES (p_user_id, p_subscriber, p_subscriber_id)
+    RETURNING *;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Function to insert a new row in the request_media table
 CREATE OR REPLACE FUNCTION insert_media(data jsonb)
 RETURNS INTEGER[] AS $$
@@ -172,7 +201,6 @@ BEGIN
          'user_1', conv.user_1, 
          'user_2', conv.user_2, 
          'request_id', conv.request_id,
-         'sender', conv.sender,
          'updated_at', conv.updated_at)) AS conversation
         FROM "conversation" conv
         GROUP BY "request_id"
@@ -252,7 +280,6 @@ BEGIN
             'user_1', conv.user_1, 
             'user_2', conv.user_2, 
             'request_id', conv.request_id,
-            'sender', conv.sender,
             'updated_at', conv.updated_at)) AS conversation
         FROM "conversation" conv
         GROUP BY "request_id"
@@ -361,7 +388,6 @@ BEGIN
                 'user_1', "conversation".user_1, 
                 'user_2', "conversation".user_2,
                 'request_id', "conversation".request_id, 
-                'sender', "conversation".sender,
                 'updated_at', "conversation".updated_at)) AS conversation 
             FROM "conversation"
             GROUP BY "request_id"
@@ -407,6 +433,7 @@ BEGIN
     FROM subscription 
     WHERE subscriber IN ('conversation', 'clientConversation') 
       AND NEW.conversation_id = ANY(subscriber_id)
+	  AND user_id <> NEW.user_id -- Exclude the sender's user_id
   ) LOOP
     found := TRUE;
     -- Debugging: Log the current sub_user_id
@@ -429,6 +456,7 @@ BEGIN
 
   -- If no subscribers were found for 'conversation' and 'clientConversation', check 'request'
   IF NOT found THEN
+  IF req_id IS NOT NULL THEN
     FOR sub_user_id IN (
       SELECT user_id 
       FROM subscription 
@@ -452,6 +480,11 @@ BEGIN
         END IF;
       END IF;
     END LOOP;
+
+    ELSE
+      -- Debugging: Log that no req_id was found
+      RAISE NOTICE 'No request_id found for conversation_id: %', NEW.conversation_id;
+    END IF;
   END IF;
 
   RETURN NEW;
