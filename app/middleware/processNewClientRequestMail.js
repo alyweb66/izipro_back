@@ -4,7 +4,7 @@ import { newRequestEmail } from './sendEmail.js';
 export default async function checkViewedBeforeSendRequestEmail(request, dataSources) {
   const userId = await
   dataSources.dataDB.userHasNotViewedRequest.getUserNotViewedConv(request.id);
-  console.log('userId', userId);
+
   if (!userId) {
     return false;
   }
@@ -31,10 +31,6 @@ export default async function checkViewedBeforeSendRequestEmail(request, dataSou
       );
     });
 
-    // const userData = await dataSources.dataDB.user.findByPk(userId[0].user_id);
-
-    // const request = await dataSources.dataDB.request.findByPk(message.request_id);
-console.log('filteredUsers', filteredUsers);
     if (filteredUsers && filteredUsers.length > 0) {
       filteredUsers.forEach((user) => {
         newRequestEmail(user, request);

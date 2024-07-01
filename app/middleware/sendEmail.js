@@ -96,7 +96,6 @@ export async function newMessageEmail(user, request, message) {
 }
 
 export async function newRequestEmail(user, request) {
-  console.log('email sending');
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: `${user.email}`,
@@ -109,7 +108,7 @@ export async function newRequestEmail(user, request) {
       <p>Bonjour,</p>
       <p>Vous avez reçu une nouvelle demande le ${new Date(Number(request.created_at)).toLocaleString('fr-FR', { hour12: false })} de <span style="color: #f37c04;">${user.role === 'pro' ? user.denomination : `${user.first_name} ${user.last_name}`} </span></p>
       <p>Description:</p>
-      <p>${request.description}</p>
+      <p>${request.message}</p>
     `,
   };
 
