@@ -4,7 +4,7 @@ import {
 } from 'apollo-server-core';
 import handleUploadedFiles from '../middleware/handleUploadFiles.js';
 import pubsub from '../middleware/pubSub.js';
-import checkViewedBeforeSendEmail from '../middleware/tempoNewMessageMail.js';
+import checkViewedBeforeSendEmail from '../middleware/processNewMessageMail.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:messageMutation`);
 

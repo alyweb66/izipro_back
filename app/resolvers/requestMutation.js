@@ -7,7 +7,7 @@ import path from 'path';
 import url from 'url'; */
 import pubsub from '../middleware/pubSub.js';
 import handleUploadedFiles from '../middleware/handleUploadFiles.js';
-import checkViewedBeforeSendRequestEmail from '../middleware/tempoNewClientRequest.js';
+import checkViewedBeforeSendRequestEmail from '../middleware/processNewClientRequestMail.js';
 
 // __dirname not on module, this is the way to use it.
 /* const fileName = url.fileURLToPath(import.meta.url);
@@ -117,7 +117,7 @@ async function createRequest(_, { input }, { dataSources }) {
     // send email to users that have not viewed the request after 5 min
     setTimeout(() => {
       checkViewedBeforeSendRequestEmail(subscriptionResult[0], dataSources);
-    }, 1000);
+    }, 60000);
 
     debug('isUpdatedSubscription', isUpdatedSubscription);
 

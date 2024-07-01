@@ -66,7 +66,8 @@ class UserHasNotViewedRequest extends CoreDatamapper {
       LEFT JOIN 
         "user_setting" ON "user_setting"."user_id" = "user"."id"
       WHERE 
-        "request_id" = $1;
+        "request_id" = $1
+      AND "user"."deleted_at" IS NULL;
   `,
       values: [requestId],
     };

@@ -48,9 +48,10 @@ const UserResolver = {
     debug(`get all subscription from user id: ${id}`);
     return dataSources.dataDB.subscription.findByUser(id);
   },
-  userHasNotViewedRequest({ id }, _, { dataSources }) {
+  async userHasNotViewedRequest({ id }, _, { dataSources }) {
     debug(`get all has viewed request from user id: ${id}`);
-    return dataSources.dataDB.userHasNotViewedRequest.findByUser(id);
+    const notViewed = await dataSources.dataDB.userHasNotViewedRequest.findByUser(id);
+    return notViewed;
   },
   userHasNotViewedConversation({ id }, _, { dataSources }) {
     debug(`get all has viewed conversation from user id: ${id}`);
