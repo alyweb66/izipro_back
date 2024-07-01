@@ -75,6 +75,7 @@ export async function changePasswordEmail(email) {
   await transporter.sendMail(mailOptions);
 }
 
+// Email to send the new message notification
 export async function newMessageEmail(user, request, message) {
   const mailOptions = {
     from: process.env.EMAIL_USER,
@@ -95,6 +96,7 @@ export async function newMessageEmail(user, request, message) {
   await transporter.sendMail(mailOptions);
 }
 
+// Email to send the new request notification
 export async function newRequestEmail(user, request) {
   const mailOptions = {
     from: process.env.EMAIL_USER,
