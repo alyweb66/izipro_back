@@ -15,5 +15,6 @@ type Query {
     jobs(ids: [Int!]): [Job]
     requestsByJob(ids: [Int!], offset: Int, limit: Int): [Request]
     settings: UserSettings!
+    rules: Rules!
     
 }
