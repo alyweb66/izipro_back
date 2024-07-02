@@ -15,6 +15,7 @@ SELECT * FROM "media" WHERE false;
 SELECT * FROM "message_has_media" WHERE false;
 SELECT * FROM "user_has_user" WHERE false;
 SELECT * FROM "job" WHERE false;
+SELECT * FROM "rules" WHERE false;
 SELECT * FROM "user_has_job" WHERE false;
 SELECT * FROM "event" WHERE false;
 SELECT * FROM "research" WHERE false;

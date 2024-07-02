@@ -36,6 +36,8 @@ CREATE TABLE "user"(
    "image" TEXT,
    "description" TEXT CHECK (LENGTH("description") <= 200),
    "role" TEXT NOT NULL,
+   "CGU" BOOLEAN NOT NULL DEFAULT FALSE,
+   "cookies" BOOLEAN NOT NULL DEFAULT FALSE,
    "deleted_at" timestamptz,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
@@ -61,12 +63,12 @@ CREATE TABLE "user_setting"(
    "updated_at" timestamptz
 );
 
-CREATE TABLE "type"(
+/* CREATE TABLE "type"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "name" TEXT CHECK (LENGTH("name") <= 50),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
-);
+); */
 
 CREATE TABLE "category"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -132,8 +134,16 @@ CREATE TABLE "media"(
   
 );
 
+CREATE TABLE "rules"(
+   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   "CGU" TEXT NULL,
+   "cookies" TEXT NULL,
+   "created_at" timestamptz NOT NULL DEFAULT now(),
+   "updated_at" timestamptz
+)
 
-CREATE TABLE "event"(
+
+/* CREATE TABLE "event"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "start_date" timestamptz,
    "end_date" timestamptz,
@@ -143,15 +153,15 @@ CREATE TABLE "event"(
    "type_id" INT NOT NULL REFERENCES "type"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
-);
+); */
 
-CREATE TABLE "research"(
+/* CREATE TABLE "research"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "localization" TEXT,
    "job_id" INT NOT NULL REFERENCES "job"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
-);
+); */
 
 
 CREATE TABLE "request_has_media"(
