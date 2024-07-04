@@ -117,4 +117,27 @@ export async function newRequestEmail(user, request) {
   await transporter.sendMail(mailOptions);
 }
 
+export async function contactSendEmail(data) {
+  console.log('send email', data);
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: `${process.env.EMAIL_USER}`,
+    subject: 'Nouveau message de contact',
+    html: `
+      <h1>Nouveau message de contact</h1>
+
+      ${data.enterprise ? `<p>Société: ${data.enterprise}</p>`
+    : `<p>Nom: ${data.last_name}</p>
+      <p>Prénom: ${data.first_name}</p>`}
+
+      <p>Email: ${data.email}</p>
+
+      <p>Message:</p>
+      <p>${data.description}</p>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
+
 export default { sendPasswordResetEmail, confirmEmail, changePasswordEmail };
