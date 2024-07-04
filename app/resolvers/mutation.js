@@ -8,6 +8,7 @@ import messageMutation from './messageMutation.js';
 import subscriptionMutation from './subscriptionMutation.js';
 import userHasViewedRequestMutation from './userHasNotViewedRequestMutation.js';
 import userHasNotViewedConversationMutation from './userHasNotViewedConversationMutation.js';
+import cookieConsentsMutation from './cookieConsentsMutation.js';
 
 export default {
   ...requestMutation,
@@ -20,5 +21,6 @@ export default {
   ...subscriptionMutation,
   ...userHasViewedRequestMutation,
   ...userHasNotViewedConversationMutation,
+  ...cookieConsentsMutation,
 
 };

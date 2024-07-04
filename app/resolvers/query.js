@@ -3,10 +3,10 @@ import Debug from 'debug';
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:query`);
 
 export default {
-  users(_, { ids, offset, limit }, { dataSources }) {
+  /* users(_, { ids, offset, limit }, { dataSources }) {
     debug(`get all users conversations where ids: ${ids}`);
     return dataSources.dataDB.user.findUsersByIds(ids, offset, limit);
-  },
+  }, */
   conversations(_, { offset, limit }, { dataSources }) {
     debug('get all conversations');
     return dataSources.dataDB.conversation.getConversationByUser(offset, limit);
@@ -25,19 +25,20 @@ export default {
   },
   user(_, __, { dataSources }) {
     debug(`get user with id ${dataSources.userData.id}`);
+    dataSources.dataDB.user.findByPkLoader.clear(dataSources.userData.id);
     return dataSources.dataDB.user.findByPk(dataSources.userData.id);
   },
-  requests(_, { offset, limit }, { dataSources }) {
+  /* requests(_, { offset, limit }, { dataSources }) {
     debug('get all requests');
     return dataSources.dataDB.request.findAll(offset, limit);
-  },
+  }, */
   request(_, { id }, { dataSources }) {
     debug(`get request with id ${id}`);
     return dataSources.dataDB.request.findByPk(id);
   },
-  medias(_, { offset, limit }, { dataSources }) {
+  medias(_, __, { dataSources }) {
     debug('get all medias');
-    return dataSources.dataDB.media.findAll(offset, limit);
+    return dataSources.dataDB.media.findAll();
   },
   media(_, { id }, { dataSources }) {
     debug(`get media with id ${id}`);
@@ -64,8 +65,14 @@ export default {
       offset,
       limit,
     );
-
     return result;
+  },
+
+  async rules(_, __, { dataSources }) {
+    debug('get all rules');
+    const rules = await dataSources.dataDB.rules.findAll();
+    console.log('rules', rules[0]);
+    return rules[0];
   },
 
 };

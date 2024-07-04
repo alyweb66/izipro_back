@@ -13,12 +13,14 @@ type User {
     lng: Float
     siret: String
     denomination: String
-    role: String
+    role: String!
+    CGU: Boolean!
     image: String
     description: String
     requests(id: Int!, offset: Int!, limit: Int): [Request]
     request(requestId: Int!): Request
     conversationRequestIds: [Int]
+    cookieConsents: CookieConsents
     requestsConversations(offset: Int!, limit: Int!): [Request]
     messages(conversationId: Int!, offset: Int!, limit: Int! ): [Message!]!
     userHasNotViewedRequest: [UserHasNotViewedRequest]
@@ -84,6 +86,7 @@ input UpdateUserInput {
     denomination: String @length(max: 50)
     lat: Float
     lng: Float
+    CGU: Boolean
 }
 
 input ForgotPasswordInput {

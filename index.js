@@ -29,7 +29,6 @@ import { InMemoryLRUCache } from '@apollo/utils.keyvaluecache';
 import typeDefs from './app/schemas/index.js';
 import resolvers from './app/resolvers/index.js';
 import getUserByToken from './app/middleware/getUserByToken.js';
-
 // class DataDB from dataSources
 import DataDB from './app/datasources/data/index.js';
 // import serverLogout from './app/middleware/serverLogout.js';

@@ -1,0 +1,15 @@
+type CookieConsents {
+    id: Int
+    user_id: Int
+    consented_at: String
+    cookies_necessary: Boolean
+    cookies_analytics: Boolean
+    cookies_marketing: Boolean
+}
+
+input CookieConsentInput {
+    id: Int
+    cookies_necessary: Boolean!
+    cookies_analytics: Boolean!
+    cookies_marketing: Boolean!
+}
