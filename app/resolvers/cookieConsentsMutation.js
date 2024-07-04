@@ -54,7 +54,7 @@ async function updateCookieConsents(_, { id, input }, { dataSources }) {
     if (!isUpdatedCookieConsents) {
       throw new ApolloError('Error updating cookie consents');
     }
-console.log(isUpdatedCookieConsents);
+
     return isUpdatedCookieConsents;
   } catch (error) {
     debugInDevelopment('Error updating cookie consents', error);

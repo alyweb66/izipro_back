@@ -9,6 +9,7 @@ import subscriptionMutation from './subscriptionMutation.js';
 import userHasViewedRequestMutation from './userHasNotViewedRequestMutation.js';
 import userHasNotViewedConversationMutation from './userHasNotViewedConversationMutation.js';
 import cookieConsentsMutation from './cookieConsentsMutation.js';
+import contactMutation from './contactMutation.js';
 
 export default {
   ...requestMutation,
@@ -22,5 +23,6 @@ export default {
   ...userHasViewedRequestMutation,
   ...userHasNotViewedConversationMutation,
   ...cookieConsentsMutation,
+  ...contactMutation,
 
 };
