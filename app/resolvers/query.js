@@ -71,6 +71,7 @@ export default {
   async rules(_, __, { dataSources }) {
     debug('get all rules');
     const rules = await dataSources.dataDB.rules.findAll();
+    console.log('rules', rules[0]);
     return rules[0];
   },
 

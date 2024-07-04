@@ -55,8 +55,9 @@ const UserResolver = {
   },
   async userHasNotViewedRequest({ id }, _, { dataSources }) {
     debug(`get all has viewed request from user id: ${id}`);
-    dataSources.dataDB.userHasNotViewedRequest.cache.clear();
+    dataSources.dataDB.userHasNotViewedRequest.findByUserIdsLoader.clear(id);
     const notViewed = await dataSources.dataDB.userHasNotViewedRequest.findByUser(id);
+    //console.log('notViewed', notViewed);
     return notViewed;
   },
   async userHasNotViewedConversation({ id }, _, { dataSources }) {
@@ -69,6 +70,13 @@ const UserResolver = {
     debug(`get all conversation id from user id: ${id}`);
     const conv = await dataSources.dataDB.request.getRequestsConvId(id);
     return conv;
+  },
+  async cookieConsents({ id }, _, { dataSources }) {
+    debug(`get all cookie consents from user id: ${id}`);
+    dataSources.dataDB.cookieConsents.findByUserIdsLoader.clear(id);
+    const cookieConsents = await dataSources.dataDB.cookieConsents.findByUser(id);
+    console.log('cookieConsents', cookieConsents[0]);
+    return cookieConsents[0];
   },
 };
 
