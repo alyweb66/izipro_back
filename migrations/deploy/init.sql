@@ -37,11 +37,22 @@ CREATE TABLE "user"(
    "description" TEXT CHECK (LENGTH("description") <= 200),
    "role" TEXT NOT NULL,
    "CGU" BOOLEAN NOT NULL DEFAULT FALSE,
-   "cookies" BOOLEAN NOT NULL DEFAULT FALSE,
    "deleted_at" timestamptz,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );
+
+CREATE TABLE "cookie_consents" (
+    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    "user_id" INT NOT NULL UNIQUE REFERENCES "user"(id),
+    "consented_at" timestamptz NOT NULL DEFAULT now(),
+    "ip_address" TEXT CHECK (LENGTH("ip_address") <= 50),
+    "cookies_necessary" BOOLEAN NOT NULL DEFAULT FALSE,
+    "cookies_analytics" BOOLEAN,
+    "cookies_marketing" BOOLEAN
+    "updated_at" timestamptz
+);
+
 -- 4 subscriber : request, jobrequest, clientConversation, conversation
 CREATE TABLE "subscription"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

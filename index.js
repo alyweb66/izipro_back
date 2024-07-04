@@ -29,7 +29,6 @@ import { InMemoryLRUCache } from '@apollo/utils.keyvaluecache';
 import typeDefs from './app/schemas/index.js';
 import resolvers from './app/resolvers/index.js';
 import getUserByToken from './app/middleware/getUserByToken.js';
-
 // class DataDB from dataSources
 import DataDB from './app/datasources/data/index.js';
 // import serverLogout from './app/middleware/serverLogout.js';
@@ -117,13 +116,13 @@ const wsServer = new WebSocketServer({
 }); */
 
 // Log mutation or query data
-const logMutationData = (req, res, next) => {
+/* const logMutationData = (req, res, next) => {
   if (req.method === 'POST') {
     console.log('Mutation data:', req.body);
   }
   next();
 };
-app.use(logMutationData);
+app.use(logMutationData); */
 
 // Hand in the schema we just created and have the
 // WebSocketServer start listening.
