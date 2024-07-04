@@ -15,6 +15,8 @@ DROP TABLE "research";
 DROP TABLE "event";
 DROP TABLE "conversation";
 DROP TABLE "request";
+DROP TABLE "rules";
+DROP TABLE "cookie_consents";
 DROP TABLE "job";
 DROP TABLE "category";
 DROP TABLE "type";

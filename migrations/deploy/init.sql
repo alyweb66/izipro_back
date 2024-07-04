@@ -36,10 +36,23 @@ CREATE TABLE "user"(
    "image" TEXT,
    "description" TEXT CHECK (LENGTH("description") <= 200),
    "role" TEXT NOT NULL,
+   "CGU" BOOLEAN NOT NULL DEFAULT FALSE,
    "deleted_at" timestamptz,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );
+
+CREATE TABLE "cookie_consents" (
+    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    "user_id" INT NOT NULL UNIQUE REFERENCES "user"(id),
+    "consented_at" timestamptz NOT NULL DEFAULT now(),
+    "ip_address" TEXT CHECK (LENGTH("ip_address") <= 50),
+    "cookies_necessary" BOOLEAN NOT NULL DEFAULT FALSE,
+    "cookies_analytics" BOOLEAN,
+    "cookies_marketing" BOOLEAN
+    "updated_at" timestamptz
+);
+
 -- 4 subscriber : request, jobrequest, clientConversation, conversation
 CREATE TABLE "subscription"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -61,12 +74,12 @@ CREATE TABLE "user_setting"(
    "updated_at" timestamptz
 );
 
-CREATE TABLE "type"(
+/* CREATE TABLE "type"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "name" TEXT CHECK (LENGTH("name") <= 50),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
-);
+); */
 
 CREATE TABLE "category"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -132,8 +145,16 @@ CREATE TABLE "media"(
   
 );
 
+CREATE TABLE "rules"(
+   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   "CGU" TEXT NULL,
+   "cookies" TEXT NULL,
+   "created_at" timestamptz NOT NULL DEFAULT now(),
+   "updated_at" timestamptz
+)
 
-CREATE TABLE "event"(
+
+/* CREATE TABLE "event"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "start_date" timestamptz,
    "end_date" timestamptz,
@@ -143,15 +164,15 @@ CREATE TABLE "event"(
    "type_id" INT NOT NULL REFERENCES "type"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
-);
+); */
 
-CREATE TABLE "research"(
+/* CREATE TABLE "research"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "localization" TEXT,
    "job_id" INT NOT NULL REFERENCES "job"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
-);
+); */
 
 
 CREATE TABLE "request_has_media"(
