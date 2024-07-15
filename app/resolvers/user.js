@@ -16,14 +16,13 @@ const UserResolver = {
     const request = await dataSources.dataDB.request.getRequestByRequestId(requestId);
     return request;
   },
-  async jobs({ id }, _, { dataSources }) {
-    dataSources.dataDB.userHasJob.cache.clear();
+  jobs({ id }, _, { dataSources }) {
+    dataSources.dataDB.userHasJob.findByUserIdsLoader.clear(id);
     debug(`get all jobs from user id: ${id}`);
-    const jobs = await dataSources.dataDB.userHasJob.findByUser(id);
-    return jobs;
+    return dataSources.dataDB.userHasJob.findByUser(id);
   },
   async settings({ id }, _, { dataSources }) {
-    dataSources.dataDB.userSetting.cache.clear();
+    dataSources.dataDB.userSetting.findByUserIdsLoader.clear(id);
     debug(`get setting from user id: ${id}`);
     const setting = await dataSources.dataDB.userSetting.findByUser(id);
     return setting;
@@ -50,6 +49,7 @@ const UserResolver = {
   },
   async subscription({ id }, _, { dataSources }) {
     debug(`get all subscription from user id: ${id}`);
+    dataSources.dataDB.subscription.findByUserIdsLoader.clear(id);
     const sub = await dataSources.dataDB.subscription.findByUser(id);
     return sub;
   },
@@ -57,7 +57,7 @@ const UserResolver = {
     debug(`get all has viewed request from user id: ${id}`);
     dataSources.dataDB.userHasNotViewedRequest.findByUserIdsLoader.clear(id);
     const notViewed = await dataSources.dataDB.userHasNotViewedRequest.findByUser(id);
-    //console.log('notViewed', notViewed);
+    // console.log('notViewed', notViewed);
     return notViewed;
   },
   async userHasNotViewedConversation({ id }, _, { dataSources }) {

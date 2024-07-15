@@ -308,7 +308,7 @@ BEGIN
     LOOP
         IF subscribers.user_id != NEW.user_id THEN
             INSERT INTO "user_has_notViewedRequest"(user_id, request_id, created_at)
-            VALUES (subscribers.user_id, NEW.id, NOW(), NOW());
+            VALUES (subscribers.user_id, NEW.id, NOW());
         END IF;
     END LOOP;
     RETURN NEW;
