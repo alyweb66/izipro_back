@@ -107,6 +107,7 @@ async function createRequest(_, { input }, { dataSources }) {
 
     // add request_id in the array of subscriber_id
     subscriberIds.push(requestId);
+
     // update subscription for request
     const isUpdatedSubscription = await dataSources.dataDB.subscription.createSubscription(
       dataSources.userData.id,
