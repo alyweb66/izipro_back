@@ -34,6 +34,8 @@ const UserHasNotViewedConversationMutation = readFileSync(path.join(dirname, './
 const Rules = readFileSync(path.join(dirname, './Rules.gql'), 'utf8');
 const CookieConsents = readFileSync(path.join(dirname, './CookieConsents.gql'), 'utf8');
 const CookieConsentsMutation = readFileSync(path.join(dirname, './CookieConsentsMutation.gql'), 'utf8');
+const Contact = readFileSync(path.join(dirname, './Contact.gql'), 'utf8');
+const ContactMutation = readFileSync(path.join(dirname, './ContactMutation.gql'), 'utf8');
 
 const schema = `#graphql
 scalar validateEmail
@@ -68,6 +70,8 @@ scalar validateSiret
     ${Rules}
     ${CookieConsents}
     ${CookieConsentsMutation}
+    ${Contact}
+    ${ContactMutation}
 `;
 
 export default schema;
