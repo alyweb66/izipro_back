@@ -49,7 +49,7 @@ CREATE TABLE "cookie_consents" (
     "ip_address" TEXT CHECK (LENGTH("ip_address") <= 50),
     "cookies_necessary" BOOLEAN NOT NULL DEFAULT FALSE,
     "cookies_analytics" BOOLEAN,
-    "cookies_marketing" BOOLEAN
+    "cookies_marketing" BOOLEAN,
     "updated_at" timestamptz
 );
 
@@ -151,28 +151,7 @@ CREATE TABLE "rules"(
    "cookies" TEXT NULL,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
-)
-
-
-/* CREATE TABLE "event"(
-   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "start_date" timestamptz,
-   "end_date" timestamptz,
-   "all_day" BOOLEAN,
-   "user_id" INT NOT NULL REFERENCES "user"(id),
-   "user_id_1" INT NOT NULL REFERENCES "user"(id),
-   "type_id" INT NOT NULL REFERENCES "type"(id),
-   "created_at" timestamptz NOT NULL DEFAULT now(),
-   "updated_at" timestamptz
-); */
-
-/* CREATE TABLE "research"(
-   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "localization" TEXT,
-   "job_id" INT NOT NULL REFERENCES "job"(id),
-   "created_at" timestamptz NOT NULL DEFAULT now(),
-   "updated_at" timestamptz
-); */
+);
 
 
 CREATE TABLE "request_has_media"(

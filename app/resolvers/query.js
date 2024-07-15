@@ -3,10 +3,10 @@ import Debug from 'debug';
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:query`);
 
 export default {
-  /* users(_, { ids, offset, limit }, { dataSources }) {
+  users(_, { ids, offset, limit }, { dataSources }) {
     debug(`get all users conversations where ids: ${ids}`);
     return dataSources.dataDB.user.findUsersByIds(ids, offset, limit);
-  }, */
+  },
   conversations(_, { offset, limit }, { dataSources }) {
     debug('get all conversations');
     return dataSources.dataDB.conversation.getConversationByUser(offset, limit);
@@ -23,10 +23,11 @@ export default {
     debug(`get message with id ${id}`);
     return dataSources.dataDB.message.findByPk(id);
   },
-  user(_, __, { dataSources }) {
+  async user(_, __, { dataSources }) {
     debug(`get user with id ${dataSources.userData.id}`);
     dataSources.dataDB.user.findByPkLoader.clear(dataSources.userData.id);
-    return dataSources.dataDB.user.findByPk(dataSources.userData.id);
+    const userData = await dataSources.dataDB.user.findByPk(dataSources.userData.id);
+    return userData;
   },
   /* requests(_, { offset, limit }, { dataSources }) {
     debug('get all requests');
@@ -52,10 +53,11 @@ export default {
     debug(`get category with id ${id}`);
     return dataSources.dataDB.category.findByPk(id);
   },
-  jobs(_, { ids }, { dataSources }) {
+  async jobs(_, { ids }, { dataSources }) {
     debug(`get job with id ${ids}`);
     dataSources.dataDB.job.cache.clear();
-    return dataSources.dataDB.job.findJobByPK(ids);
+    const jobs = await dataSources.dataDB.job.findJobByPK(ids);
+    return jobs;
   },
   async requestsByJob(_, { ids, offset, limit }, { dataSources }) {
     debug(`get all requests by job_id: ${ids}, offset ${offset}, limit ${limit}`);
