@@ -26,6 +26,7 @@ import { InMemoryLRUCache } from '@apollo/utils.keyvaluecache';
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
 // your data.
+import cookie from 'cookie';
 import typeDefs from './app/schemas/index.js';
 import resolvers from './app/resolvers/index.js';
 import getUserByToken from './app/middleware/getUserByToken.js';
@@ -64,7 +65,12 @@ app.use(async (req, res, next) => {
   if (!req.userData) {
     try {
       if (req.headers.cookie) {
-        req.userData = await getUserByToken(req, res, dataSources);
+        const cookies = cookie.parse(req.headers.cookie);
+        if (cookies['auth-token']) {
+          req.userData = await getUserByToken(req, res, dataSources);
+        } else {
+          req.userData = null;
+        }
       } else {
         req.userData = null;
       }
@@ -108,12 +114,12 @@ const wsServer = new WebSocketServer({
 });
 
 // Log incoming connections
-wsServer.on('connection', (ws) => {
+/* wsServer.on('connection', (ws) => {
   console.log('A new client Connected!');
   ws.on('message', (message) => {
     console.log('received: %s', message);
   });
-});
+}); */
 
 // Log mutation or query data
 /* const logMutationData = (req, res, next) => {

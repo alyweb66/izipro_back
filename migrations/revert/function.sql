@@ -14,6 +14,8 @@ DROP FUNCTION getRequestSubscription;
 DROP TRIGGER request_inserted ON request;
 DROP FUNCTION add_not_viewed_request;
 DROP FUNCTION getMyConversationRequest;
+DROP FUNCTION delete_not_viewed_requests;
+DROP TRIGGER trigger_delete_not_viewed_requests ON "request";
 
 
 COMMIT;
