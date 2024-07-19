@@ -27,12 +27,14 @@ import { InMemoryLRUCache } from '@apollo/utils.keyvaluecache';
 // that together define the "shape" of queries that are executed against
 // your data.
 import cookie from 'cookie';
+
 import typeDefs from './app/schemas/index.js';
 import resolvers from './app/resolvers/index.js';
 import getUserByToken from './app/middleware/getUserByToken.js';
 // class DataDB from dataSources
 import DataDB from './app/datasources/data/index.js';
 // import serverLogout from './app/middleware/serverLogout.js';
+import logger from './app/middleware/logger.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:httpserver`);
 
@@ -45,6 +47,18 @@ function debugInDevelopment(message = '', value = '') {
 const app = express();
 
 app.use(express.json());
+
+/* // Middleware pour enregistrer les requêtes HTTP
+app.use((req, res, next) => {
+  logger.http({
+    message: 'HTTP Request',
+    method: req.method,
+    url: req.url,
+    ip: req.ip,
+    userAgent: req.headers['user-agent'],
+  });
+  next();
+}); */
 
 // __dirname not on module, this is the way to use it.
 const filename = url.fileURLToPath(import.meta.url);
@@ -60,7 +74,7 @@ const dataSources = { dataDB: new DataDB({ cache }) };
 // middleware to handle file uploads
 app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
 
-// Middleware to get user data and attach to request
+// Middleware to get user data from token
 app.use(async (req, res, next) => {
   if (!req.userData) {
     try {
@@ -151,6 +165,24 @@ const server = new ApolloServer({
         };
       },
     },
+    // Plugin personnalisé pour la gestion des erreurs
+    {
+      async requestDidStart() {
+        return {
+          async willSendResponse({ response, errors }) {
+            if (errors) {
+              errors.forEach((error) => {
+                logger.error({
+                  message: error.message,
+                  stack: error.stack,
+                  extensions: error.extensions,
+                });
+              });
+            }
+          },
+        };
+      },
+    },
   ],
   cache,
 });
@@ -193,7 +225,23 @@ app.use(
   }),
 );
 
-await new Promise((resolve) => { httpServer.listen({ port: process.env.PORT || 4000 }, resolve); });
-debugInDevelopment('⚠️   Warning:  DEVELOPMENT MODE ON');
-debug(`🚀  Server ready at: http://localhost:${httpServer.address().port}`);
-debug(`🚀  Subscription ready at: ws//localhost:${httpServer.address().port}/subscriptions`);
+/* // Middleware to handle errors
+//* add next to the parameters to make it an error handler even if it's not used
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  console.log('handling error', err);
+  logger.error({
+    stack: err,
+    name: err.name,
+
+  });
+  res.status(500).send('Something broke!');
+}); */
+
+await new Promise((resolve) => {
+  httpServer.listen({ port: process.env.PORT || 4000 }, resolve);
+  logger.info(`Server running on port ${process.env.PORT || 4000}`);
+});
+logger.info('⚠️   Warning:  DEVELOPMENT MODE ON');
+logger.info(`🚀  Server ready at: http://localhost:${httpServer.address().port}`);
+logger.info(`🚀  Subscription ready at: ws//localhost:${httpServer.address().port}/subscriptions`);

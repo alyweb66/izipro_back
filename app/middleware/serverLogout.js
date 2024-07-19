@@ -16,10 +16,6 @@ export default async function serverLogout(_, __, { res }) {
   debug('serverLogout is starting');
 
   try {
-    // console.log('userId', userId);
-    // const user = { id: userId, value: true };
-    // publish the request to the client
-
     const pastDate = new Date(0);
     const TokenCookie = cookie.serialize(
       'auth-token',
@@ -41,6 +37,6 @@ export default async function serverLogout(_, __, { res }) {
     return true;
   } catch (err) {
     debug(err);
-    throw new ApolloError('Error', err);
+    throw new ApolloError('Error serveur logout');
   }
 }

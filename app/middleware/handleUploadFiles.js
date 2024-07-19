@@ -63,6 +63,7 @@ async function handleUploadedFiles(media) {
     // Saving the compressed images in the request body
     return compressedImages;
   } catch (error) {
+    debug('Error', error);
     throw new ApolloError(error);
   }
 }

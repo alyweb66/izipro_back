@@ -91,7 +91,7 @@ export default {
   categories(_, __, { dataSources }) {
     try {
       debug('get all categories');
-      return dataSources.dataDB.category.findAll();
+      return dataSources.dataDB.category.findAl();
     } catch (error) {
       debug('error', error);
       throw new ApolloError('Error get all categories');
