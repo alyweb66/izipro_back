@@ -118,7 +118,6 @@ export async function newRequestEmail(user, request) {
 }
 
 export async function contactSendEmail(data) {
-  console.log('send email', data);
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: `${process.env.EMAIL_USER}`,
