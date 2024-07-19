@@ -50,7 +50,7 @@ async function deleteUserJob(_, { input }, { dataSources }) {
       throw new ApolloError('Error deleting user_has_job');
     }
 
-    debugInDevelopment(userHasJob);;
+    debugInDevelopment(userHasJob);
     return userHasJob;
   } catch (error) {
     debug('error', error);

@@ -28,7 +28,7 @@ async function createHiddenClientRequest(_, { input }, { dataSources }) {
 
     return isCreatedHiddenClientRequest;
   } catch (error) {
-    debugInDevelopment('Error creating hidden client request', error);
+    debug('error', error);
     throw new ApolloError('Error creating hidden client request');
   }
 }

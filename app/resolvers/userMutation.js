@@ -2,7 +2,6 @@ import Debug from 'debug';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import cookie from 'cookie';
-import { GraphQLError } from 'graphql';
 import {
   AuthenticationError, ApolloError, UserInputError,
 } from 'apollo-server-core';
@@ -50,8 +49,9 @@ async function deleteFile(file) {
   try {
     await fs.unlink(filePath);
     debugInDevelopment(`File ${file} deleted successfully`);
-  } catch (err) {
-    debugInDevelopment(`Error deleting file: ${err}`);
+  } catch (error) {
+    debug('error', error);
+    throw new ApolloError('Error delete file');
   }
 }
 
@@ -129,9 +129,9 @@ async function createUserFunction(_, { input }, { dataSources }) {
     }
 
     return { __typename: 'User', ...createdUser };
-  } catch (err) {
-    debug(err);
-    throw new GraphQLError('Error');
+  } catch (error) {
+    debug('error', error);
+    throw new ApolloError('Error creating user');
   }
 }
 
@@ -163,9 +163,9 @@ async function confirmRegisterEmail(_, { input }, { dataSources }) {
       verified_email: true,
     });
     return true;
-  } catch (err) {
-    debug(err);
-    throw new ApolloError('Error');
+  } catch (error) {
+    debug('error', error);
+    throw new ApolloError('Error confirm register mail');
   }
 }
 
@@ -264,9 +264,9 @@ async function login(_, { input }, { dataSources, res }) {
 
     res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
     return true;
-  } catch (err) {
-    debug(err);
-    throw new ApolloError('Error');
+  } catch (error) {
+    debug('error', error);
+    throw new ApolloError('Error login');
   }
 }
 
@@ -298,9 +298,9 @@ async function logout(_, { id }, { dataSources, res }) {
     res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
 
     return true;
-  } catch (err) {
-    debug(err);
-    throw new ApolloError('Error', err);
+  } catch (error) {
+    debug('error', error);
+    throw new ApolloError('Error logout');
   }
 }
 
@@ -368,9 +368,9 @@ async function deleteUser(_, { id }, { dataSources, res }) {
 
     logout(null, { id }, { dataSources, res });
     return true;
-  } catch (err) {
-    debug(err);
-    throw new ApolloError('Error');
+  } catch (error) {
+    debug('error', error);
+    throw new ApolloError('Error delete user');
   }
 }
 
@@ -387,9 +387,9 @@ async function forgotPassword(_, { input }, { dataSources }) {
     await sendEmail.sendPasswordResetEmail(input.email, resetToken);
     debug('Email sent');
     return true;
-  } catch (err) {
-    debug(err);
-    throw new ApolloError('Error', 'BAD_REQUEST');
+  } catch (error) {
+    debug('error', error);
+    throw new ApolloError('Error forgot password');
   }
 }
 
@@ -427,9 +427,9 @@ async function validateForgotPassword(_, { input }, { dataSources }) {
 
     dataSources.dataDB.user.update(existingUser.id, userInputWithHashedPassword);
     return true;
-  } catch (err) {
-    debug(err);
-    throw new GraphQLError('Error');
+  } catch (error) {
+    debug('error', error);
+    throw new ApolloError('Error validate forgot password');
   }
 }
 
@@ -508,11 +508,12 @@ async function updateUser(_, { id, input }, { dataSources }) {
 
     dataSources.dataDB.user.cache.clear();
     return dataSources.dataDB.user.update(id, updateInput);
-  } catch (err) {
-    if (err instanceof AuthenticationError) {
-      throw err;
+  } catch (error) {
+    if (error instanceof AuthenticationError) {
+      throw error;
     }
-    throw new ApolloError('Error');
+    debug('error', error);
+    throw new ApolloError('Error updating user');
   }
 }
 
@@ -540,10 +541,10 @@ async function changePassword(_, { id, input }, { dataSources }) {
     );
     await sendEmail.changePasswordEmail(user.email);
     return true;
-  } catch (err) {
-    debug(err);
-    if (err instanceof AuthenticationError) {
-      throw err;
+  } catch (error) {
+    debug(error);
+    if (error instanceof AuthenticationError) {
+      throw error;
     }
     throw new ApolloError('Error', 'BAD_REQUEST');
   }
@@ -573,12 +574,12 @@ async function deleteProfilePicture(_, { id }, { dataSources }) {
     // Update the user image to null
     await dataSources.dataDB.user.update(id, { image: null });
     return true;
-  } catch (err) {
-    debug(err);
-    if (err instanceof AuthenticationError) {
-      throw err;
+  } catch (error) {
+    debug(error);
+    if (error instanceof AuthenticationError) {
+      throw error;
     }
-    throw new ApolloError('Error');
+    throw new ApolloError('Error delete profile picture');
   }
 }
 

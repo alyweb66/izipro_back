@@ -26,6 +26,7 @@ async function userSetting(_, { input }, { dataSources }) {
     dataSources.dataDB.user.cache.clear();
     return userSettings;
   } catch (error) {
+    debug('error', error);
     throw new ApolloError('Error updating user setting');
   }
 }

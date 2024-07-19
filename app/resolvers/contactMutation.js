@@ -19,7 +19,7 @@ async function contactEmail(_, { input }) {
 
     return true;
   } catch (error) {
-    debugInDevelopment('Error creating contact', error);
+    debug('Error', error);
     throw new ApolloError('Error creating contact');
   }
 }
