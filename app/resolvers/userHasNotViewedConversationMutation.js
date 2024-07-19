@@ -28,7 +28,7 @@ async function deleteNotViewedConversation(_, { input }, { dataSources }) {
 
     return true;
   } catch (error) {
-    debugInDevelopment('Error deleting viewed conversation', error);
+    debug('error', error);
     throw new ApolloError('Error deleting viewed conversation');
   }
 }
