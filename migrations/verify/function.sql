@@ -13,5 +13,6 @@ SELECT * FROM getRequestSubscription(null);
 SELECT * FROM getRequestByJob(null);
 SELECT * FROM getMyConversationRequest(null);
 SELECT * FROM add_not_viewed_request(null);
+SELECT * FROM delete_not_viewed_requests(null);
 
 ROLLBACK;

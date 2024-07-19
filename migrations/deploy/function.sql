@@ -142,7 +142,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
+-- Function to get Request by array of jobs
 CREATE OR REPLACE FUNCTION getRequestByJob(job_ids INT[], userId_id INT, ofset INT, lim INT)
 RETURNS TABLE(
     id INT,
@@ -415,6 +415,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+-- Function to insert a new row in the user_has_notViewedConversation table when a new message is inserted
 CREATE OR REPLACE FUNCTION add_to_not_viewed() RETURNS TRIGGER AS $$
 DECLARE
   sub_user_id INT;
@@ -491,11 +492,33 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
 CREATE TRIGGER message_inserted
 AFTER INSERT ON message
 FOR EACH ROW
 EXECUTE FUNCTION add_to_not_viewed();
+
+
+-- create function to delete not viewed requests if request is deleted
+CREATE OR REPLACE FUNCTION delete_not_viewed_requests()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Verify if the request is not null
+  IF NEW."deleted_at" IS NOT NULL THEN
+    -- delete all not viewed requests where request_id is the same as the deleted request
+    DELETE FROM "user_has_notViewedRequest"
+    WHERE "request_id" = NEW."id";
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger
+CREATE TRIGGER trigger_delete_not_viewed_requests
+AFTER UPDATE OF "deleted_at" ON "request"
+FOR EACH ROW
+WHEN (NEW."deleted_at" IS NOT NULL)
+EXECUTE FUNCTION delete_not_viewed_requests();
+
 
 COMMIT;
 
