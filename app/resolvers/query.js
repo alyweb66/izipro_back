@@ -52,6 +52,7 @@ export default {
   async user(_, __, { dataSources }) {
     try {
       debug(`get user with id ${dataSources.userData.id}`);
+      // clear cache
       dataSources.dataDB.user.findByPkLoader.clear(dataSources.userData.id);
       const userData = await dataSources.dataDB.user.findByPk(dataSources.userData.id);
       return userData;
@@ -91,7 +92,7 @@ export default {
   categories(_, __, { dataSources }) {
     try {
       debug('get all categories');
-      return dataSources.dataDB.category.findAl();
+      return dataSources.dataDB.category.findAll();
     } catch (error) {
       debug('error', error);
       throw new ApolloError('Error get all categories');

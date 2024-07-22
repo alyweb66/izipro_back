@@ -38,27 +38,15 @@ import logger from './app/middleware/logger.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:httpserver`);
 
-function debugInDevelopment(message = '', value = '') {
+/* function debugInDevelopment(message = '', value = '') {
   if (process.env.NODE_ENV === 'development') {
     debug('⚠️', message, value);
   }
-}
+} */
 
 const app = express();
 
 app.use(express.json());
-
-/* // Middleware pour enregistrer les requêtes HTTP
-app.use((req, res, next) => {
-  logger.http({
-    message: 'HTTP Request',
-    method: req.method,
-    url: req.url,
-    ip: req.ip,
-    userAgent: req.headers['user-agent'],
-  });
-  next();
-}); */
 
 // __dirname not on module, this is the way to use it.
 const filename = url.fileURLToPath(import.meta.url);
@@ -127,7 +115,7 @@ const wsServer = new WebSocketServer({
   path: '/subscriptions',
 });
 
-// Log incoming connections
+//* Log incoming connections
 /* wsServer.on('connection', (ws) => {
   console.log('A new client Connected!');
   ws.on('message', (message) => {
@@ -135,7 +123,7 @@ const wsServer = new WebSocketServer({
   });
 }); */
 
-// Log mutation or query data
+//* Log mutation or query data
 /* const logMutationData = (req, res, next) => {
   if (req.method === 'POST') {
     console.log('Mutation data:', req.body);
@@ -143,6 +131,12 @@ const wsServer = new WebSocketServer({
   next();
 };
 app.use(logMutationData); */
+
+//* log request headers
+/* app.use((req, res, next) => {
+  console.log('Request headers:', req.headers);
+  next();
+}); */
 
 // Hand in the schema we just created and have the
 // WebSocketServer start listening.
@@ -169,7 +163,7 @@ const server = new ApolloServer({
     {
       async requestDidStart() {
         return {
-          async willSendResponse({ response, errors }) {
+          async willSendResponse({ errors }) {
             if (errors) {
               errors.forEach((error) => {
                 logger.error({
@@ -186,10 +180,7 @@ const server = new ApolloServer({
   ],
   cache,
 });
-/* app.use((req, res, next) => {
-  console.log('Request headers:', req.headers);
-  next();
-}); */
+
 await server.start();
 
 app.use(
@@ -224,19 +215,6 @@ app.use(
     ,
   }),
 );
-
-/* // Middleware to handle errors
-//* add next to the parameters to make it an error handler even if it's not used
-// eslint-disable-next-line no-unused-vars
-app.use((err, req, res, next) => {
-  console.log('handling error', err);
-  logger.error({
-    stack: err,
-    name: err.name,
-
-  });
-  res.status(500).send('Something broke!');
-}); */
 
 await new Promise((resolve) => {
   httpServer.listen({ port: process.env.PORT || 4000 }, resolve);
