@@ -192,15 +192,15 @@ async function login(_, { input }, { dataSources, res }) {
       throw new ApolloError('EIncorrect email or password', 'BAD_REQUEST');
     }
     // Create a token
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
+    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1m' });
 
     // activeSession or not that is the question
     let refreshToken;
     debugInDevelopment('input.activeSession', input.activeSession);
     if (input.activeSession) {
-      refreshToken = jwt.sign({ id: user.id, role: user.role, activeSession: true }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
+      refreshToken = jwt.sign({ id: user.id, role: user.role, activeSession: true }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '2m' });
     } else {
-      refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
+      refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '2m' });
     }
     const saveRefreshToken = await dataSources.dataDB.user.update(
       user.id,
@@ -209,10 +209,10 @@ async function login(_, { input }, { dataSources, res }) {
     debugInDevelopment('saveRefreshToken', saveRefreshToken);
 
     // Set the token as a cookie
-    let TokenCookie;
-    let refreshTokenCookie;
+    //  let TokenCookie;
+    // let refreshTokenCookie;
     // if activeSession is true, the cookie will be set for 30 days
-    if (input.activeSession) {
+    /* if (input.activeSession) {
       TokenCookie = cookie.serialize(
         'auth-token',
         token,
@@ -237,30 +237,30 @@ async function login(_, { input }, { dataSources, res }) {
           maxAge: 24 * 60 * 60,
         },
       );
-    } else {
-      TokenCookie = cookie.serialize(
-        'auth-token',
-        token,
-        {
-          httpOnly: true,
-          sameSite: 'strict',
-          secure: secureEnv(),
-          domain: 'localhost',
-          path: '/',
-        },
-      );
-      refreshTokenCookie = cookie.serialize(
-        'refresh-token',
-        refreshToken,
-        {
-          httpOnly: true,
-          sameSite: 'strict',
-          secure: secureEnv(),
-          domain: 'localhost',
-          path: '/',
-        },
-      );
-    }
+    } */// else {
+    const TokenCookie = cookie.serialize(
+      'auth-token',
+      token,
+      {
+        httpOnly: true,
+        sameSite: 'strict',
+        secure: secureEnv(),
+        domain: 'localhost',
+        path: '/',
+      },
+    );
+    const refreshTokenCookie = cookie.serialize(
+      'refresh-token',
+      refreshToken,
+      {
+        httpOnly: true,
+        sameSite: 'strict',
+        secure: secureEnv(),
+        domain: 'localhost',
+        path: '/',
+      },
+    );
+    // }
 
     res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
     return true;
