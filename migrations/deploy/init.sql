@@ -210,4 +210,9 @@ CREATE TABLE "user_has_hiddingClientRequest"(
    "updated_at" timestamptz
 );
 
+CREATE INDEX "idx_user_email" ON "user"("email");
+CREATE INDEX "idx_request_user_id" ON "request"("user_id");
+CREATE INDEX "idx_message_conversation_id" ON "message"("conversation_id");
+CREATE INDEX "idx_conversation_request_id" ON "conversation"("request_id");
+
 COMMIT;

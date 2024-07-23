@@ -28,7 +28,7 @@ async function userHasNotViewedRequest(_, { input }, { dataSources }) {
 
     return true;
   } catch (error) {
-    debugInDevelopment('Error creating viewed request', error);
+    debug('error', error);
     throw new ApolloError('Error creating viewed request');
   }
 }
@@ -52,7 +52,7 @@ async function deleteNotViewedRequest(_, { input }, { dataSources }) {
 
     return true;
   } catch (error) {
-    debugInDevelopment('Error deleting viewed request', error);
+    debug('error', error);
     throw new ApolloError('Error deleting viewed request');
   }
 }

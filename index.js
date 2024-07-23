@@ -26,20 +26,23 @@ import { InMemoryLRUCache } from '@apollo/utils.keyvaluecache';
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
 // your data.
+import cookie from 'cookie';
+
 import typeDefs from './app/schemas/index.js';
 import resolvers from './app/resolvers/index.js';
 import getUserByToken from './app/middleware/getUserByToken.js';
 // class DataDB from dataSources
 import DataDB from './app/datasources/data/index.js';
 // import serverLogout from './app/middleware/serverLogout.js';
+import logger from './app/middleware/logger.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:httpserver`);
 
-function debugInDevelopment(message = '', value = '') {
+/* function debugInDevelopment(message = '', value = '') {
   if (process.env.NODE_ENV === 'development') {
     debug('⚠️', message, value);
   }
-}
+} */
 
 const app = express();
 
@@ -59,12 +62,17 @@ const dataSources = { dataDB: new DataDB({ cache }) };
 // middleware to handle file uploads
 app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
 
-// Middleware to get user data and attach to request
+// Middleware to get user data from token
 app.use(async (req, res, next) => {
   if (!req.userData) {
     try {
       if (req.headers.cookie) {
-        req.userData = await getUserByToken(req, res, dataSources);
+        const cookies = cookie.parse(req.headers.cookie);
+        if (cookies['auth-token']) {
+          req.userData = await getUserByToken(req, res, dataSources);
+        } else {
+          req.userData = null;
+        }
       } else {
         req.userData = null;
       }
@@ -74,6 +82,7 @@ app.use(async (req, res, next) => {
     } catch (error) {
       debug('error', error);
       req.userData = null;
+      // return next(error);
     }
   }
   next();
@@ -107,15 +116,15 @@ const wsServer = new WebSocketServer({
   path: '/subscriptions',
 });
 
-// Log incoming connections
-wsServer.on('connection', (ws) => {
+//* Log incoming connections
+/* wsServer.on('connection', (ws) => {
   console.log('A new client Connected!');
   ws.on('message', (message) => {
     console.log('received: %s', message);
   });
-});
+}); */
 
-// Log mutation or query data
+//* Log mutation or query data
 /* const logMutationData = (req, res, next) => {
   if (req.method === 'POST') {
     console.log('Mutation data:', req.body);
@@ -123,6 +132,12 @@ wsServer.on('connection', (ws) => {
   next();
 };
 app.use(logMutationData); */
+
+//* log request headers
+/* app.use((req, res, next) => {
+  console.log('Request headers:', req.headers);
+  next();
+}); */
 
 // Hand in the schema we just created and have the
 // WebSocketServer start listening.
@@ -145,13 +160,28 @@ const server = new ApolloServer({
         };
       },
     },
+    // Plugin personnalisé pour la gestion des erreurs
+    {
+      async requestDidStart() {
+        return {
+          async willSendResponse({ errors }) {
+            if (errors) {
+              errors.forEach((error) => {
+                logger.error({
+                  message: error.message,
+                  stack: error.stack,
+                  extensions: error.extensions,
+                });
+              });
+            }
+          },
+        };
+      },
+    },
   ],
   cache,
 });
-/* app.use((req, res, next) => {
-  console.log('Request headers:', req.headers);
-  next();
-}); */
+
 await server.start();
 
 app.use(
@@ -187,7 +217,10 @@ app.use(
   }),
 );
 
-await new Promise((resolve) => { httpServer.listen({ port: process.env.PORT || 4000 }, resolve); });
-debugInDevelopment('⚠️   Warning:  DEVELOPMENT MODE ON');
-debug(`🚀  Server ready at: http://localhost:${httpServer.address().port}`);
-debug(`🚀  Subscription ready at: ws//localhost:${httpServer.address().port}/subscriptions`);
+await new Promise((resolve) => {
+  httpServer.listen({ port: process.env.PORT || 4000 }, resolve);
+  logger.info(`Server running on port ${process.env.PORT || 4000}`);
+});
+logger.info('⚠️   Warning:  DEVELOPMENT MODE ON');
+logger.info(`🚀  Server ready at: http://localhost:${httpServer.address().port}`);
+logger.info(`🚀  Subscription ready at: ws//localhost:${httpServer.address().port}/subscriptions`);
