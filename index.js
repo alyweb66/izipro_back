@@ -1,6 +1,5 @@
 // server creating
 // Environment
-import 'dotenv/config.js';
 import Debug from 'debug';
 // Modules import
 import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
