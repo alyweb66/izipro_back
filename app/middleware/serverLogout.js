@@ -31,8 +31,19 @@ export default async function serverLogout(_, __, { res }) {
         httpOnly: true, sameSite: 'strict', secure: secureEnv(), expires: pastDate,
       },
     );
+    const logoutCookie = cookie.serialize(
+      'logout',
+      true,
+      {
+        httpOnly: false,
+        sameSite: 'strict',
+        secure: secureEnv(),
+        domain: 'localhost',
+        path: '/',
+      },
+    );
 
-    res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
+    res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie, logoutCookie]);
 
     return true;
   } catch (err) {

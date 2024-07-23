@@ -26,6 +26,7 @@ function secureEnv() {
 }
 
 function subscribeToLogout(userId) {
+  debugInDevelopment('subscribeToLogout', userId);
   const subValue = { id: userId, value: true };
   pubsub.publish('LOGOUT', {
     logout: subValue,
@@ -48,7 +49,7 @@ export default async function getUserByToken(req, res, dataSources) {
 
   const token = cookies['auth-token'] || '';
   const refreshToken = cookies['refresh-token'] || '';
-
+  let decodeToken;
   try {
     // If the token is valid, return the user data
     if (token) {
@@ -64,7 +65,6 @@ export default async function getUserByToken(req, res, dataSources) {
       // If the error is token expired, refresh the token
       debug('refreshToken is starting');
 
-      let decodeToken;
       try {
         // decode the refresh token to get the user id
         decodeToken = jwt.decode(refreshToken);
@@ -95,18 +95,7 @@ export default async function getUserByToken(req, res, dataSources) {
           throw new ApolloError('Error token', 'BAD_REQUEST');
         }
 
-        const newToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1m' });
-
-        // get expiration date of verifyRefreshToken to add this date to the cookie expiration date
-        /*     const tokenData = jwt.decode(user.refresh_token);
-            const now = Math.floor(Date.now() / 1000); // current time in seconds
-            const expDate = (tokenData.exp - now) * 1000; */
-
-        // if token is expired
-        /*   if (expDate < 0) {
-            subscribeToLogout(user.id);
-            serverLogout(null, null, { res });
-          } */
+        const newToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '30m' });
 
         const TokenCookie = cookie.serialize(
           'auth-token',
@@ -123,43 +112,6 @@ export default async function getUserByToken(req, res, dataSources) {
           },
         );
 
-        // Add the new token to the cookies
-        // let TokenCookie;
-        // let refreshTokenCookie;
-        /* if (verifyRefreshToken.activeSession) {
-          TokenCookie = cookie.serialize(
-            'auth-token',
-            newToken,
-            {
-              ...cookieOptions,
-              maxAge: tokenData.exp,
-            },
-          );
-          refreshTokenCookie = cookie.serialize(
-            'refresh-token',
-            refreshToken,
-            {
-              ...cookieOptions,
-              maxAge: tokenData.exp,
-            },
-          );
-        } else {
-          TokenCookie = cookie.serialize(
-            'auth-token',
-            newToken,
-            {
-              ...cookieOptions,
-            },
-          );
-          refreshTokenCookie = cookie.serialize(
-            'refresh-token',
-            refreshToken,
-            {
-              ...cookieOptions,
-            },
-          );
-        } */
-
         res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
         const userData = { id: user.id, role: user.role };
         return userData;
@@ -169,8 +121,8 @@ export default async function getUserByToken(req, res, dataSources) {
           if (refreshTokenError instanceof jwt.TokenExpiredError && decodeToken.activeSession) {
             debug('refreshToken is expired, new refresh token is starting');
             // make a new refreshtoken
-            const newToken = jwt.sign({ id: decodeToken.id, role: decodeToken.role }, process.env.JWT_SECRET, { expiresIn: '1m' });
-            const newRefreshToken = jwt.sign({ id: decodeToken.id, role: decodeToken.role, activeSession: decodeToken.activeSession }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '2m' });
+            const newToken = jwt.sign({ id: decodeToken.id, role: decodeToken.role }, process.env.JWT_SECRET, { expiresIn: '30m' });
+            const newRefreshToken = jwt.sign({ id: decodeToken.id, role: decodeToken.role, activeSession: decodeToken.activeSession }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
             // update the refresh token in the database
             await dataSources.dataDB.user.update(
               decodeToken.id,
@@ -197,17 +149,17 @@ export default async function getUserByToken(req, res, dataSources) {
             return userData;
           }
         } catch (error) {
-          debug('Failed to verify refresh token');
+          debug('Failed to verify refresh token1');
           subscribeToLogout(decodeToken.id);
           serverLogout(null, null, { res });
           throw new AuthenticationError('Failed to verify make new refresh-token');
         }
-        subscribeToLogout(decodeToken.id);
-        serverLogout(null, null, { res });
+      /*   subscribeToLogout(decodeToken.id);
+        serverLogout(null, null, { res }); */
       }
     }
-    debug('Failed to verify refresh token');
-    // subscribeToLogout(decodeToken.id);
+    debug('Failed to verify refresh token2');
+    subscribeToLogout(decodeToken.id);
     serverLogout(null, null, { res });
     throw new AuthenticationError('Failed to verify token');
   }
