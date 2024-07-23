@@ -447,8 +447,10 @@ BEGIN
            (distance < user_range / 1000 OR user_range = 0) THEN
 
             -- add the request to the user_has_notViewedRequest table
+            IF subscriber.user_id != NEW.user_id THEN
             INSERT INTO "user_has_notViewedRequest"(user_id, request_id, created_at)
             VALUES (subscriber.user_id, NEW.id, NOW());
+            END IF;
         END IF;
     END LOOP;
 
