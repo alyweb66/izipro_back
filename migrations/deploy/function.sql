@@ -142,8 +142,118 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Function to get Request by array of jobs
-CREATE OR REPLACE FUNCTION getRequestByJob(job_ids INT[], userId_id INT, ofset INT, lim INT)
+-- Function to get Request by array of jobs and tries to get the user location and range
+CREATE OR REPLACE FUNCTION getRequestByJob(
+    job_ids INT[], 
+    userId_id INT, 
+    ofset INT, 
+    lim INT
+)
+RETURNS TABLE(
+    id INT,
+    title TEXT,
+    urgent BOOLEAN,
+    message TEXT,
+    lng NUMERIC,
+    lat NUMERIC,
+    range INT,
+    user_id INT,
+    job_id INT,
+    city TEXT,
+    first_name TEXT,
+    last_name TEXT,
+    denomination TEXT,
+    viewed_conv BOOLEAN,
+    deleted_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE,
+    job TEXT,
+    media JSON,
+    conversation JSON
+) AS $$
+DECLARE
+    user_lng NUMERIC;
+    user_lat NUMERIC;
+    user_range INT;
+BEGIN
+    -- get user location
+    SELECT u.lng, u.lat INTO user_lng, user_lat
+    FROM "user" u
+    WHERE u.id = userId_id
+    LIMIT 1;
+
+    -- get user range
+    SELECT us.range INTO user_range
+    FROM "user_setting" us
+    WHERE us.user_id = userId_id
+    LIMIT 1;
+
+    RETURN QUERY 
+    SELECT 
+        r.id,
+        r.title,
+        r.urgent,
+        r.message,
+        r.lng,
+        r.lat,
+        r.range,
+        r.user_id,
+        r.job_id,
+        r.city,
+        u.first_name,
+        u.last_name,
+        u.denomination,
+        r.viewed_conv,
+        r.deleted_at,
+        r.created_at,
+        j.name AS job,
+        m.media,
+        c.conversation
+    FROM "request" r
+    LEFT JOIN (
+        SELECT "request_id", json_agg(row_to_json((SELECT x FROM (SELECT m.id, m.url, m.name) AS x))) AS media
+        FROM "request_has_media" rhm
+        JOIN "media" m ON m."id"="media_id"
+        GROUP BY "request_id"
+    ) m ON m."request_id" = r."id"
+    LEFT JOIN "job" j ON j."id" = r."job_id"
+    JOIN "user" u ON u."id" = r."user_id"
+    LEFT JOIN (
+        SELECT "request_id", json_agg(json_build_object('id', conv.id,
+         'user_1', conv.user_1, 
+         'user_2', conv.user_2, 
+         'request_id', conv.request_id,
+         'updated_at', conv.updated_at)) AS conversation
+        FROM "conversation" conv
+        GROUP BY "request_id"
+    ) c ON c."request_id" = r."id"
+    WHERE r.job_id = ANY(job_ids)
+      AND r.deleted_at IS NULL
+      AND r.user_id != userId_id
+      AND (
+          6371 * acos(
+              cos(radians(user_lat)) * cos(radians(r.lat)) * cos(radians(r.lng) - radians(user_lng)) +
+              sin(radians(user_lat)) * sin(radians(r.lat))
+          ) < r.range / 1000 OR r.range = 0
+      )
+      AND (
+          6371 * acos(
+              cos(radians(user_lat)) * cos(radians(r.lat)) * cos(radians(r.lng) - radians(user_lng)) +
+              sin(radians(user_lat)) * sin(radians(r.lat))
+          ) < user_range / 1000 OR user_range = 0
+      )
+      AND NOT EXISTS (
+          SELECT 1 FROM "user_has_hiddingClientRequest" uhhcr
+          WHERE uhhcr."request_id" = r.id AND uhhcr."user_id" = userId_id
+      )
+      AND NOT EXISTS (
+          SELECT 1 FROM "conversation" conv
+          WHERE conv."request_id" = r.id AND (conv."user_1" = userId_id OR conv."user_2" = userId_id)
+      )
+    ORDER BY r.created_at DESC
+    OFFSET ofset LIMIT lim;
+END; $$
+LANGUAGE plpgsql;
+/* CREATE OR REPLACE FUNCTION getRequestByJob(job_ids INT[], userId_id INT, ofset INT, lim INT)
 RETURNS TABLE(
     id INT,
     title TEXT,
@@ -219,7 +329,7 @@ BEGIN
     ORDER BY r.created_at DESC
     OFFSET ofset LIMIT lim;
 END; $$
-LANGUAGE plpgsql;
+LANGUAGE plpgsql; */
 
 CREATE OR REPLACE FUNCTION getRequestSubscription(job_ids INT[], userId_id INT, ofset INT, lim INT)
 RETURNS TABLE(
@@ -302,6 +412,51 @@ LANGUAGE plpgsql;
 -- Function to insert a new row in the user_has_notViewedRequest table when a new request is inserted
 CREATE OR REPLACE FUNCTION add_not_viewed_request() RETURNS TRIGGER AS $$
 DECLARE
+    subscriber RECORD;
+    user_lng NUMERIC;
+    user_lat NUMERIC;
+    user_range INT;
+    distance NUMERIC;
+BEGIN
+    -- get user by jobRequest subscriber
+    FOR subscriber IN
+        SELECT s.user_id
+        FROM subscription s
+        WHERE s.subscriber = 'jobRequest'
+          AND s.subscriber_id @> ARRAY[NEW.job_id]
+    LOOP
+        -- get location and range of the user
+        SELECT u.lng, u.lat INTO user_lng, user_lat
+        FROM "user" u
+        WHERE u.id = subscriber.user_id
+        LIMIT 1;
+
+        SELECT us.range INTO user_range
+        FROM "user_setting" us
+        WHERE us.user_id = subscriber.user_id
+        LIMIT 1;
+
+        -- calculate the distance between the user and the request
+        distance := 6371 * acos(
+            cos(radians(user_lat)) * cos(radians(NEW.lat)) * cos(radians(NEW.lng) - radians(user_lng)) +
+            sin(radians(user_lat)) * sin(radians(NEW.lat))
+        );
+
+        -- verify if the distance is less than the range of the user and the range of the request
+        IF (distance < NEW.range / 1000 OR NEW.range = 0) AND
+           (distance < user_range / 1000 OR user_range = 0) THEN
+
+            -- add the request to the user_has_notViewedRequest table
+            INSERT INTO "user_has_notViewedRequest"(user_id, request_id, created_at)
+            VALUES (subscriber.user_id, NEW.id, NOW());
+        END IF;
+    END LOOP;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+/* CREATE OR REPLACE FUNCTION add_not_viewed_request() RETURNS TRIGGER AS $$
+DECLARE
     subscribers RECORD;
 BEGIN
     FOR subscribers IN SELECT * FROM subscription WHERE subscriber = 'jobRequest' AND subscriber_id @> ARRAY[NEW.job_id]
@@ -313,7 +468,7 @@ BEGIN
     END LOOP;
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql; */
 
 CREATE TRIGGER request_inserted
 AFTER INSERT ON request
