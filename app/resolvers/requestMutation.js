@@ -132,7 +132,7 @@ async function createRequest(_, { input }, { dataSources }) {
     return subscriptionResult[0];
   } catch (error) {
     debug('error', error);
-    throw new Error(error);
+    throw new ApolloError('Error create request');
   }
 }
 
@@ -166,7 +166,7 @@ async function deleteRequest(_, { input }, { dataSources }) {
     return true;
   } catch (error) {
     debug('error', error);
-    throw new Error(error);
+    throw new ApolloError('Error delete request');
   }
 }
 

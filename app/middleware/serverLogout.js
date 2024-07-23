@@ -16,10 +16,6 @@ export default async function serverLogout(_, __, { res }) {
   debug('serverLogout is starting');
 
   try {
-    // console.log('userId', userId);
-    // const user = { id: userId, value: true };
-    // publish the request to the client
-
     const pastDate = new Date(0);
     const TokenCookie = cookie.serialize(
       'auth-token',
@@ -35,12 +31,23 @@ export default async function serverLogout(_, __, { res }) {
         httpOnly: true, sameSite: 'strict', secure: secureEnv(), expires: pastDate,
       },
     );
+    const logoutCookie = cookie.serialize(
+      'logout',
+      true,
+      {
+        httpOnly: false,
+        sameSite: 'strict',
+        secure: secureEnv(),
+        domain: 'localhost',
+        path: '/',
+      },
+    );
 
-    res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
+    res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie, logoutCookie]);
 
     return true;
   } catch (err) {
     debug(err);
-    throw new ApolloError('Error', err);
+    throw new ApolloError('Error serveur logout');
   }
 }

@@ -29,7 +29,7 @@ async function createCookieConsents(_, { id, input }, { dataSources }) {
 
     return isCreatedCookieConsents;
   } catch (error) {
-    debugInDevelopment('Error creating cookie consents', error);
+    debug('Error', error);
     throw new ApolloError('Error creating cookie consents');
   }
 }
@@ -57,7 +57,7 @@ async function updateCookieConsents(_, { id, input }, { dataSources }) {
 
     return isUpdatedCookieConsents;
   } catch (error) {
-    debugInDevelopment('Error updating cookie consents', error);
+    debug('Error', error);
     throw new ApolloError('Error updating cookie consents');
   }
 }

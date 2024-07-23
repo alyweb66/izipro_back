@@ -27,5 +27,10 @@ DROP TABLE "user";
 DROP DOMAIN email;
 DROP DOMAIN postal_code_domain;
 
+DROP INDEX [IF EXISTS] "idx_user_email";
+DROP INDEX [IF EXISTS] "idx_request_user_id";
+DROP INDEX [IF EXISTS] "idx_message_conversation_id";
+DROP INDEX [IF EXISTS] "idx_conversation_request_id";
+
 
 COMMIT;
