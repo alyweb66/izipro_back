@@ -32,24 +32,37 @@ async function handleUploadedFiles(media) {
       if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg') {
         const buffer = await getBuffer(file.buffer);
         compressedBuffer = await sharp(buffer)
-          // .resize({ width: 800, height: 800, withoutEnlargement: true })
-          .jpeg({ quality: 80 })
+          .resize({ width: 1920, withoutEnlargement: true }) // Adjust size if needed
+          .webp({ quality: 75, effort: 4 }) // Adjust quality and effort for better compression
           .toBuffer();
       }
+      console.log('compressedBuffer', compressedBuffer);
+
       // Get file name without extension
       const fileNameWithoutExtension = path.parse(file.filename).name;
 
       // Generating a unique file name
-      const uniqueFileName = `${fileNameWithoutExtension}_${Date.now()}${path.extname(file.filename)}`;
+     // const uniqueFileName = `${fileNameWithoutExtension}_${Date.now()}${path.extname(file.filename)}`;
+     let uniqueFileName;
+     if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg') {
+       uniqueFileName = file.mimetype.startsWith('image/')
+        ? `${fileNameWithoutExtension}_${Date.now()}.webp`
+        : `${fileNameWithoutExtension}_${Date.now()}${path.extname(file.filename)}`;
+     }
+
+     if (file.mimetype === 'application/pdf') {
+       uniqueFileName = `${fileNameWithoutExtension}_${Date.now()}${path.extname(file.filename)}`;
+     }
 
       // Saving or further processing the compressed image or pdf
+      const filePath = `./public/media/${uniqueFileName}`;
       if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg') {
-        await sharp(compressedBuffer).toFile(`./public/media/${uniqueFileName}`);
+        await sharp(compressedBuffer).toFile(filePath);
       } else {
         await file.buffer.pipe(fs.createWriteStream(`./public/media/${uniqueFileName}`));
       }
       // get the file path
-      const filePath = `./media/${uniqueFileName}`;
+      //const filePath = `./media/${uniqueFileName}`;
 
       // get the file name
       const fileName = path.basename(filePath);
