@@ -51,6 +51,9 @@ export default {
   },
   async user(_, __, { dataSources }) {
     try {
+      if (!dataSources.userData) {
+        throw new ApolloError('User not found', 'USER_NOT_FOUND');
+      }
       debug(`get user with id ${dataSources.userData.id}`);
       // clear cache
       dataSources.dataDB.user.findByPkLoader.clear(dataSources.userData.id);
@@ -120,6 +123,9 @@ export default {
   },
   async requestsByJob(_, { ids, offset, limit }, { dataSources }) {
     try {
+      if (ids.length === 0) {
+        return null;
+      }
       debug(`get all requests by job_id: ${ids}, offset ${offset}, limit ${limit}`);
       const result = await dataSources.dataDB.request.getRequestByJobId(
         ids,

@@ -82,6 +82,7 @@ app.use(async (req, res, next) => {
     } catch (error) {
       debug('error', error);
       req.userData = null;
+      // return next(error);
     }
   }
   next();
