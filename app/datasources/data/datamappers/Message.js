@@ -11,8 +11,10 @@ class Message extends CoreDatamapper {
 
   /**
    * Finds all messages by conversation_id.
-   *
-   * @param {integer} id - The conversation id.
+   *@function findByUserConversation
+   * @param {integer} conversationId - The conversation id.
+   * @param {integer} offset - The offset.
+   * @param {integer} limit - The limit.
    * @returns {Promise<object>} The found messages.
    * @throws {Error} If user not found.
    */
@@ -28,6 +30,13 @@ class Message extends CoreDatamapper {
     return messages;
   }
 
+  /**
+   * Finds all messages by conversation_id.
+   *
+   * @param {number} conversationId - The conversation id.
+   * @returns {Promise<object>} The found messages.
+   * @throws {Error} If user not found.
+   */
   async findByConversationId(conversationId, offset, limit) {
     debug(`Finding messages by conversation_id ${conversationId}`);
     debug(`SQL function ${this.viewName} called`);
