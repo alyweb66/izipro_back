@@ -10,6 +10,19 @@ function debugInDevelopment(message = '', value = '') {
   }
 }
 
+/**
+ * Sends a contact email based on the provided input.
+ *
+ * @async
+ * @function contactEmail
+ * @param {Object} _ - The parent object, which is not used in this resolver.
+ * @param {Object} args - The arguments provided to the field in the GraphQL query.
+ * @param {{first_name: string,
+ * last_name: string, email: string, enterprise: string, description: string}}
+ *  args.input - The input object containing the contact email details.
+ * @returns {Promise<boolean>} A promise that resolves to true if the email was sent successfully.
+ * @throws {ApolloError} If there is an error sending the contact email.
+ */
 async function contactEmail(_, { input }) {
   debug('contact email');
   debugInDevelopment('input', input);

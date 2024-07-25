@@ -24,6 +24,7 @@ export async function sendPasswordResetEmail(email, resetToken) {
     to: `${email}`,
     subject: 'Réinitialisation de mot de passe',
     html: `
+    <img src="${logo}" alt="logo" style="width: 100px; height: 100px; margin-bottom: 20px;"/>
       <h1>Réinitialisation de mot de passe</h1>
 
       <p>Bonjour,</p>
@@ -43,6 +44,7 @@ export async function confirmEmail(email, confirmToken) {
     to: `${email}`,
     subject: 'Confirmation de compte',
     html: `
+    <img src="${logo}" alt="logo" style="width: 100px; height: 100px; margin-bottom: 20px;"/>
       <h1>Confirmation de compte</h1>
 
       <p>Bonjour,</p>
@@ -62,7 +64,7 @@ export async function changePasswordEmail(email) {
     to: `${email}`,
     subject: 'Changement de mot de passe',
     html: `
-    <img src="
+    <img src="${logo}" alt="logo" style="width: 100px; height: 100px; margin-bottom: 20px;"/>
       <h1>Confirmation de changement de mot de passe</h1>
 
       <p>Bonjour,</p>

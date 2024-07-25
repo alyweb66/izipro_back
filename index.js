@@ -37,12 +37,6 @@ import logger from './app/middleware/logger.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:httpserver`);
 
-/* function debugInDevelopment(message = '', value = '') {
-  if (process.env.NODE_ENV === 'development') {
-    debug('⚠️', message, value);
-  }
-} */
-
 const app = express();
 
 app.use(express.json());
@@ -191,28 +185,7 @@ app.use(
   }),
   // bodyParser.json({ limit: '50mb' }),
   expressMiddleware(server, {
-    context: async ({ req, res }) => ({ res, req, dataSources })
-    // let userData = null;
-    //  const { cache } = server;
-    /* const dataSources = {
-        dataDB: new DataDB({ cache }),
-        userData: req.userData,
-      }; */
-
-    /* // Get the user token from the headers.
-      if (req.headers.cookie !== undefined) {
-        debug('cookie in headers');
-        userData = await getUserByToken(req, res, dataSources);
-        // Update userData in dataSources
-        dataSources.userData = userData;
-      } else {
-        debug('no cookie in headers');
-
-        dataSources.userData = null;
-        debugInDevelopment('dataSources', dataSources);
-      } */
-
-    ,
+    context: async ({ req, res }) => ({ res, req, dataSources }),
   }),
 );
 

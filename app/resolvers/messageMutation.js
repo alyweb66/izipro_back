@@ -14,6 +14,19 @@ function debugInDevelopment(message = '', value = '') {
   }
 }
 
+/**
+ * create a message
+ *
+ * @param {number} args.id - The ID of the user creating the message.
+ * @param {{content: string,
+ * user_id: number,
+ * conversation_id:
+ * number, media: Array}} args.input - The input object containing the message details.
+  * @param {Object} context.dataSources - The data sources available in the context.
+ * @returns {Promise<boolean>} A promise that resolves to true
+ * if the message was created successfully.
+ * @throws {ApolloError} If there is an error creating the message.
+ */
 async function createMessage(_, { id, input }, { dataSources }) {
   debug('create message');
 

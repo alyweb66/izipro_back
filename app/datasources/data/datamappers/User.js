@@ -27,6 +27,13 @@ class User extends CoreDatamapper {
     return user;
   }
 
+  /**
+   * find users by ids
+   *
+   * @param {[number]} ids - array of user ids
+   * @returns {Promise<object[]>} The found users.
+   * @throws {Error} If there is an issue with the database query.
+   */
   async findUsersByIds(ids) {
     debug('Finding users by ids');
     debug(`SQL function ${this.tableName} called`);
@@ -41,6 +48,13 @@ class User extends CoreDatamapper {
     return users;
   }
 
+  /**
+   * find users by siret
+   *
+   * @param {number} siret - The user siret.
+   * @returns {Promise<boolean>} The found user.
+   * @throws {Error} If user not found.
+   */
   async findBySiret(siret) {
     debug('Finding users by siret');
     debug(`SQL function ${this.tableName} called`);

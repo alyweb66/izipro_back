@@ -6,6 +6,14 @@ const debug = Debug(`${process.env.DEBUG_MODULE}:datamappers:UserHasNotViewedCon
 class UserHasNotViewedConversation extends CoreDatamapper {
   tableName = 'user_has_notViewedConversation';
 
+  /**
+   * delete notViewedConversation
+   *
+   * @param {{user_id: number, conversation_id: number}} input - The ID of the user
+   * and the conversation to find.
+   * @returns {Promise<object[]>} A promise that resolves to an object of notViewedConversation.
+   * @throws {Error} If there is an issue with the database query.
+   */
   async deleteNotViewedConversation(input) {
     debug('delete notViewedConversation');
     // map the ids to placeholders
@@ -26,6 +34,13 @@ class UserHasNotViewedConversation extends CoreDatamapper {
     return rows;
   }
 
+  /**
+   * get user by conversation id
+   *
+   * @param {number} conversationId - The ID of the conversation to find.
+   * @returns {Promise<object[]>} A promise that resolves to an object of user.
+   * @throws {Error} If there is an issue with the database query.
+   */
   async getUserByConversationId(conversationId) {
     debug('get user by conversation id');
     const query = {

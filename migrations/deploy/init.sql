@@ -101,14 +101,13 @@ CREATE TABLE "request"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "title" TEXT NOT NULL CHECK (LENGTH("title") <= 50),
    "urgent" BOOLEAN NOT NULL,
-   "message" TEXT NOT NULL,
+   "message" TEXT NOT NULL CHECK (LENGTH("message") <= 500),
    "city" TEXT NOT NULL CHECK (LENGTH("city") <= 50),
    "lng" NUMERIC NOT NULL,
    "lat" NUMERIC NOT NULL,
    "range" INT NOT NULL,
    "user_id" INT NOT NULL REFERENCES "user"(id),
    "job_id" INT NOT NULL REFERENCES "job"(id),
-   "viewed_conv" BOOLEAN NOT NULL DEFAULT FALSE,
    "deleted_at" timestamptz,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
@@ -155,7 +154,7 @@ CREATE TABLE "rules"(
 
 
 CREATE TABLE "request_has_media"(
-    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "media_id" INT NOT NULL REFERENCES "media"(id),
    "request_id" INT NOT NULL REFERENCES "request"(id) ON DELETE CASCADE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
@@ -194,13 +193,13 @@ CREATE TABLE "user_has_notViewedConversation"(
    "updated_at" timestamptz
 );
 
-CREATE TABLE "user_has_user"(
+/* CREATE TABLE "user_has_user"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "user_id" INT NOT NULL REFERENCES "user"(id),
    "user_id_1" INT NOT NULL REFERENCES "user"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
-);
+); */
 
 CREATE TABLE "user_has_hiddingClientRequest"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
