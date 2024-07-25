@@ -36,23 +36,23 @@ async function handleUploadedFiles(media) {
           .webp({ quality: 75, effort: 4 }) // Adjust quality and effort for better compression
           .toBuffer();
       }
-      console.log('compressedBuffer', compressedBuffer);
 
       // Get file name without extension
       const fileNameWithoutExtension = path.parse(file.filename).name;
 
       // Generating a unique file name
-     // const uniqueFileName = `${fileNameWithoutExtension}_${Date.now()}${path.extname(file.filename)}`;
-     let uniqueFileName;
-     if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg') {
-       uniqueFileName = file.mimetype.startsWith('image/')
-        ? `${fileNameWithoutExtension}_${Date.now()}.webp`
-        : `${fileNameWithoutExtension}_${Date.now()}${path.extname(file.filename)}`;
-     }
+      // const uniqueFileName =
+      // `${fileNameWithoutExtension}_${Date.now()}${path.extname(file.filename)}`;
+      let uniqueFileName;
+      if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg') {
+        uniqueFileName = file.mimetype.startsWith('image/')
+          ? `${fileNameWithoutExtension}_${Date.now()}.webp`
+          : `${fileNameWithoutExtension}_${Date.now()}${path.extname(file.filename)}`;
+      }
 
-     if (file.mimetype === 'application/pdf') {
-       uniqueFileName = `${fileNameWithoutExtension}_${Date.now()}${path.extname(file.filename)}`;
-     }
+      if (file.mimetype === 'application/pdf') {
+        uniqueFileName = `${fileNameWithoutExtension}_${Date.now()}${path.extname(file.filename)}`;
+      }
 
       // Saving or further processing the compressed image or pdf
       const filePath = `./public/media/${uniqueFileName}`;
@@ -62,13 +62,13 @@ async function handleUploadedFiles(media) {
         await file.buffer.pipe(fs.createWriteStream(`./public/media/${uniqueFileName}`));
       }
       // get the file path
-      //const filePath = `./media/${uniqueFileName}`;
+      // const filePath = `./media/${uniqueFileName}`;
 
       // get the file name
       const fileName = path.basename(filePath);
       // Returning image details
       return {
-        url: `http://localhost:${process.env.PORT}/public/media/${fileName}`,
+        url: `${process.env.FILE_URL}${process.env.PORT}/public/media/${fileName}`,
         name: uniqueFileName,
       };
     }));

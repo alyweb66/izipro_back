@@ -4,10 +4,10 @@ import Debug from 'debug';
 import { ApolloError, AuthenticationError } from 'apollo-server-core';
 import serverLogout from './serverLogout.js';
 import pubsub from './pubSub.js';
-import RefreshToken from '../datasources/data/datamappers/refreshToken.js';
-// import User from '../datasources/data/datamappers/User.js';
+import ServerRequest from '../datasources/data/datamappers/serverRequest.js';
+import logger from './logger.js';
 
-const refreshTokenInstance = new RefreshToken();
+const refreshTokenInstance = new ServerRequest();
 // const UserMutation = new User();
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:getUserByToken`);
@@ -49,6 +49,7 @@ export default async function getUserByToken(req, res, dataSources) {
 
   const token = cookies['auth-token'] || '';
   const refreshToken = cookies['refresh-token'] || '';
+
   let decodeToken;
   try {
     // If the token is valid, return the user data
@@ -149,13 +150,21 @@ export default async function getUserByToken(req, res, dataSources) {
             return userData;
           }
         } catch (error) {
+          logger.error({
+            message: error.message,
+            stack: error.stack,
+            extensions: error.extensions,
+          });
           debug('Failed to verify refresh token1');
           subscribeToLogout(decodeToken.id);
           serverLogout(null, null, { res });
           throw new AuthenticationError('Failed to verify make new refresh-token');
         }
-      /*   subscribeToLogout(decodeToken.id);
-        serverLogout(null, null, { res }); */
+        logger.error({
+          message: refreshTokenError.message,
+          stack: refreshTokenError.stack,
+          extensions: refreshTokenError.extensions,
+        });
       }
     }
     debug('Failed to verify refresh token2');
