@@ -34,6 +34,7 @@ import getUserByToken from './app/middleware/getUserByToken.js';
 import DataDB from './app/datasources/data/index.js';
 // import serverLogout from './app/middleware/serverLogout.js';
 import logger from './app/middleware/logger.js';
+import updateLastLoginInDatabase from './app/middleware/lastLogin.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:httpserver`);
 
@@ -80,6 +81,42 @@ app.use(async (req, res, next) => {
   }
   next();
 });
+
+//* middleware to update last login using a Map to limit database calls
+const activeUsers = new Map();
+// verify interval in milliseconds (5 minutes)
+const checkInterval = 5 * 60 * 1000;
+// minimum interval to update the last login time in the database (1 minute)
+const minUpdateInterval = 60 * 1000;
+
+app.use((req, res, next) => {
+  if (req.userData && req.userData.id) {
+    const { userId } = req.userData.id;
+    const now = Date.now();
+    if (!activeUsers.has(userId) || (now - activeUsers.get(userId)) > minUpdateInterval) {
+      activeUsers.set(userId, now);
+    }
+  }
+  next();
+});
+
+// configure the interval to update the last login time in the database
+setInterval(() => {
+  const now = Date.now();
+  try {
+    activeUsers.forEach((lastActiveTime, userId) => {
+      if ((now - lastActiveTime) <= checkInterval) {
+        updateLastLoginInDatabase(userId, new Date(lastActiveTime));
+      } else {
+        activeUsers.delete(userId); // delete user if inactive
+      }
+    });
+  } catch (error) {
+    debug('error', error);
+  }
+}, checkInterval);
+//* end of middleware to update last login
+
 // Authentication Middleware
 const authenticate = (req, res, next) => {
   if (!req.userData) {
