@@ -38,6 +38,15 @@ function secureEnv() {
 }
 
 // function to delete the files from the public folder
+/**
+ * Deletes a file.
+ *
+ * @async
+ * @function deleteFile
+ * @param {string} file - The name of the file to delete.
+ * @returns {Promise<void>} A promise that resolves when the file is deleted.
+ * @throws {ApolloError} If there is an error deleting the file.
+ */
 async function deleteFile(file) {
   if (!file) {
     debugInDevelopment('No file to delete');
@@ -54,13 +63,18 @@ async function deleteFile(file) {
     throw new ApolloError('Error delete file');
   }
 }
-
 /**
+ * Creates a new user.
  *
- * @param {*} _ parent object
- * @param {*} param1 destructuring input from the mutation
- * @param {*} param2 destructuring dataSources from the context
- * @returns
+ * @async
+ * @function createUserFunction
+ * @param {Object} _ - The parent object, which is not used in this resolver.
+ * @param {{email: string, password: string}} input - The input object containing user details.
+ * @param {Object} context - The context object,
+ * which contains dataSources and other contextual information.
+ * @param {Object} context.dataSources - The data sources available in the context.
+ * @returns {Promise<Object>} A promise that resolves to the created user.
+ * @throws {ApolloError} If there is an error creating the user.
  */
 async function createUserFunction(_, { input }, { dataSources }) {
   debug('createUser is starting');
@@ -134,7 +148,19 @@ async function createUserFunction(_, { input }, { dataSources }) {
     throw new ApolloError('Error creating user');
   }
 }
-
+/**
+ * Confirms the registration email.
+ *
+ * @async
+ * @function confirmRegisterEmail
+ * @param {Object} _ - The parent object, which is not used in this resolver.
+ * @param {{token: string}} input - The input object containing the token.
+ * @param {Object} context - The context object,
+ * which contains dataSources and other contextual information.
+ * @param {Object} context.dataSources - The data sources available in the context.
+ * @returns {Promise<boolean>} A promise that resolves to true if the email is confirmed.
+ * @throws {ApolloError} If there is an error confirming the email.
+ */
 async function confirmRegisterEmail(_, { input }, { dataSources }) {
   debug('confirmRegisterEmail is starting');
   try {
@@ -168,7 +194,22 @@ async function confirmRegisterEmail(_, { input }, { dataSources }) {
     throw new ApolloError('Error confirm register mail');
   }
 }
-
+/**
+ * Logs in a user.
+ *
+ * @async
+ * @function login
+ * @param {Object} _ - The parent object, which is not used in this resolver.
+ * @param {{email: string,
+ * password: string,
+ * activeSession: boolean}} input - The input object containing login details.
+ * @param {Object} context - The context object,
+ * which contains dataSources, res, and other contextual information.
+ * @param {Object} context.dataSources - The data sources available in the context.
+ * @param {Object} context.res - The response object to set cookies.
+ * @returns {Promise<boolean>} A promise that resolves to true if the login is successful.
+ * @throws {ApolloError} If there is an error logging in.
+ */
 async function login(_, { input }, { dataSources, res }) {
   debug('login is starting');
   debugInDevelopment(input);
@@ -238,7 +279,18 @@ async function login(_, { input }, { dataSources, res }) {
     throw new ApolloError('Error login');
   }
 }
-
+/**
+ * Logs out the user by clearing authentication cookies and user data.
+ *
+ * @param {Object} _ - Unused parameter.
+ * @param {Object} args - The arguments object.
+ * @param {number} args.id - The ID of the user to log out.
+ * @param {Object} context - The context object.
+ * @param {Object} context.dataSources - The data sources object.
+ * @param {Object} context.res - The response object.
+ * @returns {Promise<boolean>} - Returns true if logout is successful.
+ * @throws {ApolloError} - Throws an error if logout fails.
+ */
 async function logout(_, { id }, { dataSources, res }) {
   debug('logout is starting');
   try {
@@ -272,7 +324,19 @@ async function logout(_, { id }, { dataSources, res }) {
     throw new ApolloError('Error logout');
   }
 }
-
+/**
+ * Deletes a user and all associated data.
+ *
+ * @param {Object} _ - Unused parameter.
+ * @param {Object} args - The arguments object.
+ * @param {number} args.id - The ID of the user to delete.
+ * @param {Object} context - The context object.
+ * @param {Object} context.dataSources - The data sources object.
+ * @param {Object} context.res - The response object.
+ * @returns {Promise<boolean>} - Returns true if user deletion is successful.
+ * @throws {ApolloError} - Throws an error if user deletion fails.
+ * @throws {AuthenticationError} - Throws an error if the user is not authenticated.
+ */
 async function deleteUser(_, { id }, { dataSources, res }) {
   debug('delete user is starting', id);
   try {
@@ -342,7 +406,17 @@ async function deleteUser(_, { id }, { dataSources, res }) {
     throw new ApolloError('Error delete user');
   }
 }
-
+/**
+ * Sends a password reset email to the user.
+ *
+ * @param {Object} _ - Unused parameter.
+ * @param {Object} args - The arguments object.
+ * @param {{email: string}} args.input - The input object.
+ * @param {Object} context - The context object.
+ * @param {Object} context.dataSources - The data sources object.
+ * @returns {Promise<boolean>} - Returns true if the password reset email is sent successfully.
+ * @throws {ApolloError} - Throws an error if password reset fails.
+ */
 async function forgotPassword(_, { input }, { dataSources }) {
   try {
     const user = await dataSources.dataDB.user.findUserByEmail(input.email);
@@ -361,7 +435,17 @@ async function forgotPassword(_, { input }, { dataSources }) {
     throw new ApolloError('Error forgot password');
   }
 }
-
+/**
+ * Validates the forgot password token and updates the user's password.
+ *
+ * @param {Object} _ - Unused parameter.
+ * @param {Object} args - The arguments object.
+ * @param {{token: string, password: string}} args.input - The input object.
+ * @param {Object} context - The context object.
+ * @param {Object} context.dataSources - The data sources object.
+ * @returns {Promise<boolean>} - Returns true if password validation and update is successful.
+ * @throws {ApolloError} - Throws an error if validation or update fails.
+ */
 async function validateForgotPassword(_, { input }, { dataSources }) {
   debug('validation forgot password is starting');
   debugInDevelopment(input);
@@ -401,7 +485,31 @@ async function validateForgotPassword(_, { input }, { dataSources }) {
     throw new ApolloError('Error validate forgot password');
   }
 }
-
+/**
+ * Updates the user's information.
+ *
+ * @param {Object} _ - Unused parameter.
+ * @param {Object} args - The arguments object.
+ * @param {number} args.id - The ID of the user to update.
+ * @param {{first_name: string,
+ * last_name: string,
+ * email: string,
+ * image: file,
+ * description: string,
+ * address: string,
+ * postal_code: string,
+ * city: string,
+ * siret: number,
+ * denomination: string,
+ * lat: number,
+ * lng: number,
+ * CGU: boolean}} args.input - The input object containing updated user information.
+ * @param {Object} context - The context object.
+ * @param {Object} context.dataSources - The data sources object.
+ * @returns {Promise<Object>} - Returns the updated user object.
+ * @throws {ApolloError} - Throws an error if update fails.
+ * @throws {AuthenticationError} - Throws an error if the user is not authenticated.
+ */
 async function updateUser(_, { id, input }, { dataSources }) {
   debug('updateUser is starting');
   debugInDevelopment('input', input);
@@ -474,8 +582,9 @@ async function updateUser(_, { id, input }, { dataSources }) {
     if (imageInput) {
       updateInput.image = imageInput;
     }
-
+    // clear the cache
     dataSources.dataDB.user.cache.clear();
+    dataSources.dataDB.user.findByPkLoader.clear(dataSources.userData.id);
     return dataSources.dataDB.user.update(id, updateInput);
   } catch (error) {
     if (error instanceof AuthenticationError) {
@@ -485,7 +594,20 @@ async function updateUser(_, { id, input }, { dataSources }) {
     throw new ApolloError('Error updating user');
   }
 }
-
+/**
+ * Changes the user's password.
+ *
+ * @param {Object} _ - Unused parameter.
+ * @param {Object} args - The arguments object.
+ * @param {number} args.id - The ID of the user to change the password for.
+ * @param {{oldPassword: string,
+ * newPassword: string}} args.input - The input object containing old and new passwords.
+ * @param {Object} context - The context object.
+ * @param {Object} context.dataSources - The data sources object.
+ * @returns {Promise<boolean>} - Returns true if password change is successful.
+ * @throws {ApolloError} - Throws an error if password change fails.
+ * @throws {AuthenticationError} - Throws an error if the user is not authenticated.
+ */
 async function changePassword(_, { id, input }, { dataSources }) {
   debug('changePassword is starting');
   const { oldPassword, newPassword } = input;
@@ -518,7 +640,18 @@ async function changePassword(_, { id, input }, { dataSources }) {
     throw new ApolloError('Error', 'BAD_REQUEST');
   }
 }
-
+/**
+ * Deletes the user's profile picture.
+ *
+ * @param {Object} _ - Unused parameter.
+ * @param {Object} args - The arguments object.
+ * @param {number} args.id - The ID of the user whose profile picture is to be deleted.
+ * @param {Object} context - The context object.
+ * @param {Object} context.dataSources - The data sources object.
+ * @returns {Promise<boolean>} - Returns true if the profile picture is successfully deleted.
+ * @throws {ApolloError} - Throws an error if deletion fails.
+ * @throws {AuthenticationError} - Throws an error if the user is not authenticated.
+ */
 async function deleteProfilePicture(_, { id }, { dataSources }) {
   debug('deleteProfilePicture is starting');
   try {

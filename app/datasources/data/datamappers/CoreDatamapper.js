@@ -133,7 +133,7 @@ class CoreDatamapper {
    * Modify an existing entity
    *
    * @param {number} id - id of the entity to modify
-   * @param {Object} inputData - enity modifications
+   * @param {Object} inputData - entity modifications
    * @returns an updated entity
    */
   async update(id, inputData) {
@@ -180,7 +180,7 @@ class CoreDatamapper {
   /**
    * delete an existing entity
    *
-   * @param {number} id - id of the entity to modify
+   * @param {number} userId - id of the entity to modify
    * @returns an boolean
    */
   async deleteByUserId(userId) {

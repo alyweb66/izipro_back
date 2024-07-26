@@ -11,6 +11,7 @@ class Job extends CoreDatamapper {
   *
   * @param {number} id - id of the entity
   * @returns {Promise<object[]>} The found jobs.
+  * @throws {Error} If there is an issue with the database query.
   */
   async findJobsByCategory(id) {
     debug(`find jobs by category with id ${id}`);
@@ -27,6 +28,13 @@ class Job extends CoreDatamapper {
     return rows;
   }
 
+  /**
+   * finds all jobs by their ids
+   *
+   * @param {[number]} jobIds - array of job ids
+   * @returns {Promise<object[]>} The found jobs.
+   * @throws {Error} If there is an issue with the database query.
+   */
   async findJobByPK(jobIds) {
     debug('find jobs by ids');
     debug(`SQL function ${this.tableName} called`);

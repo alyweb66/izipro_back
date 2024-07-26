@@ -6,6 +6,21 @@ import {
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:user`);
 
 const UserResolver = {
+  /**
+ * Retrieves all requests for a user with pagination.
+ *
+ * @async
+ * @function requests
+ * @param {Object} args - The arguments provided to the field in the GraphQL query.
+ * @param {number} user.id - The ID of the user.
+ * @param {number} args.offset - The offset for pagination.
+ * @param {number} args.limit - The limit for pagination.
+ * @param {Object} context - The context object,
+ * which contains dataSources and other contextual information.
+ * @param {Object} context.dataSources - The data sources available in the context.
+ * @returns {Promise<Array>} A promise that resolves to an array of requests.
+ * @throws {ApolloError} If there is an error retrieving the requests.
+ */
   async requests({ id }, { offset, limit }, { dataSources }) {
     try {
       debug(`get all request from user id: ${id}, offset ${offset}, limit ${limit}`);
@@ -16,6 +31,20 @@ const UserResolver = {
       throw new ApolloError('Error get all request from user id ');
     }
   },
+  /**
+ * Retrieves a specific request by its ID.
+ *
+ * @async
+ * @function request
+ * @param {number} user.id - The ID of the user.
+ * @param {Object} args - The arguments provided to the field in the GraphQL query.
+ * @param {number} args.requestId - The ID of the request to retrieve.
+ * @param {Object} context - The context object,
+ * which contains dataSources and other contextual information.
+ * @param {Object} context.dataSources - The data sources available in the context.
+ * @returns {Promise<Object>} A promise that resolves to the request object.
+ * @throws {ApolloError} If there is an error retrieving the request.
+ */
   async request({ id }, { requestId }, { dataSources }) {
     try {
       debug(`get request by id: ${id}`);
@@ -26,6 +55,18 @@ const UserResolver = {
       throw new ApolloError('Error get request by id ');
     }
   },
+  /**
+ * Retrieves all jobs for a user.
+ *
+ * @function jobs
+ * @param {number} user.id - The ID of the user.
+ * @param {Object} _ - The parent object, which is not used in this resolver.
+ * @param {Object} context - The context object,
+ * which contains dataSources and other contextual information.
+ * @param {Object} context.dataSources - The data sources available in the context.
+ * @returns {Promise<Array>} A promise that resolves to an array of jobs.
+ * @throws {ApolloError} If there is an error retrieving the jobs.
+ */
   jobs({ id }, _, { dataSources }) {
     try {
       dataSources.dataDB.userHasJob.findByUserIdsLoader.clear(id);
@@ -36,6 +77,19 @@ const UserResolver = {
       throw new ApolloError('Error get all jobs from user id ');
     }
   },
+  /**
+ * Retrieves the settings for a user.
+ *
+ * @async
+ * @function settings
+ * @param {number} user.id - The ID of the user.
+ * @param {Object} _ - The parent object, which is not used in this resolver.
+ * @param {Object} context - The context object, w
+ * hich contains dataSources and other contextual information.
+ * @param {Object} context.dataSources - The data sources available in the context.
+ * @returns {Promise<Object>} A promise that resolves to the settings object.
+ * @throws {ApolloError} If there is an error retrieving the settings.
+ */
   async settings({ id }, _, { dataSources }) {
     try {
       dataSources.dataDB.userSetting.findByUserIdsLoader.clear(id);
@@ -47,6 +101,21 @@ const UserResolver = {
       throw new ApolloError('Error get setting from user id ');
     }
   },
+  /**
+ * Retrieves all requests by conversations for a user with pagination.
+ *
+ * @async
+ * @function requestsConversations
+ * @param {number} user.id - The ID of the user.
+ * @param {Object} args - The arguments provided to the field in the GraphQL query.
+ * @param {number} args.offset - The offset for pagination.
+ * @param {number} args.limit - The limit for pagination.
+ * @param {Object} context - The context object,
+ * which contains dataSources and other contextual information.
+ * @param {Object} context.dataSources - The data sources available in the context.
+ * @returns {Promise<Array>} A promise that resolves to an array of requests.
+ * @throws {ApolloError} If there is an error retrieving the requests.
+ */
   async requestsConversations({ id }, { offset, limit }, { dataSources }) {
     try {
       debug(`get all requests by conversations from user id: ${id}`);
@@ -58,6 +127,23 @@ const UserResolver = {
       throw new ApolloError('Error get all requests by conversations from user id ');
     }
   },
+  /**
+ * Retrieves all messages from a conversation for a user with pagination.
+ *
+ * @async
+ * @function messages
+ * @param {number} user.id - The ID of the user.
+ * @param {Object} args - The arguments provided to the field in the GraphQL query.
+ * @param {number} args.conversationId - The ID of the conversation.
+ * @param {number} args.offset - The offset for pagination.
+ * @param {number} args.limit - The limit for pagination.
+ * @param {Object} context - The context object,
+ * which contains dataSources and other contextual information.
+ * @param {Object} context.dataSources - The data sources available in the context.
+ * @returns {Promise<Array>} A promise that resolves to an array of messages.
+ * @throws {AuthenticationError} If the user is unauthorized.
+ * @throws {ApolloError} If there is an error retrieving the messages.
+ */
   async messages({ id }, { conversationId, offset, limit }, { dataSources }) {
     try {
       debug(`get all messages from conversation id: ${conversationId}`);
@@ -76,6 +162,19 @@ const UserResolver = {
       throw new ApolloError('Error get all messages from conversation id ');
     }
   },
+  /**
+ * Retrieves all subscriptions for a user.
+ *
+ * @async
+ * @function subscription
+ * @param {number} user.id - The ID of the user.
+ * @param {Object} _ - The parent object, which is not used in this resolver.
+ * @param {Object} context - The context object,
+ * which contains dataSources and other contextual information.
+ * @param {Object} context.dataSources - The data sources available in the context.
+ * @returns {Promise<Array>} A promise that resolves to an array of subscriptions.
+ * @throws {ApolloError} If there is an error retrieving the subscriptions.
+ */
   async subscription({ id }, _, { dataSources }) {
     try {
       debug(`get all subscription from user id: ${id}`);
@@ -87,6 +186,19 @@ const UserResolver = {
       throw new ApolloError('Error get all subscription from user id ');
     }
   },
+  /**
+ * Retrieves all requests that have not been viewed by the user.
+ *
+ * @async
+ * @function userHasNotViewedRequest
+ * @param {number} user.id - The ID of the user.
+ * @param {Object} _ - The parent object, which is not used in this resolver.
+ * @param {Object} context - The context object,
+ * which contains dataSources and other contextual information.
+ * @param {Object} context.dataSources - The data sources available in the context.
+ * @returns {Promise<Array>} A promise that resolves to an array of not viewed requests.
+ * @throws {ApolloError} If there is an error retrieving the requests.
+ */
   async userHasNotViewedRequest({ id }, _, { dataSources }) {
     try {
       debug(`get all has viewed request from user id: ${id}`);
@@ -98,6 +210,19 @@ const UserResolver = {
       throw new ApolloError('Error get all has viewed request from user id ');
     }
   },
+  /**
+ * Retrieves all conversations that have not been viewed by the user.
+ *
+ * @async
+ * @function userHasNotViewedConversation
+ * @param {number} user.id - The ID of the user.
+ * @param {Object} _ - The parent object, which is not used in this resolver.
+ * @param {Object} context - The context object,
+ * which contains dataSources and other contextual information.
+ * @param {Object} context.dataSources - The data sources available in the context.
+ * @returns {Promise<Array>} A promise that resolves to an array of not viewed conversations.
+ * @throws {ApolloError} If there is an error retrieving the conversations.
+ */
   async userHasNotViewedConversation({ id }, _, { dataSources }) {
     try {
       debug(`get all has not viewed conversation from user id: ${id}`);
@@ -109,6 +234,20 @@ const UserResolver = {
       throw new ApolloError('Error get all has not viewed conversation from user id ');
     }
   },
+  /**
+ * Retrieves all conversation request IDs for a user.
+ *
+ * @async
+ * @function conversationRequestIds
+ * @param {Object} user - The user object.
+ * @param {number} user.id - The ID of the user.
+ * @param {Object} _ - The parent object, which is not used in this resolver.
+ * @param {Object} context - The context object,
+ * which contains dataSources and other contextual information.
+ * @param {Object} context.dataSources - The data sources available in the context.
+ * @returns {Promise<Array>} A promise that resolves to an array of conversation request IDs.
+ * @throws {ApolloError} If there is an error retrieving the conversation request IDs.
+ */
   async conversationRequestIds({ id }, _, { dataSources }) {
     try {
       debug(`get all conversation id from user id: ${id}`);
@@ -119,6 +258,20 @@ const UserResolver = {
       throw new ApolloError('Error get all conversation id from user id ');
     }
   },
+  /**
+ * Retrieves all cookie consents for a user.
+ *
+ * @async
+ * @function cookieConsents
+ * @param {Object} user - The user object.
+ * @param {number} user.id - The ID of the user.
+ * @param {Object} _ - The parent object, which is not used in this resolver.
+ * @param {Object} context - The context object,
+ * which contains dataSources and other contextual information.
+ * @param {Object} context.dataSources - The data sources available in the context.
+ * @returns {Promise<Object>} A promise that resolves to the first cookie consent object.
+ * @throws {ApolloError} If there is an error retrieving the cookie consents.
+ */
   async cookieConsents({ id }, _, { dataSources }) {
     try {
       debug(`get all cookie consents from user id: ${id}`);

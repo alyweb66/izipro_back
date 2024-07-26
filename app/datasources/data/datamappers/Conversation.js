@@ -6,6 +6,13 @@ const debug = Debug(`${process.env.DEBUG_MODULE}:datamappers:Conversation`);
 class Conversation extends CoreDatamapper {
   tableName = 'conversation';
 
+  /**
+ * Retrieves conversations for a given user ID.
+ *
+ * @param {number} userId - The ID of the user to find conversations for.
+ * @returns {Promise<Array>} A promise that resolves to an array of conversation objects.
+ * @throws {Error} If there is an issue with the database query.
+ */
   async getConversationByUser(userId) {
     debug('Finding conversation by user id');
     debug(`SQL function ${this.tableName} called`);
@@ -20,6 +27,13 @@ class Conversation extends CoreDatamapper {
     return request;
   }
 
+  /**
+   * updates the updated_at field of a conversation.
+   *
+   * @param {number} conversationId  - The ID of the conversation to update
+   * @returns {Promise<number>} A promise that resolves to the number of rows affected.
+   * @throws {Error} If there is an issue with the database query.
+   */
   async updateUpdatedAtConversation(conversationId) {
     debug('Updating updated_at conversation');
     debug(`SQL function ${this.tableName} called`);

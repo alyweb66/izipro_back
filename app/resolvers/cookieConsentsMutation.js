@@ -9,6 +9,19 @@ function debugInDevelopment(message = '', value = '') {
   }
 }
 
+/**
+ * create cookie consents
+ *
+ * @param {number} args.id - The ID of the user creating the cookie consents.
+ * @param {{id: number,
+ * cookies_necessary: boolean,
+ * cookies_analytics: boolean,
+ * cookies_marketing: boolean}} args.input -
+ * The input object containing the cookie consents details.
+ * @param {Object} context.dataSources - The data sources available in the context.
+ * @returns {Promise<Object>} A promise that resolves to the created cookie consents object.
+ * @throws {ApolloError} If there is an error creating the cookie consents.
+ */
 async function createCookieConsents(_, { id, input }, { dataSources }) {
   debug('create cookie consents');
   debugInDevelopment('input', input);
@@ -34,6 +47,18 @@ async function createCookieConsents(_, { id, input }, { dataSources }) {
   }
 }
 
+/**
+ *
+ * @param {number} args.id - The ID of the user updating the cookie consents.
+ * @param {{id: number,
+ * cookies_necessary: boolean,
+* cookies_analytics: boolean,
+* cookies_marketing: boolean}} args.input -
+* The input object containing the cookie consents details.
+* @param {Object} context.dataSources - The data sources available in the context.
+ * @returns {Promise<Object>} A promise that resolves to the updated cookie consents object.
+ * @throws {ApolloError} If there is an error updating the cookie consents.
+ */
 async function updateCookieConsents(_, { id, input }, { dataSources }) {
   debug('update cookie consents');
   debugInDevelopment('input', input);

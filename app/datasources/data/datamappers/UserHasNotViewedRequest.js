@@ -6,6 +6,14 @@ const debug = Debug(`${process.env.DEBUG_MODULE}:datamappers:UserHasNotViewedReq
 class UserHasNotViewedRequest extends CoreDatamapper {
   tableName = 'user_has_notViewedRequest';
 
+  /**
+   * create a notViewedRequest
+   *
+   * @param {{user_id: number, request_id: number}} input - The ID of the user and the
+   * request to find.
+   * @returns {Promise<object[]>} A promise that resolves to an object of notViewedRequest.
+   * @throws {Error} If there is an issue with the database query.
+   */
   async createNotViewedRequest(input) {
     debug('create notViewedRequest');
     // map the ids to placeholders
@@ -26,6 +34,14 @@ class UserHasNotViewedRequest extends CoreDatamapper {
     return rows;
   }
 
+  /**
+   * delete notViewedRequest
+   *
+   * @param {{user_id: number, request_id: number}} input - The ID of the user and the
+   * request to delete.
+   * @returns {Promise<object[]>} A promise that resolves to an object of notViewedRequest.
+   * @throws {Error} If there is an issue with the database query.
+   */
   async deleteNotViewedRequest(input) {
     debug('delete notViewedRequest');
     // map the ids to placeholders
@@ -46,6 +62,13 @@ class UserHasNotViewedRequest extends CoreDatamapper {
     return rows;
   }
 
+  /**
+   * get user's not viewed request
+   *
+   * @param {number} requestId - The ID of the user to find.
+   * @returns {Promise<object[]>} A promise that resolves to an object of user.
+   * @throws {Error} If there is an issue with the database query
+   */
   async getUserNotViewedConv(requestId) {
     debug('get user not viewed request');
     const query = {

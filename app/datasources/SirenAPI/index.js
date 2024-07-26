@@ -10,7 +10,7 @@ debug('siren API starting');
 class SirenAPI extends RESTDataSource {
   constructor(options) {
     super(options);
-    this.baseURL = 'https://api.insee.fr/entreprises/sirene/V3.11/siret/';
+    this.baseURL = process.env.SIREN_API_URL;
     this.token = process.env.SIREN_API_TOKEN;
   }
 

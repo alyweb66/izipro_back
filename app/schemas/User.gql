@@ -52,8 +52,8 @@ type AccessToken {
 }
 
 input loginInput {
-    email: String!
-    password: String!
+    email: validateEmail! 
+    password: validatePassword! @length(max: 60)
     activeSession: Boolean!
 }
 

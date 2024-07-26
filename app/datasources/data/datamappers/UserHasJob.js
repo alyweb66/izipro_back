@@ -38,6 +38,14 @@ class UserHasJob extends CoreDatamapper {
     return false;
   }
 
+  /**
+   * delete data in user_has_job.
+   *
+   * @param {number} userId - The ID of the user to find requests for.
+   * @param {number} jobId - The ID of the job to find requests for.
+   * @returns {Promise<object>} A promise that resolves to an array of request objects.
+   * @throws {Error} If there is an issue with the database query.
+   */
   async deleteUserHasJob(userId, jobId) {
     debug('delete user_has_job');
     debug(`SQL function ${this.tableName} called`);
