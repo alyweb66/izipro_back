@@ -582,8 +582,9 @@ async function updateUser(_, { id, input }, { dataSources }) {
     if (imageInput) {
       updateInput.image = imageInput;
     }
-
+    // clear the cache
     dataSources.dataDB.user.cache.clear();
+    dataSources.dataDB.user.findByPkLoader.clear(dataSources.userData.id);
     return dataSources.dataDB.user.update(id, updateInput);
   } catch (error) {
     if (error instanceof AuthenticationError) {
