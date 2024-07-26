@@ -83,15 +83,18 @@ app.use(async (req, res, next) => {
 });
 
 //* middleware to update last login using a Map to limit database calls
+// record the last connection in the last 12 hours using a Map
+// each time a user makes a request, the last connection time is updated
+// the last connection time is updated in the database every 12 hours
 const activeUsers = new Map();
-// verify interval in milliseconds (5 minutes)
-const checkInterval = 5 * 60 * 1000;
+// verify interval in milliseconds (12 hours)
+const checkInterval = 12 * 60 * 60 * 1000;
 // minimum interval to update the last login time in the database (1 minute)
 const minUpdateInterval = 60 * 1000;
 
 app.use((req, res, next) => {
   if (req.userData && req.userData.id) {
-    const { userId } = req.userData.id;
+    const userId = req.userData.id;
     const now = Date.now();
     if (!activeUsers.has(userId) || (now - activeUsers.get(userId)) > minUpdateInterval) {
       activeUsers.set(userId, now);
@@ -107,10 +110,10 @@ setInterval(() => {
     activeUsers.forEach((lastActiveTime, userId) => {
       if ((now - lastActiveTime) <= checkInterval) {
         updateLastLoginInDatabase(userId, new Date(lastActiveTime));
-      } else {
-        activeUsers.delete(userId); // delete user if inactive
       }
     });
+    // Clear the map after updating the database
+    activeUsers.clear();
   } catch (error) {
     debug('error', error);
   }
