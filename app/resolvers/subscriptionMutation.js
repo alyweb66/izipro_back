@@ -11,6 +11,17 @@ function debugInDevelopment(message = '', value = '') {
   }
 }
 
+/**
+ * create Subscription
+ * @async
+ *@function createSubscription
+ * @param {object} _ The parent object, which is not used in this resolver.
+ * @param {{user_id: number, subscriber: string, subscriber_id: array}} args.input
+ * The input object containing the subscription details.
+ * @param {Object} context.dataSources - The data sources available in the context.
+ * @returns {Promise<Object>} A promise that resolves to the created subscription object.
+ * @throws {ApolloError} If the user is not authorized to create the subscription.
+ */
 async function createSubscription(_, { input }, { dataSources }) {
   debug('create subscription');
   debugInDevelopment('input', input);

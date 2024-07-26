@@ -34,14 +34,9 @@ import getUserByToken from './app/middleware/getUserByToken.js';
 import DataDB from './app/datasources/data/index.js';
 // import serverLogout from './app/middleware/serverLogout.js';
 import logger from './app/middleware/logger.js';
+import updateLastLoginInDatabase from './app/middleware/lastLogin.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:httpserver`);
-
-/* function debugInDevelopment(message = '', value = '') {
-  if (process.env.NODE_ENV === 'development') {
-    debug('⚠️', message, value);
-  }
-} */
 
 const app = express();
 
@@ -86,6 +81,45 @@ app.use(async (req, res, next) => {
   }
   next();
 });
+
+//* middleware to update last login using a Map to limit database calls
+// record the last connection in the last 12 hours using a Map
+// each time a user makes a request, the last connection time is updated
+// the last connection time is updated in the database every 12 hours
+const activeUsers = new Map();
+// verify interval in milliseconds (12 hours)
+const checkInterval = 12 * 60 * 60 * 1000;
+// minimum interval to update the last login time in the database (1 minute)
+const minUpdateInterval = 60 * 1000;
+
+app.use((req, res, next) => {
+  if (req.userData && req.userData.id) {
+    const userId = req.userData.id;
+    const now = Date.now();
+    if (!activeUsers.has(userId) || (now - activeUsers.get(userId)) > minUpdateInterval) {
+      activeUsers.set(userId, now);
+    }
+  }
+  next();
+});
+
+// configure the interval to update the last login time in the database
+setInterval(() => {
+  const now = Date.now();
+  try {
+    activeUsers.forEach((lastActiveTime, userId) => {
+      if ((now - lastActiveTime) <= checkInterval) {
+        updateLastLoginInDatabase(userId, new Date(lastActiveTime));
+      }
+    });
+    // Clear the map after updating the database
+    activeUsers.clear();
+  } catch (error) {
+    debug('error', error);
+  }
+}, checkInterval);
+//* end of middleware to update last login
+
 // Authentication Middleware
 const authenticate = (req, res, next) => {
   if (!req.userData) {
@@ -191,28 +225,7 @@ app.use(
   }),
   // bodyParser.json({ limit: '50mb' }),
   expressMiddleware(server, {
-    context: async ({ req, res }) => ({ res, req, dataSources })
-    // let userData = null;
-    //  const { cache } = server;
-    /* const dataSources = {
-        dataDB: new DataDB({ cache }),
-        userData: req.userData,
-      }; */
-
-    /* // Get the user token from the headers.
-      if (req.headers.cookie !== undefined) {
-        debug('cookie in headers');
-        userData = await getUserByToken(req, res, dataSources);
-        // Update userData in dataSources
-        dataSources.userData = userData;
-      } else {
-        debug('no cookie in headers');
-
-        dataSources.userData = null;
-        debugInDevelopment('dataSources', dataSources);
-      } */
-
-    ,
+    context: async ({ req, res }) => ({ res, req, dataSources }),
   }),
 );
 

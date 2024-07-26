@@ -3,7 +3,8 @@
 **/.DS_Store
 
 # media
-public/media/
+public/media/*
+!public/media/
 
 # Sqitch
 sqitch.conf

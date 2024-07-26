@@ -35,6 +35,29 @@ function debugInDevelopment(message = '', value = '') {
 } */
 
 // function to create the request
+/**
+ * Creates a new request based on the provided input.
+ *
+ * @async
+ * @function createRequest
+ * @param {Object} _ - The parent object, which is not used in this resolver.
+ * @param {Object} args - The arguments provided to the field in the GraphQL query.
+ * @param {{urgent: boolean,
+ * title: string,
+ * message: string,
+ * city: string,
+ * lng: number,
+ * lat: number,
+ * range: number,
+ * user_id: number,
+ * job_id: number,
+ *  media: Array}} args.input - The input object containing the request details.
+ * @param {Object} context.dataSources - The data sources available in the context.
+ * @returns {Promise<Object>} A promise that resolves
+ * to the created request object with media and conversation.
+ * @throws {AuthenticationError} If the user is not authorized to create the request.
+ * @throws {ApolloError} If there is an error creating the request or associated media.
+ */
 async function createRequest(_, { input }, { dataSources }) {
   debug('create request');
   debugInDevelopment('input', input.media);
@@ -137,6 +160,23 @@ async function createRequest(_, { input }, { dataSources }) {
 }
 
 // function to delete the request
+/**
+ * Deletes a request by marking it as deleted.
+ *
+ * @async
+ * @function deleteRequest
+ * @param {Object} _ - The parent object, which is not used in this resolver.
+ * @param {Object} args - The arguments provided to the field in the GraphQL query.
+ * @param {{id: number, user_id: number}} args.input -
+ * The input object containing the request details.
+ * @param {Object} context - The context object,
+ * which contains dataSources and other contextual information.
+ * @param {Object} context.dataSources - The data sources available in the context.
+ * @returns {Promise<boolean>} A promise that resolves to
+ *  true if the request was successfully deleted.
+ * @throws {AuthenticationError} If the user is not authorized to delete the request.
+ * @throws {ApolloError} If there is an error deleting the request.
+ */
 async function deleteRequest(_, { input }, { dataSources }) {
   debug('delete request');
   try {

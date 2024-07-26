@@ -6,6 +6,15 @@ import CoreDatamapper from './CoreDatamapper.js';
 class UserSetting extends CoreDatamapper {
   tableName = 'user_setting';
 
+  /**
+   * update user setting
+   *
+   * @param {number} id - The ID of the user to update.
+   * @param {{name: string, content: string, range: number, user_id: number}} inputData -
+   * The data to update.
+   * @returns {Promise<object>} A promise that resolves to an object of user setting.
+   * @throws {Error} If there is an issue with the database query.
+   */
   async updateUserSetting(id, inputData) {
     const fieldsAndPlaceholders = [];
     let indexPlaceholder = 1;

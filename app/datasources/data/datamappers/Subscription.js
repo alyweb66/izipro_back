@@ -8,6 +8,17 @@ class Subscription extends CoreDatamapper {
 
   insertFunc = 'insert_subscription';
 
+  /**
+   * create a subscription
+   *
+   * @param {number} userId - The ID of the user to find requests for.
+   * @param {string} subscriber - The subscriber type (
+   * request, jobRequest, clientConversation, conversation ).
+   *
+   * @param {number} subscriberIds
+   * @returns {Promise<object>} A promise that resolves to an object of subscription.
+   * @throws {Error} If there is an issue with the database query
+   */
   async createSubscription(userId, subscriber, subscriberIds) {
     debug('create subscription');
     debug(`SQL function ${this.insertFunc} called`);
