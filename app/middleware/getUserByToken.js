@@ -41,6 +41,9 @@ const cookieOptions = {
   path: '/',
 };
 
+// this function is used to get the user by token and verify token, if the token is expired,
+// it will refresh the token
+// and if the refresh token is expired, it will make a new refresh token
 export default async function getUserByToken(req, res, dataSources) {
   debug('starting get user by token');
 

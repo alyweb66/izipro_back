@@ -29,6 +29,7 @@ type User {
     settings: [UserSettings]
     subscription: [UserSubscription]
     deleted_at: String
+    publicKey: String
 }
 
 type UserResult{
@@ -45,6 +46,8 @@ type AuthPayload {
     token: String!
     refreshToken: String!
 }
+
+
 
 
 type AccessToken {

@@ -63,6 +63,16 @@ CREATE TABLE "subscription"(
    "updated_at" timestamptz
 );
 
+CREATE TABLE "notification"(
+   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   "user_id" INT NOT NULL REFERENCES "user"(id),
+   "endpoint" TEXT NOT NULL,
+   "public_key" TEXT NOT NULL,
+   "auth_token" TEXT NOT NULL,
+   "created_at" timestamptz NOT NULL DEFAULT now(),
+   "updated_at" timestamptz
+);
+
 CREATE TABLE "user_setting"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "name" TEXT CHECK (LENGTH("name") <= 50),
