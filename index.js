@@ -9,7 +9,8 @@ import { expressMiddleware } from '@apollo/server/express4';
 import cors from 'cors';
 import express from 'express';
 // import { PubSub } from 'graphql-subscriptions';
-import http from 'http';
+import fs from 'fs';
+import https from 'https';
 import path from 'path';
 import url from 'url';
 
@@ -39,6 +40,10 @@ import updateLastLoginInDatabase from './app/middleware/lastLogin.js';
 const debug = Debug(`${process.env.DEBUG_MODULE}:httpserver`);
 
 const app = express();
+
+// Chemins vers les fichiers de certificat et de clé
+const key = fs.readFileSync('./server.key');
+const cert = fs.readFileSync('./server.cert');
 
 app.use(express.json());
 
@@ -132,7 +137,7 @@ const authenticate = (req, res, next) => {
 app.use('/public', authenticate, express.static(path.join(dirname, 'public')));
 app.use('/logo', express.static(path.join(dirname, 'logo')));
 // The `listen` method launches a web server.
-const httpServer = http.createServer(app);
+const httpServer = https.createServer({ key, cert }, app);
 
 // The ApolloServer constructor requires two parameters: schema
 // definition and set of resolvers.

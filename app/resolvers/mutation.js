@@ -10,6 +10,7 @@ import userHasViewedRequestMutation from './userHasNotViewedRequestMutation.js';
 import userHasNotViewedConversationMutation from './userHasNotViewedConversationMutation.js';
 import cookieConsentsMutation from './cookieConsentsMutation.js';
 import contactMutation from './contactMutation.js';
+import notificationMutation from './notificationMutation.js';
 
 export default {
   ...requestMutation,
@@ -24,5 +25,6 @@ export default {
   ...userHasNotViewedConversationMutation,
   ...cookieConsentsMutation,
   ...contactMutation,
+  ...notificationMutation,
 
 };

@@ -624,6 +624,7 @@ BEGIN
       -- Debugging: Log the current sub_user_id
       RAISE NOTICE 'Subscriber User ID: %', sub_user_id;
 
+      -- check if the user is not the sender
       IF sub_user_id <> NEW.user_id THEN
         -- Check if the pair (sub_user_id, NEW.conversation_id) already exists
         IF NOT EXISTS (
