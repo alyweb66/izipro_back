@@ -1,0 +1,6 @@
+extend type Mutation{
+    # Notification mutations
+    createNotification(input: NotificationInput!): Boolean
+    deleteNotification(input: NotificationDeleteInput! ): Boolean
+   
+}

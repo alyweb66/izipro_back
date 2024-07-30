@@ -5,6 +5,24 @@ import { newRequestEmail } from './sendEmail.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:middleware:checkViewedBeforeSendRequestEmail`);
 
+/**
+ * Check if the request has been viewed before sending an email
+ *
+ * @param {{urgent: boolean,
+ * title: string,
+* message: string,
+* city: string,
+* lng: number,
+* lat: number,
+* range: number,
+* user_id: number,
+* job_id: number,
+*  media: Array}} request - The input object containing the request details.
+ * @param {Object} dataSources - The data sources object containing the database access methods
+ * @returns {Promise<boolean>} -
+ * Returns false if the request has not been viewed or if an error occurs
+ * @throws {ApolloError} - Throws an error if there is an issue with the database query
+ */
 export default async function checkViewedBeforeSendRequestEmail(request, dataSources) {
   try {
     const userId = await

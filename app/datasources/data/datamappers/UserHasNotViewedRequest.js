@@ -100,6 +100,33 @@ class UserHasNotViewedRequest extends CoreDatamapper {
 
     return rows;
   }
+
+  /**
+   * get all users by request id
+   *
+   * @param {number} requestId - The ID of the request to find.
+   * @returns {Promise<object[]>} A promise that resolves to an object of user.
+   * @throws {Error} If there is an issue with the database query
+   */
+  async getUserByRequestId(requestId) {
+    debug(`get user by request id in ${this.tableName} table`);
+    const query = {
+      text: `
+      SELECT 
+        "user_id"
+      FROM 
+        "${this.tableName}"
+      WHERE 
+        "request_id" = $1;
+  `,
+      values: [requestId],
+    };
+
+    const result = await this.client.query(query);
+    const { rows } = result;
+
+    return rows;
+  }
 }
 
 export default UserHasNotViewedRequest;
