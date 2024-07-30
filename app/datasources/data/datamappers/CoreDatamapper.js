@@ -66,15 +66,23 @@ class CoreDatamapper {
   }
 
   /**
-   * returns all entities according to its user_id
-   *
-   * @param {number} userId - id of the entity
-   * @returns an entity
-   */
+ * Returns all entities according to their user_id(s)
+ *
+ * @param {number|number[]} userId - The ID or an array of IDs of the entity/entities
+ * @returns {Promise<Object|Object[]>} -
+ * A promise that resolves to an entity or an array of entities
+ */
   async findByUser(userId) {
     debug('add new entities to dataLoader');
+    if (Array.isArray(userId)) {
+      const records = await this.findByUserIdsLoader.loadMany(userId);
+      return records.map((record) => record || null);
+    }
     const record = await this.findByUserIdsLoader.load(userId);
     return record || null;
+
+    /*  const record = await this.findByUserIdsLoader.load(userId);
+    return record || null; */
   }
 
   /**

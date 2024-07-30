@@ -17,6 +17,7 @@ import UserHasNotViewedRequest from './datamappers/UserHasNotViewedRequest.js';
 import UserHasNotViewedConversation from './datamappers/UserHasNotViewedConversation.js';
 import Rules from './datamappers/rules.js';
 import CookieConsents from './datamappers/CookieConsents.js';
+import Notification from './datamappers/Notification.js';
 
 // allows you to instantiate the datamappers
 // to put it in context
@@ -41,6 +42,7 @@ class DataDB {
     this.userHasNotViewedConversation = new UserHasNotViewedConversation(newOptions);
     this.rules = new Rules(newOptions);
     this.cookieConsents = new CookieConsents(newOptions);
+    this.notification = new Notification(newOptions);
   }
 }
 

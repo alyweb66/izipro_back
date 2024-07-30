@@ -283,6 +283,11 @@ const UserResolver = {
       throw new ApolloError('Error get all cookie consents from user id ');
     }
   },
+
+  publicKey({ id }) {
+    debug(`get the VAPID public key from user id: ${id}`);
+    return process.env.VAPID_PUBLIC_KEY;
+  },
 };
 
 export default UserResolver;
