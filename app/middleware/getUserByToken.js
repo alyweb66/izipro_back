@@ -33,13 +33,7 @@ function subscribeToLogout(userId) {
   });
 }
 
-const cookieOptions = {
-  httpOnly: true,
-  sameSite: 'strict',
-  secure: secureEnv(),
-  domain: 'localhost',
-  path: '/',
-};
+let cookieOptions;
 
 // this function is used to get the user by token and verify token, if the token is expired,
 // it will refresh the token
@@ -100,6 +94,15 @@ export default async function getUserByToken(req, res, dataSources) {
         }
 
         const newToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '30m' });
+
+        cookieOptions = {
+          httpOnly: true,
+          sameSite: 'strict',
+          secure: secureEnv(),
+          domain: 'localhost',
+          path: '/',
+          ...(decodeToken.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
+        };
 
         const TokenCookie = cookie.serialize(
           'auth-token',
