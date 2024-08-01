@@ -128,7 +128,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
           message: 'Cliquez pour le consulter',
           // body: message[0].content, // Assurez-vous que `message[0].content`
           // contient le texte du message
-          icon: process.env.LOGO_EMAIL_URL,
+          icon: process.env.LOGO_NOTIFICATION_URL,
           // url: `https://yourwebsite.com/conversation/${input.conversation_id}`,
         });
         // Envoyer la notification push
