@@ -1,0 +1,6 @@
+extend type Mutation{
+    # Notification mutations
+    createNotificationPush(input: NotificationPushInput!): Boolean 
+    deleteNotificationPush(input: NotificationPushDeleteInput! ): Boolean
+   
+}

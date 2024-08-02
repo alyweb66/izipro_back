@@ -10,7 +10,7 @@ DROP TABLE "user_has_notViewedConversation";
 DROP TABLE "message_has_media" CASCADE;
 DROP TABLE "request_has_media" CASCADE;
 DROP TABLE "message";
-DROP TABLE "notification";
+DROP TABLE "notification_push";
 DROP TABLE "media";
 DROP TABLE "conversation";
 DROP TABLE "request";

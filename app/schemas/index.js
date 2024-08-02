@@ -36,8 +36,10 @@ const CookieConsents = readFileSync(path.join(dirname, './CookieConsents.gql'), 
 const CookieConsentsMutation = readFileSync(path.join(dirname, './CookieConsentsMutation.gql'), 'utf8');
 const Contact = readFileSync(path.join(dirname, './Contact.gql'), 'utf8');
 const ContactMutation = readFileSync(path.join(dirname, './ContactMutation.gql'), 'utf8');
-const notificationMutation = readFileSync(path.join(dirname, './notificationMutation.gql'), 'utf8');
-const notification = readFileSync(path.join(dirname, './notification.gql'), 'utf8');
+const NotificationPushMutation = readFileSync(path.join(dirname, './NotificationPushMutation.gql'), 'utf8');
+const NotificationPush = readFileSync(path.join(dirname, './NotificationPush.gql'), 'utf8');
+const NotificationMutation = readFileSync(path.join(dirname, './NotificationMutation.gql'), 'utf8');
+const Notification = readFileSync(path.join(dirname, './Notification.gql'), 'utf8');
 
 const schema = `#graphql
 scalar validateEmail
@@ -74,8 +76,10 @@ scalar validateSiret
     ${CookieConsentsMutation}
     ${Contact}
     ${ContactMutation}
-    ${notificationMutation}
-    ${notification}
+    ${NotificationPushMutation}
+    ${NotificationPush}
+    ${NotificationMutation}
+    ${Notification}
 `;
 
 export default schema;

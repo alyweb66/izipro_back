@@ -16,9 +16,7 @@ function debugInDevelopment(message = '', value = '') {
  * @param {Object} params - The parameters object.
  * @param {Object} params.input - The input object containing the notification details.
  * @param {number} params.input.user_id - The ID of the user.
- * @param {string} params.input.endpoint - The endpoint of the notification.
- * @param {string} params.input.auth_token - The authentication token for the notification.
- * @param {string} params.input.public_key - The public key for the notification.
+ * @param {boolean} params.input.email_notification - The email notification.
  * @param {Object} context - The context object.
  * @param {Object} context.dataSources - The data sources available in the context.
  * @returns {Promise<boolean>}
@@ -34,16 +32,15 @@ async function createNotification(_, { input }, { dataSources }) {
   }
 
   try {
-    const isCreatedNotification = await dataSources.dataDB.notification.findByUser(input.user_id);
+    const isCreatedNotification = await dataSources.dataDB.notification.findByUser(
+      input.user_id,
+    );
 
-    // check if the isCreatedNotification value is the same than the input value
-    if (isCreatedNotification.endpoint === input.endpoint
-        && isCreatedNotification.auth_token === input.auth_token
-        && isCreatedNotification.public_key === input.public_key) {
-      return true;
+    if (isCreatedNotification) {
+      throw new ApolloError('User notification already exists');
     }
 
-    const createdNotification = await dataSources.dataDB.notification.create(input);
+    const createdNotification = await dataSources.dataDB.notification.create(input.user_id);
     if (!createdNotification) {
       throw new ApolloError('Error creating notification');
     }
@@ -55,30 +52,48 @@ async function createNotification(_, { input }, { dataSources }) {
 }
 
 /**
- * Deletes a notification.
+ * Creates a notification.
  *
- * @param {Object} _ - Unused parameter.
+ * @param {*} _ - The parent object (not used).
  * @param {Object} params - The parameters object.
- * @param {Object} params.input - The input object containing notification details.
- * @param {string} params.input.id - The ID of the notification to delete.
- * @param {string} params.input.endpoint - The endpoint of the notification to delete.
+ * @param {Object} params.input - The input object containing the notification details.
+ * @param {number} params.input.user_id - The ID of the user.
+ * @param {boolean} params.input.email_notification - The email notification.
  * @param {Object} context - The context object.
- * @param {Object} context.dataSources - The data sources object.
- * @param {Object} context.dataSources.dataDB - The dataDB object.
- * @param {Object} context.dataSources.dataDB.notification - The notification data source.
- * @returns {Promise<boolean>} - Returns true if the notification was successfully deleted.
- * @throws {ApolloError} - Throws an error if the deletion fails.
+ * @param {Object} context.dataSources - The data sources available in the context.
+ * @returns {Promise<boolean>}
+ * A promise that resolves to true if the notification is created successfully.
+ * @throws {ApolloError} Throws an error if there is an issue creating the notification.
  */
-async function deleteNotification(_, { input }, { dataSources }) {
-  debug('delete notification');
+async function updateNotification(_, { input }, { dataSources }) {
+  debug('update notification');
+  debugInDevelopment('input', input);
+
+  if (dataSources.userData.id !== input.user_id) {
+    throw new ApolloError('Unauthorized');
+  }
 
   try {
-    await dataSources.dataDB.notification.deleteNotification(input.user_id, input.endpoint);
+    const isCreatedNotification = await dataSources.dataDB.notification.findByUser(
+      input.user_id,
+    );
+
+    if (!isCreatedNotification) {
+      throw new ApolloError('User notification does not exist');
+    }
+
+    const updatedNotification = await dataSources.dataDB.notification.update(
+      input.user_id,
+      { email_notification: input.email_notification },
+    );
+    if (!updatedNotification) {
+      throw new ApolloError('Error updating notification');
+    }
     return true;
   } catch (error) {
     debug('Error', error);
-    throw new ApolloError('Error deleting notification');
+    throw new ApolloError('Error updating notification');
   }
 }
 
-export default { createNotification, deleteNotification };
+export default { createNotification, updateNotification };

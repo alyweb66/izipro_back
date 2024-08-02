@@ -284,9 +284,40 @@ const UserResolver = {
     }
   },
 
+  /**
+ * Retrieves the VAPID public key for a given user.
+ *
+ * @param {Object} param - The parameter object.
+ * @param {string} param.id - The ID of the user.
+ * @returns {string} The VAPID public key.
+ */
   publicKey({ id }) {
     debug(`get the VAPID public key from user id: ${id}`);
     return process.env.VAPID_PUBLIC_KEY;
+  },
+
+  /**
+ * Retrieves all notifications for a given user.
+ *
+ * @param {Object} param - The parameter object.
+ * @param {number} param.id - The ID of the user.
+ * @param {Object} _ - Unused parameter.
+ * @param {Object} context - The context object.
+ * @param {Object} context.dataSources - The data sources object.
+ * @returns {Promise<Array>} A promise that resolves to an array of notifications.
+ * @throws {ApolloError} If there is an error retrieving the notifications.
+ */
+  async notification({ id }, _, { dataSources }) {
+    try {
+      debug(`get all notification from user id: ${id}`);
+      // clear cache
+      dataSources.dataDB.notification.findByUserIdsLoader.clear(id);
+      const notification = await dataSources.dataDB.notification.findByUser(id);
+      return notification[0];
+    } catch (error) {
+      debug('error', error);
+      throw new ApolloError('Error get all notification from user id ');
+    }
   },
 };
 
