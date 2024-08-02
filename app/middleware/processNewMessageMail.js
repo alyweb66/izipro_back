@@ -14,19 +14,27 @@ const debug = Debug(`${process.env.DEBUG_MODULE}:middleware:checkViewedBeforeSen
  * Returns false if the user has not viewed the conversation or if an error occurs
  * @throws {ApolloError} - Throws an error if there is an issue with the database query
  */
-export default async function checkViewedBeforeSendEmail(message, dataSources, userId) {
+export default async function checkViewedBeforeSendEmail(
+  message,
+  dataSources,
+  userId,
+  emailNotification,
+) {
   try {
+    if (!emailNotification) {
+      return;
+    }
     /* const userId = await
     dataSources.dataDB.userHasNotViewedConversation.getUserByConversationId(
       message.conversation_id,
     ); */
 
     if (!userId) {
-      return false;
+      return;
     }
 
-    if (userId.length > 0) {
-      const userData = await dataSources.dataDB.user.findByPk(userId[0].user_id);
+    if (userId !== 0) {
+      const userData = await dataSources.dataDB.user.findByPk(userId);
 
       const request = await dataSources.dataDB.request.findByPk(message.request_id);
 
@@ -34,8 +42,6 @@ export default async function checkViewedBeforeSendEmail(message, dataSources, u
         newMessageEmail(userData, request, message);
       }
     }
-
-    return false;
   } catch (error) {
     debug('error', error);
     throw new ApolloError('Error check viewed before send email');

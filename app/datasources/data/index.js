@@ -15,8 +15,9 @@ import MessageHasMedia from './datamappers/MessageHasMedia.js';
 import Subscription from './datamappers/Subscription.js';
 import UserHasNotViewedRequest from './datamappers/UserHasNotViewedRequest.js';
 import UserHasNotViewedConversation from './datamappers/UserHasNotViewedConversation.js';
-import Rules from './datamappers/rules.js';
+import Rules from './datamappers/Rules.js';
 import CookieConsents from './datamappers/CookieConsents.js';
+import NotificationPush from './datamappers/NotificationPush.js';
 import Notification from './datamappers/Notification.js';
 
 // allows you to instantiate the datamappers
@@ -42,6 +43,7 @@ class DataDB {
     this.userHasNotViewedConversation = new UserHasNotViewedConversation(newOptions);
     this.rules = new Rules(newOptions);
     this.cookieConsents = new CookieConsents(newOptions);
+    this.notificationPush = new NotificationPush(newOptions);
     this.notification = new Notification(newOptions);
   }
 }

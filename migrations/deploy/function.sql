@@ -417,6 +417,7 @@ DECLARE
     user_lat NUMERIC;
     user_range INT;
     distance NUMERIC;
+	existing_record RECORD;
 BEGIN
     -- get user by jobRequest subscriber
     FOR subscriber IN
@@ -446,31 +447,26 @@ BEGIN
         IF (distance < NEW.range / 1000 OR NEW.range = 0) AND
            (distance < user_range / 1000 OR user_range = 0) THEN
 
+			 -- check if a record with the same user_id and request_id already exists
+            SELECT 1 INTO existing_record
+            FROM "user_has_notViewedRequest"
+            WHERE user_id = subscriber.user_id AND request_id = NEW.id
+            LIMIT 1;
+				
             -- add the request to the user_has_notViewedRequest table
+           IF existing_record IS NULL THEN
             IF subscriber.user_id != NEW.user_id THEN
             INSERT INTO "user_has_notViewedRequest"(user_id, request_id, created_at)
             VALUES (subscriber.user_id, NEW.id, NOW());
             END IF;
+		  END IF;
         END IF;
     END LOOP;
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-/* CREATE OR REPLACE FUNCTION add_not_viewed_request() RETURNS TRIGGER AS $$
-DECLARE
-    subscribers RECORD;
-BEGIN
-    FOR subscribers IN SELECT * FROM subscription WHERE subscriber = 'jobRequest' AND subscriber_id @> ARRAY[NEW.job_id]
-    LOOP
-        IF subscribers.user_id != NEW.user_id THEN
-            INSERT INTO "user_has_notViewedRequest"(user_id, request_id, created_at)
-            VALUES (subscribers.user_id, NEW.id, NOW());
-        END IF;
-    END LOOP;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql; */
+
 
 CREATE TRIGGER request_inserted
 AFTER INSERT ON request

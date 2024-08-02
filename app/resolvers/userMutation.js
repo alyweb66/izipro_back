@@ -148,6 +148,16 @@ async function createUserFunction(_, { input }, { dataSources }) {
       throw new ApolloError('Error creating user', 'BAD_REQUEST');
     }
 
+    // Create a default notification setting in the notification table
+    const createNotification = await dataSources.dataDB.notification.create({
+      user_id: createdUser.id,
+    });
+
+    if (!createNotification.id) {
+      throw new ApolloError('Error creating notification', 'BAD_REQUEST');
+    }
+
+    // Create a default user setting in the user_setting table
     const createSetting = await dataSources.dataDB.userSetting.create({ user_id: createdUser.id });
 
     if (!createSetting.id) {
