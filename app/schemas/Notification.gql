@@ -1,0 +1,10 @@
+type Notification {
+    id: Int!
+    user_id: Int!
+    email_notification: Boolean
+}
+
+input NotificationInput {
+    user_id: Int!
+    email_notification: Boolean
+}

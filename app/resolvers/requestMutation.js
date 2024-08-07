@@ -140,7 +140,7 @@ async function createRequest(_, { input }, { dataSources }) {
     );
 
     //* Notification push starting
-    // get the user that has not viewed the conversation
+    // get the user that has not viewed the request
     const targetUser = await
     dataSources.dataDB.userHasNotViewedRequest.getUserByRequestId(
       isCreatedRequest.id,
@@ -149,13 +149,21 @@ async function createRequest(_, { input }, { dataSources }) {
     // filter only the id of the user
     const userId = targetUser.map((user) => user.user_id);
 
+    // clear cache for the conversation
+    dataSources.dataDB.notificationPush.findByUserIdsLoader.clear(userId);
     // get the notification subscription of the target users
-    const usersNotification = await dataSources.dataDB.notification.findByUser(
+    /* const usersNotification = await dataSources.dataDB.notificationPush.findByUser(
+      userId,
+    ); */
+    // get the notification subscription of the target user
+    const usersNotification = await dataSources.dataDB.notification.getAllNotifications(
       userId,
     );
+
     const flattenedNotifications = usersNotification.flat();
+
     // send push notification to users that have not viewed the conversation
-    if (flattenedNotifications) {
+    if (flattenedNotifications[0].endpoint) {
       flattenedNotifications.forEach((element) => {
         const subscriptionPush = {
           endpoint: element.endpoint,
@@ -170,7 +178,7 @@ async function createRequest(_, { input }, { dataSources }) {
           message: 'Cliquez pour la consulter',
           // body: message[0].content, // Assurez-vous que `message[0].content`
           // contient le texte du message
-          icon: process.env.LOGO_EMAIL_URL,
+          icon: process.env.LOGO_NOTIFICATION_URL,
           // url: `https://yourwebsite.com/conversation/${input.conversation_id}`,
         });
 
@@ -182,7 +190,11 @@ async function createRequest(_, { input }, { dataSources }) {
 
     // send email to users that have not viewed the request after 5 min
     setTimeout(() => {
-      checkViewedBeforeSendRequestEmail(subscriptionResult[0], dataSources);
+      checkViewedBeforeSendRequestEmail(
+        subscriptionResult[0],
+        dataSources,
+        flattenedNotifications,
+      );
     }, 60000);
 
     debug('isUpdatedSubscription', isUpdatedSubscription);

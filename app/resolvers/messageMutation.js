@@ -105,15 +105,13 @@ async function createMessage(_, { id, input }, { dataSources }) {
       input.conversation_id,
     );
 
-    // clear cache for the conversation
-    dataSources.dataDB.notification.findByUserIdsLoader.clear(targetUser[0].user_id);
     // get the notification subscription of the target user
-    const userNotification = await dataSources.dataDB.notification.findByUser(
+    const userNotification = await dataSources.dataDB.notification.getAllNotifications(
       targetUser[0].user_id,
     );
 
     // send push notification to users that have not viewed the conversation
-    if (userNotification) {
+    if (userNotification.endpoint) {
       userNotification.forEach((element) => {
         const subscription = {
           endpoint: element.endpoint,
@@ -128,7 +126,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
           message: 'Cliquez pour le consulter',
           // body: message[0].content, // Assurez-vous que `message[0].content`
           // contient le texte du message
-          icon: process.env.LOGO_EMAIL_URL,
+          icon: process.env.LOGO_NOTIFICATION_URL,
           // url: `https://yourwebsite.com/conversation/${input.conversation_id}`,
         });
         // Envoyer la notification push
@@ -139,8 +137,13 @@ async function createMessage(_, { id, input }, { dataSources }) {
 
     // send email to users that have not viewed the conversation after 5 min
     setTimeout(() => {
-      checkViewedBeforeSendEmail(message[0], dataSources, targetUser[0].user_id);
-    }, 60000);
+      checkViewedBeforeSendEmail(
+        message[0],
+        dataSources,
+        userNotification[0].user_id,
+        userNotification[0].email_notification,
+      );
+    }, 100);
 
     debugInDevelopment('subscriptionResult', message);
     // publish the request to the client

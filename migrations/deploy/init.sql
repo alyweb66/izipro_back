@@ -63,12 +63,20 @@ CREATE TABLE "subscription"(
    "updated_at" timestamptz
 );
 
-CREATE TABLE "notification"(
+CREATE TABLE "notification_push"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "user_id" INT NOT NULL REFERENCES "user"(id),
    "endpoint" TEXT NOT NULL,
    "public_key" TEXT NOT NULL,
    "auth_token" TEXT NOT NULL,
+   "created_at" timestamptz NOT NULL DEFAULT now(),
+   "updated_at" timestamptz
+);
+
+CREATE TABLE "notification" (
+   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   "user_id" INT NOT NULL REFERENCES "user"(id),
+   "email_notification" BOOLEAN NOT NULL DEFAULT TRUE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );
@@ -84,12 +92,6 @@ CREATE TABLE "user_setting"(
    "updated_at" timestamptz
 );
 
-/* CREATE TABLE "type"(
-   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "name" TEXT CHECK (LENGTH("name") <= 50),
-   "created_at" timestamptz NOT NULL DEFAULT now(),
-   "updated_at" timestamptz
-); */
 
 CREATE TABLE "category"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -203,13 +205,6 @@ CREATE TABLE "user_has_notViewedConversation"(
    "updated_at" timestamptz
 );
 
-/* CREATE TABLE "user_has_user"(
-   "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "user_id" INT NOT NULL REFERENCES "user"(id),
-   "user_id_1" INT NOT NULL REFERENCES "user"(id),
-   "created_at" timestamptz NOT NULL DEFAULT now(),
-   "updated_at" timestamptz
-); */
 
 CREATE TABLE "user_has_hiddingClientRequest"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
