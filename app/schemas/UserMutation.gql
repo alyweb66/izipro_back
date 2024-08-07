@@ -1,0 +1,16 @@
+union UserResult = User | ExistingSiret
+
+extend type Mutation {
+# User mutations
+    createUser(input: CreateUserInput!): User
+    createProUser(input: CreateProUserInput!): UserResult
+    updateUser(id: Int!, input: UpdateUserInput!): User
+    deleteUser(id: Int!): Boolean
+    login(input: loginInput!): Boolean
+    logout(id: Int!): Boolean
+    forgotPassword(input: ForgotPasswordInput!): Boolean
+    validateForgotPassword(input: ValidateForgotPasswordInput!): Boolean
+    confirmRegisterEmail(input: ConfirmRegisterEmailInput!): Boolean
+    changePassword(id: Int!, input: ChangePasswordInput!): Boolean
+    deleteProfilePicture(id: Int!): Boolean
+}

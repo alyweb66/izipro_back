@@ -1,0 +1,19 @@
+type Conversation {
+    id: Int
+    user_1: Int
+    user_2: Int
+    request_id: Int
+    created_at: String
+    updated_at: String
+    messages: [Message]
+}
+
+input ConversationInput {
+    user_1: Int!
+    user_2: Int!
+    request_id: Int!
+}
+
+input UpdateConversationInput {
+    id: Int!
+}

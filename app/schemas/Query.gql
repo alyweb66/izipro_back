@@ -1,0 +1,20 @@
+### this is what i can get back and how
+type Query {
+    users(ids: [Int!],  offset: Int, limit: Int): [User!]!
+    user: User!
+    requests: [Request!]!
+    request(id: Int!): Request!
+    conversations: [Conversation!]!
+    conversation(id: Int!): Conversation!
+    messages(conversationId: Int!, offset: Int, limit: Int): [Message!]!
+    message(id: Int!): Message! 
+    medias: [Media!]!
+    media(id: Int!): Media!
+    categories: [Category!]!
+    category(id: Int!): Category!
+    jobs(ids: [Int!]): [Job]
+    requestsByJob(ids: [Int!], offset: Int, limit: Int): [Request]
+    settings: UserSettings!
+    rules: Rules!
+    
+}

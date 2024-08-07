@@ -1,0 +1,109 @@
+directive @length(max: Int!) on INPUT_FIELD_DEFINITION
+scalar Upload
+
+type User {
+    id: Int!
+    first_name: String
+    last_name: String
+    email: String!
+    address: String
+    postal_code: String
+    city: String
+    lat: Float
+    lng: Float
+    siret: String
+    denomination: String
+    role: String!
+    CGU: Boolean!
+    image: String
+    description: String
+    requests(id: Int!, offset: Int!, limit: Int): [Request]
+    request(requestId: Int!): Request
+    conversationRequestIds: [Int]
+    cookieConsents: CookieConsents
+    requestsConversations(offset: Int!, limit: Int!): [Request]
+    messages(conversationId: Int!, offset: Int!, limit: Int! ): [Message!]!
+    userHasNotViewedRequest: [UserHasNotViewedRequest]
+    userHasNotViewedConversation: [UserHasNotViewedConversation]
+    jobs: [UserHasJob]
+    settings: [UserSettings]
+    subscription: [UserSubscription]
+    deleted_at: String
+    publicKey: String
+    notification: Notification
+}
+
+type UserResult{
+    User: User
+    ExistingSiret: ExistingSiret
+}
+
+type ExistingSiret {
+    error: String!
+}
+
+
+type AuthPayload {
+    token: String!
+    refreshToken: String!
+}
+
+
+
+
+type AccessToken {
+    token: String!
+}
+
+input loginInput {
+    email: validateEmail! 
+    password: validatePassword! @length(max: 60)
+    activeSession: Boolean!
+}
+
+
+input CreateUserInput {
+    email: validateEmail!
+    password: validatePassword! @length(max: 60)
+}
+
+input ConfirmRegisterEmailInput {
+    token: String!
+}
+
+input CreateProUserInput {
+    email: validateEmail!
+    password: validatePassword!
+    siret: validateSiret!
+}
+
+input UpdateUserInput {
+    first_name: String @length(max: 50)
+    last_name: String @length(max: 50)
+    email: validateEmail
+    image: Upload
+    description: String @length(max: 200)
+    address: String @length(max: 100)
+    postal_code: validatePostalCode
+    city: String @length(max: 50)
+    siret: validateSiret @length(max: 14)
+    denomination: String @length(max: 50)
+    lat: Float
+    lng: Float
+    CGU: Boolean
+}
+
+input ForgotPasswordInput {
+    email: validateEmail!
+}
+
+input ValidateForgotPasswordInput {
+    token: String!
+    password: validatePassword! @length(max: 60)
+}
+
+input ChangePasswordInput {
+    oldPassword: validatePassword! @length(max: 60)
+    newPassword: validatePassword! @length(max: 60)
+}
+

@@ -1,0 +1,13 @@
+
+
+type Media {
+    id: Int
+    url: String
+    name: String
+}
+
+scalar Upload
+input MediaInput {
+    file: Upload!
+}
+

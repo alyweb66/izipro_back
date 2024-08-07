@@ -1,0 +1,12 @@
+input NotificationPushInput {
+    user_id: Int!
+    endpoint: String!
+    public_key: String!
+    auth_token: String!
+}
+
+input NotificationPushDeleteInput {
+    user_id: Int!
+    endpoint: String!
+}
+
