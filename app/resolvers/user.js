@@ -277,6 +277,7 @@ const UserResolver = {
       debug(`get all cookie consents from user id: ${id}`);
       dataSources.dataDB.cookieConsents.findByUserIdsLoader.clear(id);
       const cookieConsents = await dataSources.dataDB.cookieConsents.findByUser(id);
+
       return cookieConsents[0];
     } catch (error) {
       debug('error', error);
