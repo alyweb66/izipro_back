@@ -11,6 +11,7 @@ import url from 'url';
 import handleUploadedFiles from '../middleware/handleUploadFiles.js';
 import * as sendEmail from '../middleware/sendEmail.js';
 import SirenAPI from '../datasources/SirenAPI/index.js';
+import logger from '../middleware/logger.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:mutation`);
 
@@ -52,15 +53,26 @@ async function deleteFile(file) {
     debugInDevelopment('No file to delete');
     return;
   }
-
-  const filePath = path.join(directoryPath, file);
-
   try {
+    const filePath = path.join(directoryPath, file);
+    // Vérifier si le fichier existe
+    try {
+      await fs.access(filePath);
+    } catch (accessError) {
+      debugInDevelopment(`File ${file} does not exist`);
+      logger.error({
+        message: accessError.message,
+        stack: accessError.stack,
+        extensions: accessError.extensions,
+      });
+      return;
+    }
+
     await fs.unlink(filePath);
     debugInDevelopment(`File ${file} deleted successfully`);
   } catch (error) {
     debug('error', error);
-    throw new ApolloError('Error delete file');
+    throw new Error('Error deleting file');
   }
 }
 /**
@@ -136,6 +148,16 @@ async function createUserFunction(_, { input }, { dataSources }) {
       throw new ApolloError('Error creating user', 'BAD_REQUEST');
     }
 
+    // Create a default notification setting in the notification table
+    const createNotification = await dataSources.dataDB.notification.create({
+      user_id: createdUser.id,
+    });
+
+    if (!createNotification.id) {
+      throw new ApolloError('Error creating notification', 'BAD_REQUEST');
+    }
+
+    // Create a default user setting in the user_setting table
     const createSetting = await dataSources.dataDB.userSetting.create({ user_id: createdUser.id });
 
     if (!createSetting.id) {
@@ -258,6 +280,7 @@ async function login(_, { input }, { dataSources, res }) {
         secure: secureEnv(),
         domain: 'localhost',
         path: '/',
+        ...(input.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
       },
     );
     const refreshTokenCookie = cookie.serialize(
@@ -269,6 +292,7 @@ async function login(_, { input }, { dataSources, res }) {
         secure: secureEnv(),
         domain: 'localhost',
         path: '/',
+        ...(input.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
       },
     );
 
@@ -515,6 +539,10 @@ async function updateUser(_, { id, input }, { dataSources }) {
   debugInDevelopment('input', input);
 
   try {
+    // clear the cache
+    dataSources.dataDB.user.cache.clear();
+    dataSources.dataDB.user.findByPkLoader.clear(dataSources.userData.id);
+
     if (dataSources.userData === null || dataSources.userData.id !== id) {
       throw new AuthenticationError('Unauthorized');
     }
@@ -575,16 +603,18 @@ async function updateUser(_, { id, input }, { dataSources }) {
         const urlObject = new URL(user.image);
         const filename = path.basename(urlObject.pathname);
 
-        deleteFile(filename);
+        try {
+          await deleteFile(filename);
+        } catch (deleteError) {
+          debug('Error deleting old profile picture', deleteError);
+        }
       }
     }
     // Update the input image with the new url
     if (imageInput) {
       updateInput.image = imageInput;
     }
-    // clear the cache
-    dataSources.dataDB.user.cache.clear();
-    dataSources.dataDB.user.findByPkLoader.clear(dataSources.userData.id);
+
     return dataSources.dataDB.user.update(id, updateInput);
   } catch (error) {
     if (error instanceof AuthenticationError) {

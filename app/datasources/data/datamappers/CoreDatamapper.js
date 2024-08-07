@@ -157,12 +157,14 @@ class CoreDatamapper {
 
     values.push(id);
 
+    const whereClause = this.tableName === 'notification' ? 'user_id' : 'id';
+
     const preparedQuery = {
       text: `
         UPDATE "${this.tableName}" SET
         ${fieldsAndPlaceholders},
         updated_at = now()
-        WHERE id = $${indexPlaceholder}
+        WHERE ${whereClause} = $${indexPlaceholder}
         RETURNING *
       `,
       values,

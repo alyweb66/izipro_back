@@ -30,6 +30,7 @@ async function createCookieConsents(_, { id, input }, { dataSources }) {
     if (dataSources.userData.id !== id) {
       throw new ApolloError('Unauthorized');
     }
+    // add the user id to the input object
     const newInput = { ...input, user_id: id };
     // create cookie consents
     const isCreatedCookieConsents = await
@@ -68,6 +69,7 @@ async function updateCookieConsents(_, { id, input }, { dataSources }) {
       throw new ApolloError('Unauthorized');
     }
 
+    // get the cookie id and remove it from the input object
     const { id: cookieId, ...rest } = input;
 
     const isUpdatedCookieConsents = await
