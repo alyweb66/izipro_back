@@ -99,7 +99,7 @@ export default async function getUserByToken(req, res, dataSources) {
           httpOnly: true,
           sameSite: 'strict',
           secure: secureEnv(),
-          domain: 'localhost',
+          domain: process.env.DOMAIN,
           path: '/',
           ...(decodeToken.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
         };
