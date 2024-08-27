@@ -133,7 +133,7 @@ export default {
       }
       debug(`get user with id ${dataSources.userData.id}`);
       // clear cache
-      // dataSources.dataDB.user.findByPkLoader.clear(dataSources.userData.id);
+      dataSources.dataDB.user.findByPkLoader.clear(dataSources.userData.id);
       const userData = await dataSources.dataDB.user.findByPk(dataSources.userData.id);
       return userData;
     } catch (error) {
