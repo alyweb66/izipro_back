@@ -67,8 +67,9 @@ async function handleUploadedFiles(media) {
       // get the file name
       const fileName = path.basename(filePath);
       // Returning image details
+      const pictureUrl = process.env.NODE_ENV === 'development' ? `${process.env.FILE_URL}${process.env.PORT}/public/media/${fileName}` : `${process.env.FILE_URL}/public/media/${fileName}`;
       return {
-        url: process.env.NODE_ENV === 'development' ? `${process.env.FILE_URL}${process.env.PORT}/public/media/${fileName}` : `${process.env.FILE_URL}/public/media/${fileName}`,
+        url: pictureUrl,
         name: uniqueFileName,
       };
     }));
