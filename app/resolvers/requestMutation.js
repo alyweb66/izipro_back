@@ -159,11 +159,10 @@ async function createRequest(_, { input }, { dataSources }) {
     const usersNotification = await dataSources.dataDB.notification.getAllNotifications(
       userId,
     );
-
     const flattenedNotifications = usersNotification.flat();
 
     // send push notification to users that have not viewed the conversation
-    if (flattenedNotifications[0].endpoint) {
+    if (flattenedNotifications > 0 && flattenedNotifications[0].endpoint) {
       flattenedNotifications.forEach((element) => {
         const subscriptionPush = {
           endpoint: element.endpoint,
