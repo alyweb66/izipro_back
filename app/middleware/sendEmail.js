@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-const logo = process.env.LOGO_NOTIFICATION_URL;
+const logo = process.env.LOGO_EMAIL;
 
 // Configure the SMTP carrier for sending emails
 const transporter = nodemailer.createTransport({
