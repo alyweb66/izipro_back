@@ -12,25 +12,29 @@ function secureEnv() {
   return true;
 }
 
-export default async function serverLogout(_, __, { res, dataSources, req }) {
+export default async function serverLogout(_, __, {
+  res, dataSources, req, server = false,
+}) {
   debug('serverLogout is starting');
 
   try {
+    if (!server) {
     // get refresh_token from cookie
-    const cookies = cookie.parse(req.headers.cookie || '');
+      const cookies = cookie.parse(req.headers.cookie || '');
 
-    const refreshToken = cookies['refresh-token'] || '';
+      const refreshToken = cookies['refresh-token'] || '';
 
-    if (!refreshToken) {
-      throw new Error('Refresh token not found in cookies');
+      if (!refreshToken) {
+        throw new Error('Refresh token not found in cookies');
+      }
+
+      // remove refresh_token from the database
+      await dataSources.dataDB.user.modifyRefreshToken(
+        dataSources.userData.id,
+        refreshToken,
+        'array_remove',
+      );
     }
-
-    // remove refresh_token from the database
-    await dataSources.dataDB.user.modifyRefreshToken(
-      dataSources.userData.id,
-      refreshToken,
-      'array_remove',
-    );
 
     const pastDate = new Date(0);
     const TokenCookie = cookie.serialize(
