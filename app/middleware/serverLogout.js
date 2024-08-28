@@ -28,12 +28,19 @@ export default async function serverLogout(_, __, {
         throw new Error('Refresh token not found in cookies');
       }
 
-      // remove refresh_token from the database
-      await dataSources.dataDB.user.modifyRefreshToken(
-        dataSources.userData.id,
-        refreshToken,
-        'array_remove',
-      );
+      try {
+        // remove refresh_token from the database
+        if (dataSources.userData) {
+          await dataSources.dataDB.user.modifyRefreshToken(
+            dataSources.userData.id,
+            refreshToken,
+            'array_remove',
+          );
+        }
+      } catch (dbError) {
+        debug('Database error:', dbError);
+        throw new ApolloError('Failed to remove refresh token from database');
+      }
     }
 
     const pastDate = new Date(0);
