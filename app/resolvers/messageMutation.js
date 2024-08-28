@@ -111,7 +111,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
     );
 
     // send push notification to users that have not viewed the conversation
-    if (userNotification.endpoint) {
+    if (userNotification[0].endpoint) {
       userNotification.forEach((element) => {
         const subscription = {
           endpoint: element.endpoint,

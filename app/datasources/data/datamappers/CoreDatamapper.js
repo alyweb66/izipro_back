@@ -155,6 +155,7 @@ class CoreDatamapper {
       values.push(value);
     });
 
+    // add the id to the values array
     values.push(id);
 
     const whereClause = this.tableName === 'notification' ? 'user_id' : 'id';
