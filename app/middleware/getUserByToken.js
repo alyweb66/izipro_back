@@ -56,6 +56,10 @@ export default async function getUserByToken(req, res, dataSources) {
       debugInDevelopment('userData', userData);
       return userData;
     }
+    // If the token is not found, go to logout
+    debugInDevelopment('getUserByToken: token failed');
+    serverLogout(null, null, { res, dataSources, req });
+    throw new ApolloError('Token not found', 'BAD_REQUEST');
   } catch (tokenError) {
     debug('Failed to verify token', tokenError);
 
@@ -182,6 +186,6 @@ export default async function getUserByToken(req, res, dataSources) {
     serverLogout(null, null, { res, dataSources, req });
     throw new AuthenticationError('Failed to verify token');
   }
-  const userData = null;
-  return userData;
+/*   const userData = null;
+  return userData; */
 }
