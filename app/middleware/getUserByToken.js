@@ -69,7 +69,6 @@ export default async function getUserByToken(req, res, dataSources) {
         // clear user cache
         dataSources.dataDB.user.cache.clear();
         const user = await refreshTokenInstance.getRefreshTokenByUserId(decodeToken.id);
-
         const verifyRefreshToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
         if (!verifyRefreshToken) {
@@ -81,15 +80,18 @@ export default async function getUserByToken(req, res, dataSources) {
         if (!user) {
           debugInDevelopment('refreshToken: user failed');
           subscribeToLogout(verifyRefreshToken.id);
-          serverLogout(null, null, { res });
+          serverLogout(null, null, { res, dataSources, req });
           throw new ApolloError('User not found', 'BAD_REQUEST');
         }
 
+        // find the refresh token in the database
+        const findRefreshToken = user.refresh_token.find((element) => element === refreshToken);
+
         // If the refresh token is not the same as the one in the database, go to logout
-        if (user.refresh_token !== refreshToken) {
+        if (!findRefreshToken || findRefreshToken !== refreshToken) {
           debugInDevelopment('refreshToken: refresh_token failed', verifyRefreshToken);
           subscribeToLogout(user.id);
-          serverLogout(null, null, { res });
+          serverLogout(null, null, { res, dataSources, req });
           throw new ApolloError('Error token', 'BAD_REQUEST');
         }
 
@@ -129,11 +131,13 @@ export default async function getUserByToken(req, res, dataSources) {
             debug('refreshToken is expired, new refresh token is starting');
             // make a new refreshtoken
             const newToken = jwt.sign({ id: decodeToken.id, role: decodeToken.role }, process.env.JWT_SECRET, { expiresIn: '30m' });
-            const newRefreshToken = jwt.sign({ id: decodeToken.id, role: decodeToken.role, activeSession: decodeToken.activeSession }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
+            const newRefreshToken = jwt.sign({ id: decodeToken.id, role: decodeToken.role, activeSession: decodeToken.activeSession }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
             // update the refresh token in the database
-            await dataSources.dataDB.user.update(
+            await dataSources.dataDB.user.modifyRefreshToken(
               decodeToken.id,
-              { refresh_token: newRefreshToken },
+              newRefreshToken,
+              'array_replace',
+              refreshToken,
             );
 
             const TokenCookie = cookie.serialize(
@@ -163,7 +167,7 @@ export default async function getUserByToken(req, res, dataSources) {
           });
           debug('Failed to verify refresh token1');
           subscribeToLogout(decodeToken.id);
-          serverLogout(null, null, { res });
+          serverLogout(null, null, { res, dataSources, req });
           throw new AuthenticationError('Failed to verify make new refresh-token');
         }
         logger.error({
@@ -175,7 +179,7 @@ export default async function getUserByToken(req, res, dataSources) {
     }
     debug('Failed to verify refresh token2');
     subscribeToLogout(decodeToken.id);
-    serverLogout(null, null, { res });
+    serverLogout(null, null, { res, dataSources, req });
     throw new AuthenticationError('Failed to verify token');
   }
   const userData = null;

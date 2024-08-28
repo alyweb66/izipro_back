@@ -71,6 +71,62 @@ class User extends CoreDatamapper {
     }
     return false;
   }
+
+  /**
+ * Modifies the refresh token array for a user in the database.
+ *
+ * @param {number} userId - The ID of the user whose refresh token is to be modified.
+ * @param {string} refreshToken - The refresh token to be added, replaced, or removed.
+ * @param {string} action - The action to perform on the refresh token array.
+ * Must be one of 'array_append', 'array_replace', or 'array_remove'.
+ * @throws {Error} Throws an error if the action is not valid.
+ * @returns {Promise<void>} A promise that resolves when the query is executed.
+ */
+  async modifyRefreshToken(userId, refreshToken, action, oldToken = null) {
+    debug('Modifying refresh token');
+    debug(`SQL function ${this.tableName} called with action: ${action}`);
+
+    // Action list to validate the action
+    const validActions = ['array_append', 'array_replace', 'array_remove'];
+
+    if (!validActions.includes(action)) {
+      throw new Error(`Invalid action: ${action}`);
+    }
+    // Check if the refreshToken already exists in the array
+    const checkQuery = {
+      text: `SELECT refresh_token FROM "${this.tableName}" WHERE id = $1`,
+      values: [userId],
+    };
+
+    const result = await this.client.query(checkQuery);
+    const refreshTokens = result.rows[0].refresh_token;
+
+    if (refreshTokens.includes(refreshToken)) {
+      debug('Refresh token already exists, no action taken');
+      return;
+    }
+
+    let query;
+    if (action === 'array_replace') {
+    // simulate array_replace with array_append and array_remove
+      query = {
+        text: `UPDATE "${this.tableName}" 
+             SET refresh_token = array_append(array_remove(refresh_token, $3), $2)
+             WHERE id = $1`,
+        values: [userId, refreshToken, oldToken],
+      };
+    } else {
+    // For array_append and array_remove
+      query = {
+        text: `UPDATE "${this.tableName}" 
+             SET refresh_token = ${action}(refresh_token, $2)
+             WHERE id = $1`,
+        values: [userId, refreshToken],
+      };
+    }
+
+    await this.client.query(query);
+  }
 }
 
 export default User;
