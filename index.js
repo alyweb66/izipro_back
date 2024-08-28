@@ -35,7 +35,7 @@ import resolvers from './app/resolvers/index.js';
 import getUserByToken from './app/middleware/getUserByToken.js';
 // class DataDB from dataSources
 import DataDB from './app/datasources/data/index.js';
-// import serverLogout from './app/middleware/serverLogout.js';
+import serverLogout from './app/middleware/serverLogout.js';
 import logger from './app/middleware/logger.js';
 import updateLastLoginInDatabase from './app/middleware/lastLogin.js';
 
@@ -73,9 +73,15 @@ app.use(async (req, res, next) => {
         if (cookies['auth-token']) {
           req.userData = await getUserByToken(req, res, dataSources);
         } else {
+          serverLogout(null, null, {
+            res, dataSources, req, server: true,
+          });
           req.userData = null;
         }
       } else {
+        serverLogout(null, null, {
+          res, dataSources, req, server: true,
+        });
         req.userData = null;
       }
 
@@ -169,13 +175,13 @@ const wsServer = new WebSocketServer({
 }); */
 
 //* Log mutation or query data
-/* const logMutationData = (req, res, next) => {
+const logMutationData = (req, res, next) => {
   if (req.method === 'POST') {
     console.log('Mutation data:', req.body);
   }
   next();
 };
-app.use(logMutationData); */
+app.use(logMutationData);
 
 //* log request headers
 /* app.use((req, res, next) => {
