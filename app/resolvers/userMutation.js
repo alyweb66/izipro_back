@@ -191,7 +191,7 @@ async function confirmRegisterEmail(_, { input }, { dataSources }) {
 
     let user;
     // Clear the user cache
-    dataSources.dataDB.user.cache.clear();
+    dataSources.dataDB.user.findByPkLoader.clear(decodedToken.userId);
     // check if id in the token is present that mean user is changing his email
     if (decodedToken.userId) {
       user = await dataSources.dataDB.user.findByPk(decodedToken.userId);
@@ -261,13 +261,14 @@ async function login(_, { input }, { dataSources, res }) {
     let refreshToken;
     debugInDevelopment('input.activeSession', input.activeSession);
     if (input.activeSession) {
-      refreshToken = jwt.sign({ id: user.id, role: user.role, activeSession: true }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '30d' });
+      refreshToken = jwt.sign({ id: user.id, role: user.role, activeSession: true }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
     } else {
       refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
     }
-    const saveRefreshToken = await dataSources.dataDB.user.update(
+    const saveRefreshToken = await dataSources.dataDB.user.modifyRefreshToken(
       user.id,
-      { refresh_token: refreshToken },
+      refreshToken,
+      'array_append',
     );
     debugInDevelopment('saveRefreshToken', saveRefreshToken);
 
@@ -315,13 +316,29 @@ async function login(_, { input }, { dataSources, res }) {
  * @returns {Promise<boolean>} - Returns true if logout is successful.
  * @throws {ApolloError} - Throws an error if logout fails.
  */
-async function logout(_, { id }, { dataSources, res }) {
+async function logout(_, { id }, { dataSources, res, req }) {
   debug('logout is starting');
   try {
     // Controle if it's the good user who want to logout
     let TokenCookie;
     let refreshTokenCookie;
     if (dataSources.userData.id === id) {
+      // get refresh_token from cookie
+      const cookies = cookie.parse(req.headers.cookie || '');
+
+      const refreshToken = cookies['refresh-token'] || '';
+
+      if (!refreshToken) {
+        throw new Error('Refresh token not found in cookies');
+      }
+
+      // remove refresh_token from the database
+      await dataSources.dataDB.user.modifyRefreshToken(
+        id,
+        refreshToken,
+        'array_remove',
+      );
+
       const pastDate = new Date(0);
       TokenCookie = cookie.serialize(
         'auth-token',

@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-const logo = process.env.LOGO_EMAIL;
+// const logo = process.env.LOGO_EMAIL;
 
 // Configure the SMTP carrier for sending emails
 const transporter = nodemailer.createTransport({
@@ -17,6 +17,12 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const logoAttachment = {
+  filename: 'logo-email.jpg',
+  path: `${process.env.LOGO_PATH_EMAIL}`,
+  cid: 'logoEmail',
+};
+
 // Email to send the password reset link
 export async function sendPasswordResetEmail(email, resetToken) {
   const mailOptions = {
@@ -24,7 +30,7 @@ export async function sendPasswordResetEmail(email, resetToken) {
     to: `${email}`,
     subject: 'Réinitialisation de mot de passe',
     html: `
-    <img src="${logo}" alt="logo" style="width: 100px; height: 100px; margin-bottom: 20px;"/>
+    <img src="cid:logoEmail" alt="logo" style="width: 60px; height: 60px;"/>
       <h1 style="fontSize: 1.2rem">Réinitialisation de mot de passe</h1>
 
       <p>Bonjour,</p>
@@ -34,6 +40,7 @@ export async function sendPasswordResetEmail(email, resetToken) {
 
       ${process.env.CORS_ORIGIN}
     `,
+    attachments: [logoAttachment],
   };
 
   await transporter.sendMail(mailOptions);
@@ -46,7 +53,7 @@ export async function confirmEmail(email, confirmToken) {
     to: `${email}`,
     subject: 'Confirmation de compte',
     html: `
-    <img src="${logo}" alt="logo" style="width: 100px; height: 100px; margin-bottom: 20px;"/>
+    <img src="cid:logoEmail" alt="logo" style="width: 60px; height: 60px;"/>
       <h1 style="fontSize: 1.2rem">Confirmation de compte</h1>
 
       <p>Bonjour,</p>
@@ -56,6 +63,7 @@ export async function confirmEmail(email, confirmToken) {
 
       ${process.env.CORS_ORIGIN}
     `,
+    attachments: [logoAttachment],
   };
 
   await transporter.sendMail(mailOptions);
@@ -68,7 +76,7 @@ export async function changePasswordEmail(email) {
     to: `${email}`,
     subject: 'Changement de mot de passe',
     html: `
-    <img src="${logo}" alt="logo" style="width: 100px; height: 100px; margin-bottom: 20px;"/>
+    <img src="cid:logoEmail" alt="logo" style="width: 60px; height: 60px;"/>
       <h1 style="fontSize: 1.2rem">Confirmation de changement de mot de passe</h1>
 
       <p>Bonjour,</p>
@@ -76,6 +84,7 @@ export async function changePasswordEmail(email) {
       
       <p>Si vous n'êtes pas l'auteur de cette action, veuillez nous contacter: ${process.env.CORS_ORIGIN}</p>
     `,
+    attachments: [logoAttachment],
   };
 
   await transporter.sendMail(mailOptions);
@@ -88,7 +97,7 @@ export async function newMessageEmail(user, request, message) {
     to: `${user.email}`,
     subject: 'Nouveau message',
     html: `
-      <img src="${logo}" alt="logo" style="width: 100px; height: 100px; margin-bottom: 20px;"/>
+      <img src="cid:logoEmail" alt="logo" style="width: 100px; height: 100px; margin-bottom: 20px;"/>
       <h1 style="fontSize: 1.2rem">Nouveau message</h1>
       <h2 style="fontSize: 1rem"> Demande concernée : <span style="color: #028eef">${request.title}</span></h2>
 
@@ -96,10 +105,9 @@ export async function newMessageEmail(user, request, message) {
       <p>Vous avez reçu un nouveau message le ${new Date(Number(message.created_at)).toLocaleString('fr-FR', { hour12: false })} de <span style="color: #f37c04;">${user.role === 'pro' ? user.denomination : `${user.first_name} ${user.last_name}`} </span></p>
       <p>Connectez vous pour consulter le message: ${process.env.CORS_ORIGIN}</p>
     `,
+    attachments: [logoAttachment],
   };
-  /*   <p>Message:</p>
-  <p>${message.content ? message.content :
-   'Connectez vous pour consulter les images ou documents'}</p> */
+
   await transporter.sendMail(mailOptions);
 }
 
@@ -110,7 +118,7 @@ export async function newRequestEmail(user, request) {
     to: `${user.email}`,
     subject: 'Nouvelle demande',
     html: `
-      <img src="${logo}" alt="logo" style="width: 100px; height: 100px; margin-bottom: 20px;"/>
+      <img src="cid:logoEmail" alt="logo" style="width: 60px; height: 60px;"/>
       <h1 style="fontSize: 1.2rem">Nouvelle demande</h1>
       <h2 style="fontSize: 1rem"> Demande : <span style="color: #028eef">${request.title}</span></h2>
 
@@ -118,6 +126,7 @@ export async function newRequestEmail(user, request) {
       <p>Vous avez reçu une nouvelle demande le ${new Date(Number(request.created_at)).toLocaleString('fr-FR', { hour12: false })} de <span style="color: #f37c04;">${user.role === 'pro' ? user.denomination : `${user.first_name} ${user.last_name}`} </span></p>
       <p>Connectez vous pour consulter la nouvelle demande: ${process.env.CORS_ORIGIN}</p>
     `,
+    attachments: [logoAttachment],
   };
   /*  <p>Description:</p>
       <p>${request.message}</p> */
@@ -130,6 +139,7 @@ export async function contactSendEmail(data) {
     to: process.env.EMAIL_CONTACT,
     subject: 'Nouveau message de contact',
     html: `
+      <img src="cid:logoEmail" alt="logo" style="width: 60px; height: 60px;"/>
       <h1>Nouveau message de contact</h1>
 
       ${data.enterprise ? `<p>Société: ${data.enterprise}</p>`
@@ -141,6 +151,7 @@ export async function contactSendEmail(data) {
       <p>Message:</p>
       <p>${data.description}</p>
     `,
+    attachments: [logoAttachment],
   };
 
   await transporter.sendMail(mailOptions);

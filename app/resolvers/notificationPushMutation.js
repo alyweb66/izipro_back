@@ -34,18 +34,18 @@ async function createNotificationPush(_, { input }, { dataSources }) {
   }
 
   try {
-    const isCreatedNotification = await dataSources.dataDB.notification.findByUser(
+    const isCreatedNotification = await dataSources.dataDB.notificationPush.findByUser(
       input.user_id,
     );
 
     // check if the isCreatedNotification value is the same than the input value
-    if (isCreatedNotification.endpoint === input.endpoint
+    if (isCreatedNotification && isCreatedNotification.endpoint === input.endpoint
         && isCreatedNotification.auth_token === input.auth_token
         && isCreatedNotification.public_key === input.public_key) {
       return true;
     }
 
-    const createdNotification = await dataSources.dataDB.notification.create(input.user_id);
+    const createdNotification = await dataSources.dataDB.notificationPush.create(input);
     if (!createdNotification) {
       throw new ApolloError('Error creating notification');
     }
@@ -67,7 +67,7 @@ async function createNotificationPush(_, { input }, { dataSources }) {
  * @param {Object} context - The context object.
  * @param {Object} context.dataSources - The data sources object.
  * @param {Object} context.dataSources.dataDB - The dataDB object.
- * @param {Object} context.dataSources.dataDB.notification - The notification data source.
+ * @param {Object} context.dataSources.dataDB.notificationPush - The notification data source.
  * @returns {Promise<boolean>} - Returns true if the notification was successfully deleted.
  * @throws {ApolloError} - Throws an error if the deletion fails.
  */
@@ -75,7 +75,7 @@ async function deleteNotificationPush(_, { input }, { dataSources }) {
   debug('delete notificationPush');
 
   try {
-    await dataSources.dataDB.notification.deleteNotification(input.user_id, input.endpoint);
+    await dataSources.dataDB.notificationPush.deleteNotification(input.user_id, input.endpoint);
     return true;
   } catch (error) {
     debug('Error', error);
