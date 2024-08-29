@@ -31,11 +31,14 @@ export default async function serverLogout(_, __, {
       try {
         // remove refresh_token from the database
         if (dataSources.userData) {
-          await dataSources.dataDB.user.modifyRefreshToken(
+          const removedToken = await dataSources.dataDB.user.modifyRefreshToken(
             dataSources.userData.id,
             refreshToken,
             'array_remove',
           );
+          if (!removedToken) {
+            throw new Error('Error removing refresh token');
+          }
         }
       } catch (dbError) {
         debug('Database error:', dbError);
