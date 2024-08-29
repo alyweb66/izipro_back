@@ -35,7 +35,7 @@ import resolvers from './app/resolvers/index.js';
 import getUserByToken from './app/middleware/getUserByToken.js';
 // class DataDB from dataSources
 import DataDB from './app/datasources/data/index.js';
-// import serverLogout from './app/middleware/serverLogout.js';
+import serverLogout from './app/middleware/serverLogout.js';
 import logger from './app/middleware/logger.js';
 import updateLastLoginInDatabase from './app/middleware/lastLogin.js';
 
@@ -66,6 +66,17 @@ app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
 
 // Middleware to get user data from token
 app.use(async (req, res, next) => {
+  // initialize isLogout to false for the first time
+  if (typeof req.isLogout === 'undefined') {
+    req.isLogout = false;
+  }
+  // check if the request is an OPTIONS request to limit the number of database calls
+  // OPTIONS is the first request made by the browser to check if the server accepts the request
+  if (req.method === 'OPTIONS') {
+    dataSources.userData = null;
+    return next();
+  }
+
   if (!req.userData) {
     try {
       if (req.headers.cookie) {
@@ -73,15 +84,10 @@ app.use(async (req, res, next) => {
         if (cookies['auth-token']) {
           req.userData = await getUserByToken(req, res, dataSources);
         } else {
-          /* serverLogout(null, null, {
-            res, dataSources, req, server: true,
-          }); */
-          req.userData = null;
+          req.isLogout = true;
         }
       } else {
-        /* serverLogout(null, null, {
-          res, dataSources, req, server: true,
-        }); */
+        req.isLogout = true;
         req.userData = null;
       }
 
@@ -93,7 +99,7 @@ app.use(async (req, res, next) => {
       // return next(error);
     }
   }
-  next();
+  return next();
 });
 
 //* middleware to update last login using a Map to limit database calls
@@ -175,19 +181,40 @@ const wsServer = new WebSocketServer({
 }); */
 
 //* Log mutation or query data
-const logMutationData = (req, res, next) => {
+/* const logMutationData = (req, res, next) => {
   if (req.method === 'POST') {
     console.log('Mutation data:', req.body);
   }
   next();
 };
-app.use(logMutationData);
+app.use(logMutationData); */
 
 //* log request headers
 /* app.use((req, res, next) => {
   console.log('Request headers:', req.headers);
   next();
 }); */
+
+// List of operations that do not require a token
+const allowedOperations = [
+  'Login',
+  'Rules',
+  'ForgotPassword',
+  'ResetPassword',
+  'ValidateForgotPassword',
+  'Register',
+  'ProRegister',
+];
+// Middleware to handle logout
+app.use((req, res, next) => {
+  if (req.isLogout && !allowedOperations.includes(req.body.operationName)) {
+    serverLogout(null, null, {
+      res, dataSources, req, server: true,
+    });
+    req.isLogout = false;
+  }
+  next();
+});
 
 // Hand in the schema we just created and have the
 // WebSocketServer start listening.
