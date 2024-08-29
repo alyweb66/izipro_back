@@ -62,6 +62,7 @@ function debugInDevelopment(message = '', value = '') {
 async function createRequest(_, { input }, { dataSources }) {
   debug('create request');
   debugInDevelopment('input', input.media);
+
   if (dataSources.userData.id !== input.user_id) {
     throw new AuthenticationError('Unauthorized');
   }
@@ -76,12 +77,16 @@ async function createRequest(_, { input }, { dataSources }) {
     }
 
     // mapping the media array to createReadStream
-    const ReadStreamArray = await Promise.all(input.media.map(async (upload) => {
-      const fileUpload = upload.file;
+    const ReadStreamArray = await Promise.all(input.media.map(async (upload, index) => {
+      if (!upload.file.promise) {
+        throw new Error(`File upload not complete for media at index ${index}`);
+      }
+      const fileUpload = await upload.file.promise;
+
       if (!fileUpload) {
         throw new Error('File upload not complete');
       }
-      const { createReadStream, filename, mimetype } = await fileUpload.file;
+      const { createReadStream, filename, mimetype } = await fileUpload;
       const readStream = createReadStream();
       const file = {
         filename,

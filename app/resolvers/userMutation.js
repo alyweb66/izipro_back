@@ -333,11 +333,15 @@ async function logout(_, { id }, { dataSources, res, req }) {
       }
 
       // remove refresh_token from the database
-      await dataSources.dataDB.user.modifyRefreshToken(
+      const tokenRemoved = await dataSources.dataDB.user.modifyRefreshToken(
         id,
         refreshToken,
         'array_remove',
       );
+
+      if (!tokenRemoved) {
+        throw new Error('Error removing refresh token');
+      }
 
       const pastDate = new Date(0);
       TokenCookie = cookie.serialize(

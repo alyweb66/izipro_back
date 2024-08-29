@@ -79,8 +79,11 @@ class User extends CoreDatamapper {
  * @param {string} refreshToken - The refresh token to be added, replaced, or removed.
  * @param {string} action - The action to perform on the refresh token array.
  * Must be one of 'array_append', 'array_replace', or 'array_remove'.
+ * @param {string} [oldToken=null] - The old refresh token to be replaced
+ * (only used for 'array_replace' action).
  * @throws {Error} Throws an error if the action is not valid.
- * @returns {Promise<void>} A promise that resolves when the query is executed.
+ * @returns {Promise<boolean>} A promise that resolves to true
+ * if the refresh token was modified successfully, false otherwise.
  */
   async modifyRefreshToken(userId, refreshToken, action, oldToken = null) {
     debug('Modifying refresh token');
@@ -101,7 +104,7 @@ class User extends CoreDatamapper {
     const result = await this.client.query(checkQuery);
     const refreshTokens = result.rows[0].refresh_token;
 
-    if (refreshTokens.includes(refreshToken)) {
+    if (action !== 'array_remove' && refreshTokens.includes(refreshToken)) {
       debug('Refresh token already exists, no action taken');
       return;
     }
@@ -117,6 +120,7 @@ class User extends CoreDatamapper {
       };
     } else {
     // For array_append and array_remove
+
       query = {
         text: `UPDATE "${this.tableName}" 
              SET refresh_token = ${action}(refresh_token, $2)
@@ -125,7 +129,14 @@ class User extends CoreDatamapper {
       };
     }
 
-    await this.client.query(query);
+    const resultToken = await this.client.query(query);
+
+    if (resultToken.rowCount > 0) {
+      // eslint-disable-next-line consistent-return
+      return true;
+    }
+    // eslint-disable-next-line consistent-return
+    return false;
   }
 }
 
