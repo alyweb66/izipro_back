@@ -35,7 +35,7 @@ import resolvers from './app/resolvers/index.js';
 import getUserByToken from './app/middleware/getUserByToken.js';
 // class DataDB from dataSources
 import DataDB from './app/datasources/data/index.js';
-import serverLogout from './app/middleware/serverLogout.js';
+// import serverLogout from './app/middleware/serverLogout.js';
 import logger from './app/middleware/logger.js';
 import updateLastLoginInDatabase from './app/middleware/lastLogin.js';
 
@@ -73,15 +73,15 @@ app.use(async (req, res, next) => {
         if (cookies['auth-token']) {
           req.userData = await getUserByToken(req, res, dataSources);
         } else {
-          serverLogout(null, null, {
+          /* serverLogout(null, null, {
             res, dataSources, req, server: true,
-          });
+          }); */
           req.userData = null;
         }
       } else {
-        serverLogout(null, null, {
+        /* serverLogout(null, null, {
           res, dataSources, req, server: true,
-        });
+        }); */
         req.userData = null;
       }
 

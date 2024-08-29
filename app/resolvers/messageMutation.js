@@ -47,13 +47,16 @@ async function createMessage(_, { id, input }, { dataSources }) {
 
     // mapping the media array to createReadStream
     let isCreatedMessageMedia;
-    if (input.media && input.media.length > 0 && input.media[0].file) {
-      const ReadStreamArray = await Promise.all(input.media.map(async (upload) => {
-        const fileUpload = upload.file;
+    if (input.media && input.media.length > 0 /* && input.media[0].file */) {
+      const ReadStreamArray = await Promise.all(input.media.map(async (upload, index) => {
+        if (!upload.file.promise) {
+          throw new Error(`File upload not complete for media at index ${index}`);
+        }
+        const fileUpload = await upload.file.promise;
         if (!fileUpload) {
           throw new Error('File upload not complete');
         }
-        const { createReadStream, filename, mimetype } = await fileUpload.file;
+        const { createReadStream, filename, mimetype } = await fileUpload;
         const readStream = createReadStream();
         const file = {
           filename,
