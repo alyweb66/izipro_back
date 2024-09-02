@@ -81,7 +81,7 @@ app.use(async (req, res, next) => {
     try {
       if (req.headers.cookie) {
         const cookies = cookie.parse(req.headers.cookie);
-        if (cookies['auth-token']) {
+        if (cookies['auth-token'] && req.body.operationName !== 'Login') {
           req.userData = await getUserByToken(req, res, dataSources);
         } else {
           req.isLogout = true;

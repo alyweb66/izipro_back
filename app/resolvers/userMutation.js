@@ -254,22 +254,26 @@ async function login(_, { input }, { dataSources, res }) {
       debugInDevelopment('login:validPassword failed', validPassword);
       throw new ApolloError('EIncorrect email or password', 'BAD_REQUEST');
     }
+    console.log('input.activeSession', input.activeSession);
+
     // Create a token
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '30m' });
+    const token = jwt.sign({ id: user.id, role: user.role, activeSession: input.activeSession }, process.env.JWT_SECRET, { expiresIn: input.activeSession ? '30m' : '1m' });
 
     // activeSession or not that is the question
     let refreshToken;
+    let saveRefreshToken;
     debugInDevelopment('input.activeSession', input.activeSession);
     if (input.activeSession) {
       refreshToken = jwt.sign({ id: user.id, role: user.role, activeSession: true }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
-    } else {
-      refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
-    }
-    const saveRefreshToken = await dataSources.dataDB.user.modifyRefreshToken(
-      user.id,
-      refreshToken,
-      'array_append',
-    );
+      saveRefreshToken = await dataSources.dataDB.user.modifyRefreshToken(
+        user.id,
+        refreshToken,
+        'array_append',
+      );
+    } /* else {
+      refreshToken = jwt.sign({ id: user.id, role: user.role },
+      process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
+    } */
     debugInDevelopment('saveRefreshToken', saveRefreshToken);
 
     const TokenCookie = cookie.serialize(
@@ -284,20 +288,32 @@ async function login(_, { input }, { dataSources, res }) {
         ...(input.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
       },
     );
-    const refreshTokenCookie = cookie.serialize(
-      'refresh-token',
-      refreshToken,
-      {
-        httpOnly: true,
-        sameSite: 'strict',
-        secure: secureEnv(),
-        domain: process.env.DOMAIN,
-        path: '/',
-        ...(input.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
-      },
-    );
 
-    res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
+    let refreshTokenCookie;
+    if (input.activeSession) {
+      refreshTokenCookie = cookie.serialize(
+        'refresh-token',
+        refreshToken,
+        {
+          httpOnly: true,
+          sameSite: 'strict',
+          secure: secureEnv(),
+          domain: process.env.DOMAIN,
+          path: '/',
+          ...(input.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
+        },
+      );
+    } else {
+      refreshTokenCookie = cookie.serialize(
+        'refresh-token',
+        '',
+        {
+          httpOnly: true, sameSite: 'strict', secure: secureEnv(), expires: new Date(0),
+        },
+      );
+    }
+
+    res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie || '']);
     return true;
   } catch (error) {
     debug('error', error);
@@ -322,37 +338,41 @@ async function logout(_, { id }, { dataSources, res, req }) {
     // Controle if it's the good user who want to logout
     let TokenCookie;
     let refreshTokenCookie;
+    let refreshToken;
     if (dataSources.userData.id === id) {
       // get refresh_token from cookie
       const cookies = cookie.parse(req.headers.cookie || '');
 
-      const refreshToken = cookies['refresh-token'] || '';
+      refreshToken = cookies['refresh-token'] || '';
 
-      if (!refreshToken) {
+      /* if (!refreshToken) {
         throw new Error('Refresh token not found in cookies');
-      }
-
-      // remove refresh_token from the database
-      const tokenRemoved = await dataSources.dataDB.user.modifyRefreshToken(
-        id,
-        refreshToken,
-        'array_remove',
-      );
-
-      if (!tokenRemoved) {
-        throw new Error('Error removing refresh token');
-      }
-
+      } */
       const pastDate = new Date(0);
+      // remove refresh_token from the database
+      let tokenRemoved = false;
+      if (refreshToken) {
+        tokenRemoved = await dataSources.dataDB.user.modifyRefreshToken(
+          id,
+          refreshToken,
+          'array_remove',
+        );
+
+        if (!tokenRemoved) {
+          throw new Error('Error removing refresh token');
+        }
+
+        refreshTokenCookie = cookie.serialize(
+          'refresh-token',
+          '',
+          {
+            httpOnly: true, sameSite: 'strict', secure: secureEnv(), expires: pastDate,
+          },
+        );
+      }
+
       TokenCookie = cookie.serialize(
         'auth-token',
-        '',
-        {
-          httpOnly: true, sameSite: 'strict', secure: secureEnv(), expires: pastDate,
-        },
-      );
-      refreshTokenCookie = cookie.serialize(
-        'refresh-token',
         '',
         {
           httpOnly: true, sameSite: 'strict', secure: secureEnv(), expires: pastDate,
@@ -361,7 +381,11 @@ async function logout(_, { id }, { dataSources, res, req }) {
     }
     // eslint-disable-next-line no-param-reassign
     dataSources.userData = null;
-    res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
+    const cookiesToSet = [TokenCookie];
+    if (refreshToken) {
+      cookiesToSet.push(refreshTokenCookie);
+    }
+    res.setHeader('set-cookie', cookiesToSet);
 
     return true;
   } catch (error) {
