@@ -24,25 +24,20 @@ export default async function serverLogout(_, __, {
 
       const refreshToken = cookies['refresh-token'] || '';
 
-      if (!refreshToken) {
+      /* if (!refreshToken) {
         throw new Error('Refresh token not found in cookies');
-      }
+      } */
 
-      try {
-        // remove refresh_token from the database
-        if (dataSources.userData) {
-          const removedToken = await dataSources.dataDB.user.modifyRefreshToken(
-            dataSources.userData.id,
-            refreshToken,
-            'array_remove',
-          );
-          if (!removedToken) {
-            throw new Error('Error removing refresh token');
-          }
+      // remove refresh_token from the database
+      if (dataSources.userData && refreshToken) {
+        const removedToken = await dataSources.dataDB.user.modifyRefreshToken(
+          dataSources.userData.id,
+          refreshToken,
+          'array_remove',
+        );
+        if (!removedToken) {
+          throw new Error('Error removing refresh token');
         }
-      } catch (dbError) {
-        debug('Database error:', dbError);
-        throw new ApolloError('Failed to remove refresh token from database');
       }
     }
 
@@ -63,7 +58,7 @@ export default async function serverLogout(_, __, {
     );
     const logoutCookie = cookie.serialize(
       'logout',
-      true,
+      'true',
       {
         httpOnly: false,
         sameSite: 'none',
@@ -78,6 +73,11 @@ export default async function serverLogout(_, __, {
     return true;
   } catch (err) {
     debug(err);
-    throw new ApolloError('Error serveur logout');
+    /*  throw new ApolloError('Error serveur logout'); */
+    debug('serverLogout error:', err.message, err.stack);
+    throw new ApolloError('Error serveur logout', {
+      originalError: err.message,
+      stack: err.stack,
+    });
   }
 }
