@@ -100,6 +100,7 @@ app.use(async (req, res, next) => {
           });
           // req.isLogout = false;
           req.userData = null;
+          return res.end();
         }
       } else if (!allowedOperations.includes(req.body.operationName)) {
         // req.isLogout = true;
@@ -108,6 +109,7 @@ app.use(async (req, res, next) => {
         });
         // req.isLogout = false;
         req.userData = null;
+        return res.end();
       }
 
       // Attach userData to dataSources
@@ -156,6 +158,11 @@ setInterval(() => {
     activeUsers.clear();
   } catch (error) {
     debug('error', error);
+    logger.error({
+      message: error.message,
+      stack: error.stack,
+      extensions: error.extensions,
+    });
   }
 }, checkInterval);
 //* end of middleware to update last login
@@ -251,7 +258,8 @@ const server = new ApolloServer({
     {
       async requestDidStart() {
         return {
-          async willSendResponse({ errors }) {
+          async didEncounterErrors(ctx) {
+            const { errors } = ctx;
             if (errors) {
               errors.forEach((error) => {
                 logger.error({

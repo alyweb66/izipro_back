@@ -120,7 +120,6 @@ class User extends CoreDatamapper {
       };
     } else {
     // For array_append and array_remove
-
       query = {
         text: `UPDATE "${this.tableName}" 
              SET refresh_token = ${action}(refresh_token, $2)
