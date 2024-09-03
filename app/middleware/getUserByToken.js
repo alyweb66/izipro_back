@@ -65,11 +65,9 @@ export default async function getUserByToken(req, res, dataSources) {
     debug('Failed to verify token', tokenError);
 
     if (tokenError instanceof jwt.TokenExpiredError) {
-      console.log('userData in tokenerror', userDataDecoded);
-
       if (userDataDecoded && !userDataDecoded.activeSession) {
         subscribeToLogout(userDataDecoded.id);
-        serverLogout(null, null, { res, dataSources, req });
+        // serverLogout(null, null, { res, dataSources, req });
         throw new ApolloError('Outdated session');
       }
       // If the error is token expired, refresh the token
@@ -92,7 +90,7 @@ export default async function getUserByToken(req, res, dataSources) {
         if (!user) {
           debugInDevelopment('refreshToken: user failed');
           subscribeToLogout(verifyRefreshToken.id);
-          serverLogout(null, null, { res, dataSources, req });
+          // serverLogout(null, null, { res, dataSources, req });
           throw new ApolloError('User not found', 'BAD_REQUEST');
         }
 
@@ -103,7 +101,7 @@ export default async function getUserByToken(req, res, dataSources) {
         if (!findRefreshToken || findRefreshToken !== refreshToken) {
           debugInDevelopment('refreshToken: refresh_token failed', verifyRefreshToken);
           subscribeToLogout(user.id);
-          serverLogout(null, null, { res, dataSources, req });
+          // serverLogout(null, null, { res, dataSources, req });
           throw new ApolloError('Error token', 'BAD_REQUEST');
         }
 
@@ -179,7 +177,7 @@ export default async function getUserByToken(req, res, dataSources) {
           });
           debug('Failed to verify refresh token1');
           subscribeToLogout(decodeToken.id);
-          serverLogout(null, null, { res, dataSources, req });
+          // serverLogout(null, null, { res, dataSources, req });
           throw new AuthenticationError('Failed to verify make new refresh-token');
         }
         logger.error({
@@ -191,9 +189,7 @@ export default async function getUserByToken(req, res, dataSources) {
     }
     debug('Failed to verify refresh token2');
     subscribeToLogout(decodeToken.id);
-    serverLogout(null, null, { res, dataSources, req });
+    // serverLogout(null, null, { res, dataSources, req });
     throw new AuthenticationError('Failed to verify token');
   }
-/*   const userData = null;
-  return userData; */
 }

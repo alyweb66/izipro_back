@@ -254,7 +254,6 @@ async function login(_, { input }, { dataSources, res }) {
       debugInDevelopment('login:validPassword failed', validPassword);
       throw new ApolloError('EIncorrect email or password', 'BAD_REQUEST');
     }
-    console.log('input.activeSession', input.activeSession);
 
     // Create a token
     const token = jwt.sign({ id: user.id, role: user.role, activeSession: input.activeSession }, process.env.JWT_SECRET, { expiresIn: input.activeSession ? '30m' : '1m' });
@@ -308,12 +307,21 @@ async function login(_, { input }, { dataSources, res }) {
         'refresh-token',
         '',
         {
-          httpOnly: true, sameSite: 'strict', secure: secureEnv(), expires: new Date(0),
+          httpOnly: true,
+          sameSite: 'strict',
+          secure: secureEnv(),
+          expires: new Date(0),
         },
       );
     }
 
-    res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie || '']);
+    const cookiesToSet = [TokenCookie];
+
+    if (refreshTokenCookie) {
+      cookiesToSet.push(refreshTokenCookie);
+    }
+
+    res.setHeader('set-cookie', cookiesToSet);
     return true;
   } catch (error) {
     debug('error', error);

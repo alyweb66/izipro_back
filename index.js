@@ -64,12 +64,22 @@ const dataSources = { dataDB: new DataDB({ cache }) };
 // middleware to handle file uploads
 app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
 
+// List of operations that do not require a token
+const allowedOperations = [
+  'Login',
+  'Rules',
+  'ForgotPassword',
+  'ResetPassword',
+  'ValidateForgotPassword',
+  'Register',
+  'ProRegister',
+];
 // Middleware to get user data from token
 app.use(async (req, res, next) => {
   // initialize isLogout to false for the first time
-  if (typeof req.isLogout === 'undefined') {
+  /* if (typeof req.isLogout === 'undefined') {
     req.isLogout = false;
-  }
+  } */
   // check if the request is an OPTIONS request to limit the number of database calls
   // OPTIONS is the first request made by the browser to check if the server accepts the request
   if (req.method === 'OPTIONS') {
@@ -84,10 +94,19 @@ app.use(async (req, res, next) => {
         if (cookies['auth-token'] && req.body.operationName !== 'Login') {
           req.userData = await getUserByToken(req, res, dataSources);
         } else {
-          req.isLogout = true;
+          // req.isLogout = true;
+          serverLogout(null, null, {
+            res, dataSources, req, server: true,
+          });
+          // req.isLogout = false;
+          req.userData = null;
         }
-      } else {
-        req.isLogout = true;
+      } else if (!allowedOperations.includes(req.body.operationName)) {
+        // req.isLogout = true;
+        serverLogout(null, null, {
+          res, dataSources, req, server: true,
+        });
+        // req.isLogout = false;
         req.userData = null;
       }
 
@@ -99,6 +118,7 @@ app.use(async (req, res, next) => {
       // return next(error);
     }
   }
+
   return next();
 });
 
@@ -195,18 +215,8 @@ app.use(logMutationData); */
   next();
 }); */
 
-// List of operations that do not require a token
-const allowedOperations = [
-  'Login',
-  'Rules',
-  'ForgotPassword',
-  'ResetPassword',
-  'ValidateForgotPassword',
-  'Register',
-  'ProRegister',
-];
 // Middleware to handle logout
-app.use((req, res, next) => {
+/* app.use((req, res, next) => {
   if (req.isLogout && !allowedOperations.includes(req.body.operationName)) {
     serverLogout(null, null, {
       res, dataSources, req, server: true,
@@ -214,7 +224,7 @@ app.use((req, res, next) => {
     req.isLogout = false;
   }
   next();
-});
+}); */
 
 // Hand in the schema we just created and have the
 // WebSocketServer start listening.
