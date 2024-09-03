@@ -12,6 +12,7 @@ import handleUploadedFiles from '../middleware/handleUploadFiles.js';
 import * as sendEmail from '../middleware/sendEmail.js';
 import SirenAPI from '../datasources/SirenAPI/index.js';
 import logger from '../middleware/logger.js';
+import checkRefreshTokenValidity from '../middleware/refreshTokenCleaner.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:mutation`);
 
@@ -257,6 +258,8 @@ async function login(_, { input }, { dataSources, res }) {
 
     // Create a token
     const token = jwt.sign({ id: user.id, role: user.role, activeSession: input.activeSession }, process.env.JWT_SECRET, { expiresIn: input.activeSession ? '30m' : '1m' });
+
+    checkRefreshTokenValidity(user.id, dataSources);
 
     // activeSession or not that is the question
     let refreshToken;
