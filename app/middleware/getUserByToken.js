@@ -48,11 +48,12 @@ export default async function getUserByToken(req, res, dataSources) {
   const refreshToken = cookies['refresh-token'] || '';
 
   let decodeToken;
+  let userDataDecoded;
   try {
     // If the token is valid, return the user data
     if (token) {
+      userDataDecoded = jwt.decode(token, process.env.JWT_SECRET);
       const userData = jwt.verify(token, process.env.JWT_SECRET);
-
       debugInDevelopment('userData', userData);
       return userData;
     }
@@ -64,6 +65,11 @@ export default async function getUserByToken(req, res, dataSources) {
     debug('Failed to verify token', tokenError);
 
     if (tokenError instanceof jwt.TokenExpiredError) {
+      if (userDataDecoded && !userDataDecoded.activeSession) {
+        subscribeToLogout(userDataDecoded.id);
+        serverLogout(null, null, { res, dataSources, req });
+        throw new ApolloError('Outdated session');
+      }
       // If the error is token expired, refresh the token
       debug('refreshToken is starting');
 
@@ -181,11 +187,10 @@ export default async function getUserByToken(req, res, dataSources) {
         });
       }
     }
+
     debug('Failed to verify refresh token2');
     subscribeToLogout(decodeToken.id);
     serverLogout(null, null, { res, dataSources, req });
     throw new AuthenticationError('Failed to verify token');
   }
-/*   const userData = null;
-  return userData; */
 }

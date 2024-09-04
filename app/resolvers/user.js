@@ -25,6 +25,7 @@ const UserResolver = {
     try {
       debug(`get all request from user id: ${id}, offset ${offset}, limit ${limit}`);
       const requests = await dataSources.dataDB.request.getRequestByUserId(id, offset, limit);
+
       return requests;
     } catch (error) {
       debug('error', error);
