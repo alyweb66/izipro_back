@@ -103,7 +103,8 @@ export async function newMessageEmail(user, request, message) {
 
       <p>Bonjour,</p>
       <p>Vous avez reçu un nouveau message le ${new Date(Number(message.created_at)).toLocaleString('fr-FR', { hour12: false })} de <span style="color: #f37c04;">${user.role === 'pro' ? user.denomination : `${user.first_name} ${user.last_name}`} </span></p>
-      <p>Connectez vous pour consulter le message: ${process.env.CORS_ORIGIN}</p>
+      <a href="${process.env.CORS_ORIGIN}" style="background-color: #F79323; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Consulter le message</a>
+      
     `,
     attachments: [logoAttachment],
   };
@@ -124,7 +125,7 @@ export async function newRequestEmail(user, request) {
 
       <p>Bonjour,</p>
       <p>Vous avez reçu une nouvelle demande le ${new Date(Number(request.created_at)).toLocaleString('fr-FR', { hour12: false })} de <span style="color: #f37c04;">${user.role === 'pro' ? user.denomination : `${user.first_name} ${user.last_name}`} </span></p>
-      <p>Connectez vous pour consulter la nouvelle demande: ${process.env.CORS_ORIGIN}</p>
+      <a href="${process.env.CORS_ORIGIN}" style="background-color: #F79323; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Consulter la demande</a>
     `,
     attachments: [logoAttachment],
   };
