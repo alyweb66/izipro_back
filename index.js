@@ -76,10 +76,6 @@ const allowedOperations = [
 ];
 // Middleware to get user data from token
 app.use(async (req, res, next) => {
-  // initialize isLogout to false for the first time
-  /* if (typeof req.isLogout === 'undefined') {
-    req.isLogout = false;
-  } */
   // check if the request is an OPTIONS request to limit the number of database calls
   // OPTIONS is the first request made by the browser to check if the server accepts the request
   if (req.method === 'OPTIONS') {
@@ -93,10 +89,11 @@ app.use(async (req, res, next) => {
         const cookies = cookie.parse(req.headers.cookie);
         if (cookies['auth-token'] && req.body.operationName !== 'Login') {
           req.userData = await getUserByToken(req, res, dataSources);
-        } else {
+        } else if (!allowedOperations.includes(req.body.operationName)) {
           // req.isLogout = true;
           serverLogout(null, null, {
             res, dataSources, req, server: true,
+
           });
           // req.isLogout = false;
           req.userData = null;
@@ -177,7 +174,12 @@ const authenticate = (req, res, next) => {
 
 // Protect static files route with authentication
 app.use('/public', authenticate, express.static(path.join(dirname, 'public')));
-app.use('/logo', express.static(path.join(dirname, 'logo')));
+// cache-control for static files and notitication access
+app.use('/logo', express.static(path.join(dirname, 'logo'), {
+  setHeaders: (res) => {
+    res.set('Cache-Control', 'public, max-age=31536000'); // Cache de 1 an
+  },
+}));
 // The `listen` method launches a web server.
 //* HTTPS server
 // const httpServer = https.createServer({ key, cert }, app);
