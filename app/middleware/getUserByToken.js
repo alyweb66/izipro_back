@@ -79,6 +79,7 @@ export default async function getUserByToken(req, res, dataSources) {
         // clear user cache
         dataSources.dataDB.user.cache.clear();
         const user = await refreshTokenInstance.getRefreshTokenByUserId(decodeToken.id);
+
         const verifyRefreshToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
         if (!verifyRefreshToken) {
