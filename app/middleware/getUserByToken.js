@@ -187,6 +187,7 @@ export default async function getUserByToken(req, res, dataSources) {
         });
       }
     }
+
     debug('Failed to verify refresh token2');
     subscribeToLogout(decodeToken.id);
     serverLogout(null, null, { res, dataSources, req });
