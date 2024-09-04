@@ -62,7 +62,7 @@ export default async function serverLogout(_, __, {
       {
         httpOnly: false,
         sameSite: 'none',
-        secure: secureEnv(),
+        secure: true,
         domain: process.env.DOMAIN,
         path: '/',
       },

@@ -393,11 +393,8 @@ async function logout(_, { id }, { dataSources, res, req }) {
     }
     // eslint-disable-next-line no-param-reassign
     dataSources.userData = null;
-    const cookiesToSet = [TokenCookie];
-    if (refreshToken) {
-      cookiesToSet.push(refreshTokenCookie);
-    }
-    res.setHeader('set-cookie', cookiesToSet);
+
+    res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
 
     return true;
   } catch (error) {

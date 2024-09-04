@@ -1,0 +1,41 @@
+{
+  "apps": [
+    {
+      "name": "POP",
+      "script": "./index.js",
+      "instances": 1,
+      "autorestart": true,
+      "watch": false,
+      "max_memory_restart": "1G",
+      "node_args": "--experimental-modules",
+      "env": {
+        "PORT": 3000,
+        "HTTP_PORT": 3001,
+        "DEBUG_MODULE": "izi",
+        "NODE_ENV": "production",
+        "JWT_SECRET": "secretkey",
+        "REFRESH_TOKEN_SECRET": "secretkey",
+        "SERVER_URL": "yourServer",
+        "DOMAIN": "localhost",
+        "FILE_URL": "http://localhost:",
+        "CORS_ORIGIN": "your-client-url",
+        "HOST_EMAIL": "smtp.gmail.com",
+        "SERVICE_EMAIL": "Gmail",
+        "EMAIL_SERVER": "your-user-email",
+        "EMAIL_PASSWORD": "your-email-password",
+        "EMAIL_CONTACT": "your_destination_email",
+        "PGHOST": "localhost",
+        "PGPORT": 5432,
+        "PGDATABASE": "izi",
+        "PGUSER": "<dbuser>",
+        "PGPASSWORD": "<dbpass>",
+        "SIREN_API_TOKEN": "your_token",
+        "SIREN_API_URL": "https://api.insee.fr/entreprises/sirene/V3.11/siret/",
+        "LOGO_NOTIFICATION_URL": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Fanta_logo_%282009%29.jpg",
+        "LOGO_PATH_EMAIL": "/home/dev/var/www/html/izipro/izipro_back/logo/logo-email.jpg",
+        "VAPID_PUBLIC_KEY": "your_public_key",
+        "VAPID_PRIVATE_KEY": "yout_private_key"
+      }
+    }
+  ]
+}
