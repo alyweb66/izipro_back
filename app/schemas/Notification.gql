@@ -1,7 +1,12 @@
 type Notification {
     id: Int!
     user_id: Int!
-    email_notification: Boolean
+    email_notification: Boolean!
+    created_at: String
+    updated_at: String
+    endpoint: String
+    public_key: String
+    auth_token: String
 }
 
 input NotificationInput {
