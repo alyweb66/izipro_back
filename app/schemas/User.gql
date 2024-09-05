@@ -30,7 +30,7 @@ type User {
     subscription: [UserSubscription]
     deleted_at: String
     publicKey: String
-    notification: Notification
+    notification: [Notification]
 }
 
 type UserResult{
