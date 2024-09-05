@@ -92,6 +92,7 @@ export default async function getUserByToken(req, res, dataSources) {
 
         const verifyRefreshToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
+        // If the refresh token is not valid, go to logout
         if (!verifyRefreshToken) {
           debugInDevelopment('refreshToken: verifyRefreshToken failed');
           throw new ApolloError('Error token', 'BAD_REQUEST');

@@ -126,11 +126,14 @@ async function createMessage(_, { id, input }, { dataSources }) {
 
         const payload = JSON.stringify({
           title: 'Vous avez un nouveau message',
-          message: 'Cliquez pour le consulter',
+          body: 'Cliquez pour le consulter',
           // body: message[0].content, // Assurez-vous que `message[0].content`
           // contient le texte du message
           icon: process.env.LOGO_NOTIFICATION_URL,
           // url: `https://yourwebsite.com/conversation/${input.conversation_id}`,
+          badge: process.env.LOGO_NOTIFICATION_URL,
+          tag: input.conversation_id,
+          renotify: true,
         });
         // Envoyer la notification push
         sendPushNotification(subscription, payload);
