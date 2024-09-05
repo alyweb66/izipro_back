@@ -89,24 +89,31 @@ app.use(async (req, res, next) => {
         const cookies = cookie.parse(req.headers.cookie);
         if (cookies['auth-token'] && req.body.operationName !== 'Login') {
           req.userData = await getUserByToken(req, res, dataSources);
+          if (!req.userData) {
+            req.userData = null;
+            serverLogout(null, null, {
+              res, dataSources, req,
+            });
+            // throw new AuthenticationError('Authentication error');
+            return res.status(401).send('Authentication error');
+          }
         } else if (!allowedOperations.includes(req.body.operationName)) {
-          // req.isLogout = true;
           serverLogout(null, null, {
             res, dataSources, req, server: true,
 
           });
-          // req.isLogout = false;
+
           req.userData = null;
-          return res.end();
+          return res.status(401).send('Authentication error');
         }
       } else if (!allowedOperations.includes(req.body.operationName)) {
-        // req.isLogout = true;
-        serverLogout(null, null, {
+        const logoutResult = await serverLogout(null, null, {
           res, dataSources, req, server: true,
         });
-        // req.isLogout = false;
         req.userData = null;
-        return res.end();
+        if (logoutResult) {
+          throw new Error('Authentication error');
+        }
       }
 
       // Attach userData to dataSources
@@ -114,7 +121,6 @@ app.use(async (req, res, next) => {
     } catch (error) {
       debug('error', error);
       req.userData = null;
-      // return next(error);
     }
   }
 
