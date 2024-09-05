@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
 import cookie from 'cookie';
 import Debug from 'debug';
-import { ApolloError, AuthenticationError } from 'apollo-server-core';
-import serverLogout from './serverLogout.js';
+import { ApolloError } from 'apollo-server-core';
+// import serverLogout from './serverLogout.js';
 import pubsub from './pubSub.js';
 import ServerRequest from '../datasources/data/datamappers/serverRequest.js';
 import logger from './logger.js';
@@ -58,22 +58,32 @@ export default async function getUserByToken(req, res, dataSources) {
       return userData;
     }
     // If the token is not found, go to logout
-    debugInDevelopment('getUserByToken: token failed');
-    serverLogout(null, null, { res, dataSources, req });
-    throw new ApolloError('Token not found', 'BAD_REQUEST');
+    debugInDevelopment('getUserByToken: token not found');
+    // serverLogout(null, null, { res, dataSources, req });
+    // throw new ApolloError('Token not found', 'BAD_REQUEST');
+    return null;
   } catch (tokenError) {
     debug('Failed to verify token', tokenError);
 
     if (tokenError instanceof jwt.TokenExpiredError) {
       if (userDataDecoded && !userDataDecoded.activeSession) {
-        subscribeToLogout(userDataDecoded.id);
-        serverLogout(null, null, { res, dataSources, req });
-        throw new ApolloError('Outdated session');
+        debug('Outdated session', tokenError);
+        // subscribeToLogout(userDataDecoded.id);
+        // serverLogout(null, null, { res, dataSources, req });
+        return null;
+        // throw new ApolloError('Outdated session');
       }
       // If the error is token expired, refresh the token
       debug('refreshToken is starting');
 
       try {
+        if (!refreshToken) {
+          debug('refreshToken not found');
+          subscribeToLogout(userDataDecoded.id);
+          // serverLogout(null, null, { res, dataSources, req });
+          // throw new ApolloError('Refresh token not found', 'BAD_REQUEST');
+          return null;
+        }
         // decode the refresh token to get the user id
         decodeToken = jwt.decode(refreshToken);
         // clear user cache
@@ -82,6 +92,7 @@ export default async function getUserByToken(req, res, dataSources) {
 
         const verifyRefreshToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
+        // If the refresh token is not valid, go to logout
         if (!verifyRefreshToken) {
           debugInDevelopment('refreshToken: verifyRefreshToken failed');
           throw new ApolloError('Error token', 'BAD_REQUEST');
@@ -91,8 +102,9 @@ export default async function getUserByToken(req, res, dataSources) {
         if (!user) {
           debugInDevelopment('refreshToken: user failed');
           subscribeToLogout(verifyRefreshToken.id);
-          serverLogout(null, null, { res, dataSources, req });
-          throw new ApolloError('User not found', 'BAD_REQUEST');
+          // serverLogout(null, null, { res, dataSources, req });
+          // throw new ApolloError('User not found', 'BAD_REQUEST');
+          return null;
         }
 
         // find the refresh token in the database
@@ -102,11 +114,12 @@ export default async function getUserByToken(req, res, dataSources) {
         if (!findRefreshToken || findRefreshToken !== refreshToken) {
           debugInDevelopment('refreshToken: refresh_token failed', verifyRefreshToken);
           subscribeToLogout(user.id);
-          serverLogout(null, null, { res, dataSources, req });
-          throw new ApolloError('Error token', 'BAD_REQUEST');
+          // serverLogout(null, null, { res, dataSources, req });
+          // throw new ApolloError('Error token', 'BAD_REQUEST');
+          return null;
         }
 
-        const newToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '30m' });
+        const newToken = jwt.sign({ id: user.id, role: user.role, activeSession: userDataDecoded.activeSession }, process.env.JWT_SECRET, { expiresIn: '1m' });
 
         cookieOptions = {
           httpOnly: true,
@@ -178,8 +191,8 @@ export default async function getUserByToken(req, res, dataSources) {
           });
           debug('Failed to verify refresh token1');
           subscribeToLogout(decodeToken.id);
-          serverLogout(null, null, { res, dataSources, req });
-          throw new AuthenticationError('Failed to verify make new refresh-token');
+          // serverLogout(null, null, { res, dataSources, req });
+          // throw new AuthenticationError('Failed to verify make new refresh-token');
         }
         logger.error({
           message: refreshTokenError.message,
@@ -191,7 +204,8 @@ export default async function getUserByToken(req, res, dataSources) {
 
     debug('Failed to verify refresh token2');
     subscribeToLogout(decodeToken.id);
-    serverLogout(null, null, { res, dataSources, req });
-    throw new AuthenticationError('Failed to verify token');
+    // serverLogout(null, null, { res, dataSources, req });
+    // throw new AuthenticationError('Failed to verify token');
+    return null;
   }
 }
