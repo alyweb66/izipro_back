@@ -65,6 +65,7 @@ export default async function serverLogout(_, __, {
     );
 
     res.setHeader('set-cookie', [logoutCookie, TokenCookie, refreshTokenCookie]);
+console.log('logout end');
 
     return true;
   } catch (err) {
