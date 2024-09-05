@@ -314,8 +314,10 @@ const UserResolver = {
       debug(`get all notification from user id: ${id}`);
       // clear cache
       dataSources.dataDB.notification.findByUserIdsLoader.clear(id);
-      const notification = await dataSources.dataDB.notification.findByUser(id);
-      return notification[0];
+      const notification = await dataSources.dataDB.notification.getAllNotifications(id);
+      console.log(notification);
+      
+      return notification;
     } catch (error) {
       debug('error', error);
       throw new ApolloError('Error get all notification from user id ');
