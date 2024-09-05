@@ -93,7 +93,7 @@ async function createUserFunction(_, { input }, { dataSources }) {
   debug('createUser is starting');
   debugInDevelopment(input);
   try {
-  // Check if user exists
+    // Check if user exists
     const existingUser = await dataSources.dataDB.user.findUserByEmail(input.email);
     if (existingUser) {
       throw new ApolloError('incorrect email or password', 'BAD_REQUEST');
@@ -348,8 +348,8 @@ async function logout(_, { id }, { dataSources, res, req }) {
   debug('logout is starting');
   try {
     // Controle if it's the good user who want to logout
-    let TokenCookie;
-    let refreshTokenCookie;
+    // let TokenCookie;
+    // let refreshTokenCookie;
     let refreshToken;
     if (dataSources.userData.id === id) {
       // get refresh_token from cookie
@@ -360,7 +360,7 @@ async function logout(_, { id }, { dataSources, res, req }) {
       /* if (!refreshToken) {
         throw new Error('Refresh token not found in cookies');
       } */
-      const pastDate = new Date(0);
+      // const pastDate = new Date(0);
       // remove refresh_token from the database
       let tokenRemoved = false;
       if (refreshToken) {
@@ -374,7 +374,7 @@ async function logout(_, { id }, { dataSources, res, req }) {
           throw new Error('Error removing refresh token');
         }
 
-        refreshTokenCookie = cookie.serialize(
+        /*  refreshTokenCookie = cookie.serialize(
           'refresh-token',
           '',
           {
@@ -389,12 +389,15 @@ async function logout(_, { id }, { dataSources, res, req }) {
         {
           httpOnly: true, sameSite: 'strict', secure: secureEnv(), expires: pastDate,
         },
-      );
+      ); */
+      }
     }
     // eslint-disable-next-line no-param-reassign
     dataSources.userData = null;
 
-    res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
+    // res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
+    res.clearCookie('auth-token', { httpOnly: true, sameSite: 'strict', secure: secureEnv() });
+    res.clearCookie('refresh-token', { httpOnly: true, sameSite: 'strict', secure: secureEnv() });
 
     return true;
   } catch (error) {
@@ -418,7 +421,7 @@ async function logout(_, { id }, { dataSources, res, req }) {
 async function deleteUser(_, { id }, { dataSources, res }) {
   debug('delete user is starting', id);
   try {
-  // Check if the user is logged in
+    // Check if the user is logged in
     if (dataSources.userData === null || dataSources.userData.id !== id) {
       throw new AuthenticationError('Unauthorized');
     }
