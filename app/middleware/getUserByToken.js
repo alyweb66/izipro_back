@@ -65,7 +65,12 @@ export default async function getUserByToken(req, res, dataSources) {
     debug('Failed to verify token', tokenError);
 
     if (tokenError instanceof jwt.TokenExpiredError) {
+      console.log('tokenError', tokenError);
+      console.log('userDataDecoded', userDataDecoded);
+
       if (userDataDecoded && !userDataDecoded.activeSession) {
+        console.log('got to logout');
+
         subscribeToLogout(userDataDecoded.id);
         serverLogout(null, null, { res, dataSources, req });
         throw new ApolloError('Outdated session');
@@ -106,7 +111,7 @@ export default async function getUserByToken(req, res, dataSources) {
           throw new ApolloError('Error token', 'BAD_REQUEST');
         }
 
-        const newToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '30m' });
+        const newToken = jwt.sign({ id: user.id, role: user.role, activeSession: userDataDecoded.activeSession }, process.env.JWT_SECRET, { expiresIn: '1m' });
 
         cookieOptions = {
           httpOnly: true,

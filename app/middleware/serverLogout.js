@@ -24,10 +24,6 @@ export default async function serverLogout(_, __, {
 
       const refreshToken = cookies['refresh-token'] || '';
 
-      /* if (!refreshToken) {
-        throw new Error('Refresh token not found in cookies');
-      } */
-
       // remove refresh_token from the database
       if (dataSources.userData && refreshToken) {
         const removedToken = await dataSources.dataDB.user.modifyRefreshToken(
@@ -68,7 +64,7 @@ export default async function serverLogout(_, __, {
       },
     );
 
-    res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie, logoutCookie]);
+    res.setHeader('set-cookie', [logoutCookie, TokenCookie, refreshTokenCookie]);
 
     return true;
   } catch (err) {
