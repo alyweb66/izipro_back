@@ -1,5 +1,5 @@
 import Debug from 'debug';
-import { ApolloError } from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:query`);
 
@@ -24,7 +24,7 @@ export default {
       return dataSources.dataDB.user.findUsersByIds(ids, offset, limit);
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get all users conversations where ids');
+      throw new GraphQLError('Error get all users conversations where ids', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -46,7 +46,7 @@ export default {
       return dataSources.dataDB.conversation.getConversationByUser(offset, limit);
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get all conversations');
+      throw new GraphQLError('Error get all conversations', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -67,7 +67,7 @@ export default {
       return dataSources.dataDB.conversation.findByPk(id);
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get conversation with id');
+      throw new GraphQLError('Error get conversation with id', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -90,7 +90,7 @@ export default {
       return dataSources.dataDB.message.findByConversationId(conversationId, offset, limit);
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get all messages by conversation_id');
+      throw new GraphQLError('Error get all messages by conversation_id', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -111,7 +111,7 @@ export default {
       return dataSources.dataDB.message.findByPk(id);
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get message with id');
+      throw new GraphQLError('Error get message with id', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -129,7 +129,7 @@ export default {
   async user(_, __, { dataSources }) {
     try {
       if (!dataSources.userData) {
-        throw new ApolloError('User not found', 'USER_NOT_FOUND');
+        throw new GraphQLError('User not found', { extensions: { code: 'UNAUTHENTICATED' } });
       }
       debug(`get user with id ${dataSources.userData.id}`);
       // clear cache
@@ -138,7 +138,7 @@ export default {
       return userData;
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get user with id');
+      throw new GraphQLError('Error get user with id', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -159,7 +159,7 @@ export default {
       return dataSources.dataDB.request.findByPk(id);
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get request with id');
+      throw new GraphQLError('Error get request with id', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -179,7 +179,7 @@ export default {
       return dataSources.dataDB.media.findAll();
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get all medias');
+      throw new GraphQLError('Error get all medias', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -200,7 +200,7 @@ export default {
       return dataSources.dataDB.media.findByPk(id);
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get media with id');
+      throw new GraphQLError('Error get media with id', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -220,7 +220,7 @@ export default {
       return dataSources.dataDB.category.findAll();
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get all categories');
+      throw new GraphQLError('Error get all categories', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -241,7 +241,7 @@ export default {
       return dataSources.dataDB.category.findByPk(id);
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get category with id');
+      throw new GraphQLError('Error get category with id', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -265,7 +265,7 @@ export default {
       return jobs;
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get job with id');
+      throw new GraphQLError('Error get job with id', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -298,7 +298,7 @@ export default {
       return result;
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get all request by job');
+      throw new GraphQLError('Error get all request by job', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -322,7 +322,7 @@ export default {
       return rules[0];
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get rules');
+      throw new GraphQLError('Error get rules', { extensions: { code: 'BAD REQUEST' } });
     }
   },
 

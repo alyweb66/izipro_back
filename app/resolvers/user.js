@@ -1,7 +1,5 @@
 import Debug from 'debug';
-import {
-  AuthenticationError, ApolloError,
-} from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:user`);
 
@@ -29,7 +27,7 @@ const UserResolver = {
       return requests;
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get all request from user id ');
+      throw new GraphQLError('Error get all request from user id ', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -53,7 +51,7 @@ const UserResolver = {
       return request;
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get request by id ');
+      throw new GraphQLError('Error get request by id ', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -75,7 +73,7 @@ const UserResolver = {
       return dataSources.dataDB.userHasJob.findByUser(id);
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get all jobs from user id ');
+      throw new GraphQLError('Error get all jobs from user id ', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -99,7 +97,7 @@ const UserResolver = {
       return setting;
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get setting from user id ');
+      throw new GraphQLError('Error get setting from user id ', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -125,7 +123,7 @@ const UserResolver = {
       return requests;
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get all requests by conversations from user id ');
+      throw new GraphQLError('Error get all requests by conversations from user id ', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -149,7 +147,7 @@ const UserResolver = {
     try {
       debug(`get all messages from conversation id: ${conversationId}`);
       if (dataSources.userData.id !== id) {
-        throw new AuthenticationError('Unauthorized');
+        throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
       }
       const messageDESC = await dataSources.dataDB.message.findByUserConversation(
         conversationId,
@@ -160,7 +158,7 @@ const UserResolver = {
       return messageASC;
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get all messages from conversation id ');
+      throw new GraphQLError('Error get all messages from conversation id ', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -184,7 +182,7 @@ const UserResolver = {
       return sub;
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get all subscription from user id ');
+      throw new GraphQLError('Error get all subscription from user id ', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -208,7 +206,7 @@ const UserResolver = {
       return notViewed;
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get all has viewed request from user id ');
+      throw new GraphQLError('Error get all has viewed request from user id ', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -232,7 +230,7 @@ const UserResolver = {
       return notConvViewed;
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get all has not viewed conversation from user id ');
+      throw new GraphQLError('Error get all has not viewed conversation from user id ', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -256,7 +254,7 @@ const UserResolver = {
       return conv;
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get all conversation id from user id ');
+      throw new GraphQLError('Error get all conversation id from user id ', { extensions: { code: 'BAD REQUEST' } });
     }
   },
   /**
@@ -282,7 +280,7 @@ const UserResolver = {
       return cookieConsents[0];
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get all cookie consents from user id ');
+      throw new GraphQLError('Error get all cookie consents from user id ', { extensions: { code: 'BAD REQUEST' } });
     }
   },
 
@@ -316,11 +314,11 @@ const UserResolver = {
       dataSources.dataDB.notification.findByUserIdsLoader.clear(id);
       const notification = await dataSources.dataDB.notification.getAllNotifications(id);
       console.log(notification);
-      
+
       return notification;
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error get all notification from user id ');
+      throw new GraphQLError('Error get all notification from user id ', { extensions: { code: 'BAD REQUEST' } });
     }
   },
 };

@@ -37,8 +37,17 @@ const logger = winston.createLogger({
 
 const consoleErrorFormat = printf(({
   // eslint-disable-next-line no-shadow
-  level, timestamp, name, stack,
-}) => `[${timestamp}] ${level}(${name}) - ${stack}`);
+  level, timestamp, stack, extensions,
+}) => {
+  // Construire le message de log avec les informations supplémentaires
+  let logMessage = `[${timestamp}] ${level} - ${stack} -`;
+
+  if (extensions) {
+    logMessage += ` | extensions: ${JSON.stringify(extensions)}`;
+  }
+
+  return logMessage;
+});
 
 /* const consoleHttpFormat = printf(({
   // eslint-disable-next-line no-shadow

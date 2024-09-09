@@ -1,5 +1,6 @@
 import Debug from 'debug';
 import jwt from 'jsonwebtoken';
+import { GraphQLError } from 'graphql';
 import ServerRequest from '../datasources/data/datamappers/serverRequest.js';
 
 const refreshTokenInstance = new ServerRequest();
@@ -52,7 +53,7 @@ const checkRefreshTokenValidity = async (userId, dataSources) => {
         );
 
         if (!removedToken) {
-          throw new Error('Error removing refresh token');
+          throw new GraphQLError('Error removing refresh token', { extensions: { code: 'BAD REQUEST' } });
         }
       }
     });
