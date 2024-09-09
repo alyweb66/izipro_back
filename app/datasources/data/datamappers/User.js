@@ -1,4 +1,5 @@
 import Debug from 'debug';
+import { GraphQLError } from 'graphql';
 import CoreDatamapper from './CoreDatamapper.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:datamappers:User`);
@@ -93,7 +94,7 @@ class User extends CoreDatamapper {
     const validActions = ['array_append', 'array_replace', 'array_remove'];
 
     if (!validActions.includes(action)) {
-      throw new Error(`Invalid action: ${action}`);
+      throw new GraphQLError(`Invalid action: ${action}`, { extensions: { code: 'BAD REQUEST' } });
     }
     // Check if the refreshToken already exists in the array
     const checkQuery = {

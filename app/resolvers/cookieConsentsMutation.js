@@ -1,5 +1,5 @@
 import Debug from 'debug';
-import { ApolloError } from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:cookieConsentsMutation`);
 
@@ -28,7 +28,7 @@ async function createCookieConsents(_, { id, input }, { dataSources }) {
 
   try {
     if (dataSources.userData.id !== id) {
-      throw new ApolloError('Unauthorized');
+      throw new GraphQLError('Access denied', { extensions: { code: 'UNAUTHENTICATED' } });
     }
     // add the user id to the input object
     const newInput = { ...input, user_id: id };
@@ -38,13 +38,13 @@ async function createCookieConsents(_, { id, input }, { dataSources }) {
       newInput,
     );
     if (!isCreatedCookieConsents) {
-      throw new ApolloError('Error creating cookie consents');
+      throw new GraphQLError('Error cookieConsents', { extensions: { code: 'BAD REQUEST' } });
     }
 
     return isCreatedCookieConsents;
   } catch (error) {
     debug('Error', error);
-    throw new ApolloError('Error creating cookie consents');
+    throw new GraphQLError(error, { extensions: { code: 'BAD REQUEST' } });
   }
 }
 
@@ -66,7 +66,7 @@ async function updateCookieConsents(_, { id, input }, { dataSources }) {
 
   try {
     if (dataSources.userData.id !== id) {
-      throw new ApolloError('Unauthorized');
+      throw new GraphQLError('Access denied', { extensions: { code: 'UNAUTHORIZED' } });
     }
 
     // get the cookie id and remove it from the input object
@@ -79,13 +79,13 @@ async function updateCookieConsents(_, { id, input }, { dataSources }) {
     );
 
     if (!isUpdatedCookieConsents) {
-      throw new ApolloError('Error updating cookie consents');
+      throw new GraphQLError('No CookieConsents', { extensions: { code: 'BAD REQUEST' } });
     }
 
     return isUpdatedCookieConsents;
   } catch (error) {
     debug('Error', error);
-    throw new ApolloError('Error updating cookie consents');
+    throw new GraphQLError(error, { extensions: { code: 'BAD REQUEST' } });
   }
 }
 

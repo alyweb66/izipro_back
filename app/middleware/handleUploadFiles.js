@@ -3,7 +3,7 @@
 import Debug from 'debug';
 import path from 'path';
 import sharp from 'sharp';
-import { ApolloError } from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 import fs from 'fs';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:middleware:sharp`);
@@ -78,7 +78,7 @@ async function handleUploadedFiles(media) {
     return compressedImages;
   } catch (error) {
     debug('Error', error);
-    throw new ApolloError(error);
+    throw new GraphQLError(error, { extensions: { code: 'BAD REQUEST' } });
   }
 }
 

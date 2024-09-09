@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import cookie from 'cookie';
 import Debug from 'debug';
-import { ApolloError } from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 // import serverLogout from './serverLogout.js';
 import pubsub from './pubSub.js';
 import ServerRequest from '../datasources/data/datamappers/serverRequest.js';
@@ -60,7 +60,7 @@ export default async function getUserByToken(req, res, dataSources) {
     // If the token is not found, go to logout
     debugInDevelopment('getUserByToken: token not found');
     // serverLogout(null, null, { res, dataSources, req });
-    // throw new ApolloError('Token not found', 'BAD_REQUEST');
+    // throw new GraphQLError('Token not found', 'BAD_REQUEST');
     return null;
   } catch (tokenError) {
     debug('Failed to verify token', tokenError);
@@ -68,10 +68,10 @@ export default async function getUserByToken(req, res, dataSources) {
     if (tokenError instanceof jwt.TokenExpiredError) {
       if (userDataDecoded && !userDataDecoded.activeSession) {
         debug('Outdated session', tokenError);
-        // subscribeToLogout(userDataDecoded.id);
+        subscribeToLogout(userDataDecoded.id);
         // serverLogout(null, null, { res, dataSources, req });
         return null;
-        // throw new ApolloError('Outdated session');
+        // throw new GraphQLError('Outdated session');
       }
       // If the error is token expired, refresh the token
       debug('refreshToken is starting');
@@ -81,7 +81,7 @@ export default async function getUserByToken(req, res, dataSources) {
           debug('refreshToken not found');
           subscribeToLogout(userDataDecoded.id);
           // serverLogout(null, null, { res, dataSources, req });
-          // throw new ApolloError('Refresh token not found', 'BAD_REQUEST');
+          // throw new GraphQLError('Refresh token not found', 'BAD_REQUEST');
           return null;
         }
         // decode the refresh token to get the user id
@@ -95,7 +95,7 @@ export default async function getUserByToken(req, res, dataSources) {
         // If the refresh token is not valid, go to logout
         if (!verifyRefreshToken) {
           debugInDevelopment('refreshToken: verifyRefreshToken failed');
-          throw new ApolloError('Error token', 'BAD_REQUEST');
+          throw new GraphQLError('Error token', { extensions: { code: 'YOUR_ERROR_CODE' } });
         }
 
         // If the user is not found, go to logout
@@ -103,7 +103,7 @@ export default async function getUserByToken(req, res, dataSources) {
           debugInDevelopment('refreshToken: user failed');
           subscribeToLogout(verifyRefreshToken.id);
           // serverLogout(null, null, { res, dataSources, req });
-          // throw new ApolloError('User not found', 'BAD_REQUEST');
+          // throw new GraphQLError('User not found', 'BAD_REQUEST');
           return null;
         }
 
@@ -115,7 +115,7 @@ export default async function getUserByToken(req, res, dataSources) {
           debugInDevelopment('refreshToken: refresh_token failed', verifyRefreshToken);
           subscribeToLogout(user.id);
           // serverLogout(null, null, { res, dataSources, req });
-          // throw new ApolloError('Error token', 'BAD_REQUEST');
+          // throw new GraphQLError('Error token', 'BAD_REQUEST');
           return null;
         }
 
@@ -191,8 +191,6 @@ export default async function getUserByToken(req, res, dataSources) {
           });
           debug('Failed to verify refresh token1');
           subscribeToLogout(decodeToken.id);
-          // serverLogout(null, null, { res, dataSources, req });
-          // throw new AuthenticationError('Failed to verify make new refresh-token');
         }
         logger.error({
           message: refreshTokenError.message,
@@ -204,8 +202,6 @@ export default async function getUserByToken(req, res, dataSources) {
 
     debug('Failed to verify refresh token2');
     subscribeToLogout(decodeToken.id);
-    // serverLogout(null, null, { res, dataSources, req });
-    // throw new AuthenticationError('Failed to verify token');
     return null;
   }
 }

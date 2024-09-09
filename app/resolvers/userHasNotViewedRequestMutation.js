@@ -1,5 +1,5 @@
 import Debug from 'debug';
-import { ApolloError } from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:UserHasViewedRequestMutation`);
 
@@ -30,7 +30,7 @@ async function userHasNotViewedRequest(_, { input }, { dataSources }) {
 
   try {
     if (dataSources.userData.id !== input.user_id) {
-      throw new ApolloError('Unauthorized');
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
     }
 
     const isCreatedNotViewedRequest = await
@@ -38,13 +38,13 @@ async function userHasNotViewedRequest(_, { input }, { dataSources }) {
       input,
     );
     if (!isCreatedNotViewedRequest) {
-      throw new ApolloError('Error creating viewed request');
+      throw new GraphQLError('Error creating viewed request', { extensions: { code: 'BAD REQUEST' } });
     }
 
     return true;
   } catch (error) {
     debug('error', error);
-    throw new ApolloError('Error creating viewed request');
+    throw new GraphQLError('Error creating viewed request', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 /**
@@ -68,7 +68,7 @@ async function deleteNotViewedRequest(_, { input }, { dataSources }) {
 
   try {
     if (dataSources.userData.id !== input.user_id) {
-      throw new ApolloError('Unauthorized');
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
     }
 
     const isDeletedNotViewedRequest = await
@@ -76,13 +76,13 @@ async function deleteNotViewedRequest(_, { input }, { dataSources }) {
       input,
     );
     if (!isDeletedNotViewedRequest) {
-      throw new ApolloError('Error deleting viewed request');
+      throw new GraphQLError('Error deleting viewed request', { extensions: { code: 'BAD REQUEST' } });
     }
 
     return true;
   } catch (error) {
     debug('error', error);
-    throw new ApolloError('Error deleting viewed request');
+    throw new GraphQLError('Error deleting viewed request', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 
