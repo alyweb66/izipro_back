@@ -1,5 +1,6 @@
 import Debug from 'debug';
 import CoreDatamapper from './CoreDatamapper.js';
+import { GraphQLError } from 'graphql';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:datamappers:notificationPush`);
 
@@ -26,7 +27,7 @@ class NotificationPush extends CoreDatamapper {
       await this.client.query(query);
     } catch (error) {
       debug('Error deleting notification:', error);
-      throw new Error('Error deleting notification');
+      throw new GraphQLError('Error deleting notification', { extensions: { code: 'BAD REQUEST' } });
     }
   }
 }

@@ -1,7 +1,5 @@
 import Debug from 'debug';
-import {
-  AuthenticationError, ApolloError,
-} from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 import handleUploadedFiles from '../middleware/handleUploadFiles.js';
 import pubsub from '../middleware/pubSub.js';
 import checkViewedBeforeSendEmail from '../middleware/processNewMessageMail.js';
@@ -33,7 +31,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
 
   debugInDevelopment('input', input);
   if (dataSources.userData.id !== id) {
-    throw new AuthenticationError('Unauthorized');
+    throw new GraphQLError('Access denied', { extensions: { code: 'UNAUTHORIZED' } });
   }
   try {
     const messageInput = { ...input };
@@ -42,7 +40,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
     // create message
     const isCreatedMessage = await dataSources.dataDB.message.create(messageInput);
     if (!isCreatedMessage) {
-      throw new ApolloError('Error creating message');
+      throw new GraphQLError('No created message', { extensions: { code: 'BAD REQUEST' } });
     }
 
     // mapping the media array to createReadStream
@@ -50,11 +48,13 @@ async function createMessage(_, { id, input }, { dataSources }) {
     if (input.media && input.media.length > 0 /* && input.media[0].file */) {
       const ReadStreamArray = await Promise.all(input.media.map(async (upload, index) => {
         if (!upload.file.promise) {
-          throw new Error(`File upload not complete for media at index ${index}`);
+          throw new GraphQLError(`File upload not complete for media at index ${index}`, {
+            extensions: { code: 'BAD REQUEST' },
+          });
         }
         const fileUpload = await upload.file.promise;
         if (!fileUpload) {
-          throw new Error('File upload not complete');
+          throw new GraphQLError('File upload not complete', { extensions: { code: 'BAD REQUEST' } });
         }
         const { createReadStream, filename, mimetype } = await fileUpload;
         const readStream = createReadStream();
@@ -72,7 +72,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
       // create media
       const createMedia = await dataSources.dataDB.media.createMedia(media);
       if (!createMedia) {
-        throw new ApolloError('Error creating media');
+        throw new GraphQLError('Error creating media', { extensions: { code: 'BAD REQUEST' } });
       }
 
       // get the media ids from the createMedia array
@@ -87,7 +87,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
 
       if (!isCreatedMessageMedia
         || (isCreatedMessageMedia.insert_message_has_media === false)) {
-        throw new ApolloError('Error creating message_has_media');
+        throw new GraphQLError('Error creating message_has_media', { extensions: { code: 'BAD REQUEST' } });
       }
     }
 
@@ -161,7 +161,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
     return true;
   } catch (error) {
     debug('error', error);
-    throw new Error(error);
+    throw new GraphQLError(error, { extensions: { code: 'BAD REQUEST' } });
   }
 }
 

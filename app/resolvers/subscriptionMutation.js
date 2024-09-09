@@ -1,7 +1,5 @@
 import Debug from 'debug';
-import {
-  AuthenticationError, ApolloError,
-} from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:Subscription`);
 
@@ -28,7 +26,7 @@ async function createSubscription(_, { input }, { dataSources }) {
 
   try {
     if (dataSources.userData.id !== input.user_id) {
-      throw new AuthenticationError('Unauthorized');
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
     }
 
     const subscription = await dataSources.dataDB.subscription.createSubscription(
@@ -38,13 +36,13 @@ async function createSubscription(_, { input }, { dataSources }) {
     );
 
     if (!subscription) {
-      throw new ApolloError('Error creating subscription');
+      throw new GraphQLError('Error creating subscription', { extensions: { code: 'BAD REQUEST' } });
     }
 
     return subscription;
   } catch (error) {
     debug('error', error);
-    throw new ApolloError('Error creating subscription');
+    throw new GraphQLError('Error creating subscription', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 

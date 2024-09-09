@@ -1,5 +1,5 @@
 import Debug from 'debug';
-import { ApolloError } from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:userHiddenClientRequestMutation`);
 
@@ -29,7 +29,7 @@ async function createHiddenClientRequest(_, { input }, { dataSources }) {
 
   try {
     if (dataSources.userData.id !== input.user_id) {
-      throw new ApolloError('Unauthorized');
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
     }
     // create hidden client request
     const isCreatedHiddenClientRequest = await
@@ -37,13 +37,13 @@ async function createHiddenClientRequest(_, { input }, { dataSources }) {
       input,
     );
     if (!isCreatedHiddenClientRequest) {
-      throw new ApolloError('Error creating hidden client request');
+      throw new GraphQLError('Error creating hidden client request', { extensions: { code: 'BAD REQUEST' } });
     }
 
     return isCreatedHiddenClientRequest;
   } catch (error) {
     debug('error', error);
-    throw new ApolloError('Error creating hidden client request');
+    throw new GraphQLError('Error creating hidden client request', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 

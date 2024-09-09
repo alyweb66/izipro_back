@@ -1,5 +1,5 @@
 import Debug from 'debug';
-import { ApolloError } from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 import cookie from 'cookie';
 // import pubsub from './pubSub.js';
 
@@ -32,7 +32,7 @@ export default async function serverLogout(_, __, {
           'array_remove',
         );
         if (!removedToken) {
-          throw new Error('Error removing refresh token');
+          throw new GraphQLError('Error removing refresh token', { extensions: { code: 'NOT_FOUND' } });
         }
       }
     }
@@ -67,13 +67,10 @@ export default async function serverLogout(_, __, {
     res.setHeader('set-cookie', [logoutCookie, TokenCookie, refreshTokenCookie]);
 
     return true;
-  } catch (err) {
-    debug(err);
-    /*  throw new ApolloError('Error serveur logout'); */
-    debug('serverLogout error:', err.message, err.stack);
-    throw new ApolloError('Error serveur logout', {
-      originalError: err.message,
-      stack: err.stack,
-    });
+  } catch (error) {
+    debug(error);
+    /*  throw new GraphQLError('Error serveur logout'); */
+    debug('serverLogout error:', error.message, error.stack);
+    throw new GraphQLError(error, { extensions: { code: 'BAD REQUEST' } });
   }
 }

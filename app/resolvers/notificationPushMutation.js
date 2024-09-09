@@ -1,5 +1,5 @@
 import Debug from 'debug';
-import { ApolloError } from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:notificationPushMutation`);
 
@@ -30,7 +30,7 @@ async function createNotificationPush(_, { input }, { dataSources }) {
   debugInDevelopment('input', input);
 
   if (dataSources.userData.id !== input.user_id) {
-    throw new ApolloError('Unauthorized');
+    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
   }
 
   try {
@@ -47,12 +47,12 @@ async function createNotificationPush(_, { input }, { dataSources }) {
 
     const createdNotification = await dataSources.dataDB.notificationPush.create(input);
     if (!createdNotification) {
-      throw new ApolloError('Error creating notification');
+      throw new GraphQLError('Error creating notification', { extensions: { code: 'BAD REQUEST' } });
     }
     return true;
   } catch (error) {
     debug('Error', error);
-    throw new ApolloError('Error creating notification');
+    throw new GraphQLError(error, { extensions: { code: 'BAD REQUEST' } });
   }
 }
 
@@ -79,7 +79,7 @@ async function deleteNotificationPush(_, { input }, { dataSources }) {
     return true;
   } catch (error) {
     debug('Error', error);
-    throw new ApolloError('Error deleting notification');
+    throw new GraphQLError('Error deleting notification', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 

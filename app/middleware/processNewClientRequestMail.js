@@ -1,5 +1,5 @@
 import * as turf from '@turf/turf';
-import { ApolloError } from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 import Debug from 'debug';
 import { newRequestEmail } from './sendEmail.js';
 
@@ -73,6 +73,6 @@ export default async function checkViewedBeforeSendRequestEmail(
     return false;
   } catch (error) {
     debug('error', error);
-    throw new ApolloError('Error check viewed before send request email');
+    throw new GraphQLError(error, { extensions: { code: 'BAD REQUEST' } });
   }
 }

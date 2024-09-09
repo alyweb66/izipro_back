@@ -1,5 +1,5 @@
 import Debug from 'debug';
-import { ApolloError } from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:notificationMutation`);
 
@@ -28,7 +28,7 @@ async function createNotification(_, { input }, { dataSources }) {
   debugInDevelopment('input', input);
 
   if (dataSources.userData.id !== input.user_id) {
-    throw new ApolloError('Unauthorized');
+    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
   }
 
   try {
@@ -37,17 +37,17 @@ async function createNotification(_, { input }, { dataSources }) {
     );
 
     if (isCreatedNotification) {
-      throw new ApolloError('User notification already exists');
+      throw new GraphQLError('User notification already exists', { extensions: { code: 'BAD REQUEST' } });
     }
 
     const createdNotification = await dataSources.dataDB.notification.create(input.user_id);
     if (!createdNotification) {
-      throw new ApolloError('Error creating notification');
+      throw new GraphQLError('Error creating notification', { extensions: { code: 'BAD REQUEST' } });
     }
     return true;
   } catch (error) {
     debug('Error', error);
-    throw new ApolloError('Error creating notification');
+    throw new GraphQLError('Error creating notification', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 
@@ -70,7 +70,7 @@ async function updateNotification(_, { input }, { dataSources }) {
   debugInDevelopment('input', input);
 
   if (dataSources.userData.id !== input.user_id) {
-    throw new ApolloError('Unauthorized');
+    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
   }
 
   try {
@@ -79,7 +79,7 @@ async function updateNotification(_, { input }, { dataSources }) {
     );
 
     if (!isCreatedNotification) {
-      throw new ApolloError('User notification does not exist');
+      throw new GraphQLError('User notification does not exist', { extensions: { code: 'BAD REQUEST' } });
     }
 
     const updatedNotification = await dataSources.dataDB.notification.update(
@@ -87,12 +87,12 @@ async function updateNotification(_, { input }, { dataSources }) {
       { email_notification: input.email_notification },
     );
     if (!updatedNotification) {
-      throw new ApolloError('Error updating notification');
+      throw new GraphQLError('Error updating notification', { extensions: { code: 'BAD REQUEST' } });
     }
     return true;
   } catch (error) {
     debug('Error', error);
-    throw new ApolloError('Error updating notification');
+    throw new GraphQLError('Error updating notification', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 
