@@ -1,7 +1,5 @@
 import Debug from 'debug';
-import {
-  AuthenticationError, ApolloError,
-} from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 /* import fs from 'fs';
 import path from 'path';
 import url from 'url'; */
@@ -73,18 +71,18 @@ async function createRequest(_, { input }, { dataSources }) {
     // create request
     const isCreatedRequest = await dataSources.dataDB.request.create(requestInput);
     if (!isCreatedRequest) {
-      throw new ApolloError('Error creating request');
+      throw new GraphQLError('Error creating request', { extensions: { code: 'BAD REQUEST' } });
     }
 
     // mapping the media array to createReadStream
     const ReadStreamArray = await Promise.all(input.media.map(async (upload, index) => {
       if (!upload.file.promise) {
-        throw new Error(`File upload not complete for media at index ${index}`);
+        throw new GraphQLError(`File upload not complete for media at index ${index}`, { extensions: { code: 'BAD REQUEST' } });
       }
       const fileUpload = await upload.file.promise;
 
       if (!fileUpload) {
-        throw new Error('File upload not complete');
+        throw new GraphQLError('File upload not complete', { extensions: { code: 'BAD REQUEST' } });
       }
       const { createReadStream, filename, mimetype } = await fileUpload;
       const readStream = createReadStream();
@@ -102,7 +100,7 @@ async function createRequest(_, { input }, { dataSources }) {
     // create media
     const createMedia = await dataSources.dataDB.media.createMedia(media);
     if (!createMedia) {
-      throw new ApolloError('Error creating media');
+      throw new GraphQLError('Error creating media', { extensions: { code: 'BAD REQUEST' } });
     }
 
     // get the media ids from the createMedia array
@@ -117,7 +115,7 @@ async function createRequest(_, { input }, { dataSources }) {
 
     if (!isCreatedRequestMedia
       || (isCreatedRequestMedia.insert_request_has_media === false)) {
-      throw new ApolloError('Error creating request_has_media');
+      throw new GraphQLError('Error creating request_has_media', { extensions: { code: 'BAD REQUEST' } });
     }
     // get the request with media and conversation
     const subscriptionResult = await dataSources.dataDB.request.getSubscritpionRequest(
@@ -213,7 +211,7 @@ async function createRequest(_, { input }, { dataSources }) {
     return subscriptionResult[0];
   } catch (error) {
     debug('error', error);
-    throw new ApolloError('Error create request');
+    throw new GraphQLError('Error create request', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 
@@ -239,7 +237,7 @@ async function deleteRequest(_, { input }, { dataSources }) {
   debug('delete request');
   try {
     if (dataSources.userData.id !== input.user_id) {
-      throw new AuthenticationError('Unauthorized');
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
     }
 
     const newInput = { deleted_at: new Date() };
@@ -247,7 +245,7 @@ async function deleteRequest(_, { input }, { dataSources }) {
     const isDeletedRequest = await dataSources.dataDB.request.update(input.id, newInput);
 
     if (!isDeletedRequest) {
-      throw new ApolloError('Error deleting request');
+      throw new GraphQLError('Error deleting request', { extensions: { code: 'BAD REQUEST' } });
     }
 
     // read the public folder and delete all the files
@@ -264,7 +262,7 @@ async function deleteRequest(_, { input }, { dataSources }) {
     return true;
   } catch (error) {
     debug('error', error);
-    throw new ApolloError('Error delete request');
+    throw new GraphQLError('Error delete request', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 

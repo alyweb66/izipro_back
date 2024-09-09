@@ -1,5 +1,5 @@
 import Debug from 'debug';
-import { ApolloError } from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 import { newMessageEmail } from './sendEmail.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:middleware:checkViewedBeforeSendEmail`);
@@ -44,6 +44,6 @@ export default async function checkViewedBeforeSendEmail(
     }
   } catch (error) {
     debug('error', error);
-    throw new ApolloError('Error check viewed before send email');
+    throw new GraphQLError(error, { extensions: { code: 'BAD REQUEST' } });
   }
 }

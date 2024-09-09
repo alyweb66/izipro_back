@@ -4,8 +4,10 @@ import Debug from 'debug';
 // Modules import
 import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
 import { ApolloServer } from '@apollo/server';
+import { GraphQLError } from 'graphql';
 // eslint-disable-next-line import/extensions
 import { expressMiddleware } from '@apollo/server/express4';
+import { rateLimit } from 'express-rate-limit';
 import cors from 'cors';
 import express from 'express';
 // import { PubSub } from 'graphql-subscriptions';
@@ -35,7 +37,6 @@ import resolvers from './app/resolvers/index.js';
 import getUserByToken from './app/middleware/getUserByToken.js';
 // class DataDB from dataSources
 import DataDB from './app/datasources/data/index.js';
-import serverLogout from './app/middleware/serverLogout.js';
 import logger from './app/middleware/logger.js';
 import updateLastLoginInDatabase from './app/middleware/lastLogin.js';
 
@@ -64,6 +65,13 @@ const dataSources = { dataDB: new DataDB({ cache }) };
 // middleware to handle file uploads
 app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
 
+// Rate limiter middleware for ddos protection
+const limiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 100, // limit each IP to 100 requests per windows
+});
+
+app.use(limiter);
 // List of operations that do not require a token
 const allowedOperations = [
   'Login',
@@ -76,6 +84,8 @@ const allowedOperations = [
 ];
 // Middleware to get user data from token
 app.use(async (req, res, next) => {
+  // create and initialize req.authenticateError to false
+  // req.authenticateError = false;
   // check if the request is an OPTIONS request to limit the number of database calls
   // OPTIONS is the first request made by the browser to check if the server accepts the request
   if (req.method === 'OPTIONS') {
@@ -90,36 +100,32 @@ app.use(async (req, res, next) => {
         if (cookies['auth-token'] && req.body.operationName !== 'Login') {
           req.userData = await getUserByToken(req, res, dataSources);
           if (!req.userData) {
-            req.userData = null;
-            serverLogout(null, null, {
-              res, dataSources, req,
-            });
-            // throw new AuthenticationError('Authentication error');
-            return res.status(401).send('Authentication error');
+            setTimeout(() => {
+              req.authError = true;
+              req.userData = null;
+            }, 1000);
           }
         } else if (!allowedOperations.includes(req.body.operationName)) {
-          serverLogout(null, null, {
-            res, dataSources, req, server: true,
-
-          });
-
+          req.authError = true;
           req.userData = null;
-          return res.status(401).send('Authentication error');
         }
       } else if (!allowedOperations.includes(req.body.operationName)) {
-        const logoutResult = await serverLogout(null, null, {
-          res, dataSources, req, server: true,
-        });
+        req.authError = true;
         req.userData = null;
-        if (logoutResult) {
-          throw new Error('Authentication error');
-        }
       }
 
       // Attach userData to dataSources
       dataSources.userData = req.userData;
+      // next();
     } catch (error) {
       debug('error', error);
+      logger.error({
+        message: error.message,
+        stack: error.stack,
+        extensions: error.extensions,
+      });
+      // res.status(401).send('Authentication error');
+      next(error);
       req.userData = null;
     }
   }
@@ -230,17 +236,6 @@ app.use(logMutationData); */
   next();
 }); */
 
-// Middleware to handle logout
-/* app.use((req, res, next) => {
-  if (req.isLogout && !allowedOperations.includes(req.body.operationName)) {
-    serverLogout(null, null, {
-      res, dataSources, req, server: true,
-    });
-    req.isLogout = false;
-  }
-  next();
-}); */
-
 // Hand in the schema we just created and have the
 // WebSocketServer start listening.
 const serverCleanup = useServer({ schema }, wsServer);
@@ -262,12 +257,13 @@ const server = new ApolloServer({
         };
       },
     },
-    // Plugin personnalisé pour la gestion des erreurs
+    // custom plugin to log errors
     {
       async requestDidStart() {
         return {
           async didEncounterErrors(ctx) {
             const { errors } = ctx;
+
             if (errors) {
               errors.forEach((error) => {
                 logger.error({
@@ -287,6 +283,7 @@ const server = new ApolloServer({
 
 await server.start();
 
+//* add s to http://localhost:5173 if https enabled
 app.use(
   '/',
   cors({
@@ -295,7 +292,33 @@ app.use(
   }),
   // bodyParser.json({ limit: '50mb' }),
   expressMiddleware(server, {
-    context: async ({ req, res }) => ({ res, req, dataSources }),
+    context: async ({ req, res }) => {
+      // if error from cookie control
+      if (req.authError) {
+        const error = new GraphQLError('No token provided', {
+          extensions: {
+            code: 'UNAUTHENTICATED',
+            http: {
+              status: 401,
+            },
+          },
+        });
+        debug('error', error);
+        // Log the error
+        logger.error({
+          message: error.message,
+          stack: error.stack,
+          extensions: error.extensions,
+        });
+
+        throw error;
+      }
+
+      // input authentifield user data in context
+      return {
+        req, res, dataSources,
+      };
+    },
   }),
 );
 

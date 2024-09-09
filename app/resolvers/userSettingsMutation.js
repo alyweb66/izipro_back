@@ -1,5 +1,5 @@
 import Debug from 'debug';
-import { ApolloError } from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:userSettingsMutation`);
 
@@ -33,14 +33,14 @@ async function userSetting(_, { input }, { dataSources }) {
     );
 
     if (!userSetting) {
-      throw new ApolloError('Error updating user setting');
+      throw new GraphQLError('Error updating user setting',{ extensions: { code: 'BAD REQUEST' } });
     }
 
     dataSources.dataDB.user.cache.clear();
     return userSettings;
   } catch (error) {
     debug('error', error);
-    throw new ApolloError('Error updating user setting');
+    throw new GraphQLError('Error updating user setting', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 

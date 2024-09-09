@@ -2,9 +2,7 @@ import Debug from 'debug';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import cookie from 'cookie';
-import {
-  AuthenticationError, ApolloError, UserInputError,
-} from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 import * as fs from 'node:fs/promises';
 import path from 'path';
 import url from 'url';
@@ -73,7 +71,7 @@ async function deleteFile(file) {
     debugInDevelopment(`File ${file} deleted successfully`);
   } catch (error) {
     debug('error', error);
-    throw new Error('Error deleting file');
+    throw new GraphQLError('Error deleting file', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 /**
@@ -96,7 +94,7 @@ async function createUserFunction(_, { input }, { dataSources }) {
     // Check if user exists
     const existingUser = await dataSources.dataDB.user.findUserByEmail(input.email);
     if (existingUser) {
-      throw new ApolloError('incorrect email or password', 'BAD_REQUEST');
+      throw new GraphQLError('incorrect email or password', { extensions: { code: 'BAD REQUEST' } });
     }
 
     // Hash the password using bcrypt
@@ -119,10 +117,10 @@ async function createUserFunction(_, { input }, { dataSources }) {
       const sirenAPI = new SirenAPI();
       siretData = await sirenAPI.getSiretData(siret);
       if (!siretData.siret) {
-        throw new ApolloError('Siret not found', 'BAD_REQUEST');
+        throw new GraphQLError('Siret not found', { extensions: { code: 'BAD REQUEST' } });
       }
       if (Number(siretData.siret) !== input.siret) {
-        throw new ApolloError('Siret not found', 'BAD_REQUEST');
+        throw new GraphQLError('Siret not found', { extensions: { code: 'BAD REQUEST' } });
       }
     }
 
@@ -146,7 +144,7 @@ async function createUserFunction(_, { input }, { dataSources }) {
 
     const createdUser = await dataSources.dataDB.user.create(userInputWithHashedPassword);
     if (!createdUser.id) {
-      throw new ApolloError('Error creating user', 'BAD_REQUEST');
+      throw new GraphQLError('Error creating user', { extensions: { code: 'BAD REQUEST' } });
     }
 
     // Create a default notification setting in the notification table
@@ -155,20 +153,20 @@ async function createUserFunction(_, { input }, { dataSources }) {
     });
 
     if (!createNotification.id) {
-      throw new ApolloError('Error creating notification', 'BAD_REQUEST');
+      throw new GraphQLError('Error creating notification', { extensions: { code: 'BAD REQUEST' } });
     }
 
     // Create a default user setting in the user_setting table
     const createSetting = await dataSources.dataDB.userSetting.create({ user_id: createdUser.id });
 
     if (!createSetting.id) {
-      throw new ApolloError('Error creating user setting', 'BAD_REQUEST');
+      throw new GraphQLError('Error creating user setting', { extensions: { code: 'BAD REQUEST' } });
     }
 
     return { __typename: 'User', ...createdUser };
   } catch (error) {
     debug('error', error);
-    throw new ApolloError('Error creating user');
+    throw new GraphQLError('Error creating user', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 /**
@@ -201,10 +199,10 @@ async function confirmRegisterEmail(_, { input }, { dataSources }) {
     }
 
     if (!user) {
-      throw new ApolloError('User not found', 'BAD_REQUEST');
+      throw new GraphQLError('User not found', { extensions: { code: 'BAD REQUEST' } });
     }
     if (user.remember_token !== token) {
-      throw new UserInputError('Error token');
+      throw new GraphQLError('Error token', { extensions: { code: 'BAD REQUEST' } });
     }
     await dataSources.dataDB.user.update(user.id, {
       email: decodedToken.email,
@@ -214,7 +212,7 @@ async function confirmRegisterEmail(_, { input }, { dataSources }) {
     return true;
   } catch (error) {
     debug('error', error);
-    throw new ApolloError('Error confirm register mail');
+    throw new GraphQLError('Error confirm register mail', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 /**
@@ -242,18 +240,18 @@ async function login(_, { input }, { dataSources, res }) {
 
     if (!user) {
       debugInDevelopment('login:user failed', user);
-      throw new ApolloError('Incorrect email or password', 'BAD_REQUEST');
+      throw new GraphQLError('Incorrect email or password', { extensions: { code: 'BAD REQUEST' } });
     }
     if (user.verified_email === false) {
       debugInDevelopment('login:verified_email false');
-      throw new ApolloError('Unverified email', 'BAD_REQUEST');
+      throw new GraphQLError('Unverified email', { extensions: { code: 'BAD REQUEST' } });
     }
 
     const validPassword = await bcrypt.compare(input.password, user.password);
 
     if (!validPassword) {
       debugInDevelopment('login:validPassword failed', validPassword);
-      throw new ApolloError('EIncorrect email or password', 'BAD_REQUEST');
+      throw new GraphQLError('EIncorrect email or password', { extensions: { code: 'BAD REQUEST' } });
     }
 
     // Create a token
@@ -319,17 +317,18 @@ async function login(_, { input }, { dataSources, res }) {
       );
     }
 
-    const cookiesToSet = [TokenCookie];
+    /*  const cookiesToSet = [TokenCookie];
 
     if (refreshTokenCookie) {
       cookiesToSet.push(refreshTokenCookie);
-    }
+    } */
 
-    res.setHeader('set-cookie', cookiesToSet);
+    res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
+
     return true;
   } catch (error) {
     debug('error', error);
-    throw new ApolloError('Error login');
+    throw new GraphQLError('Error login', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 /**
@@ -350,28 +349,25 @@ async function logout(_, { id }, { dataSources, res, req }) {
     // Controle if it's the good user who want to logout
     // let TokenCookie;
     // let refreshTokenCookie;
-    let refreshToken;
+    // let refreshToken;
     if (dataSources.userData.id === id) {
       // get refresh_token from cookie
       const cookies = cookie.parse(req.headers.cookie || '');
 
-      refreshToken = cookies['refresh-token'] || '';
+      const refreshToken = cookies['refresh-token'] || '';
 
-      /* if (!refreshToken) {
-        throw new Error('Refresh token not found in cookies');
-      } */
       // const pastDate = new Date(0);
       // remove refresh_token from the database
-      let tokenRemoved = false;
+
       if (refreshToken) {
-        tokenRemoved = await dataSources.dataDB.user.modifyRefreshToken(
+        const tokenRemoved = await dataSources.dataDB.user.modifyRefreshToken(
           id,
           refreshToken,
           'array_remove',
         );
 
         if (!tokenRemoved) {
-          throw new Error('Error removing refresh token');
+          throw new GraphQLError('Error removing refresh token', { extensions: { code: 'BAD REQUEST' } });
         }
 
         /*  refreshTokenCookie = cookie.serialize(
@@ -380,17 +376,16 @@ async function logout(_, { id }, { dataSources, res, req }) {
           {
             httpOnly: true, sameSite: 'strict', secure: secureEnv(), expires: pastDate,
           },
-        );
+        ); */
       }
 
-      TokenCookie = cookie.serialize(
+      /* TokenCookie = cookie.serialize(
         'auth-token',
         '',
         {
           httpOnly: true, sameSite: 'strict', secure: secureEnv(), expires: pastDate,
         },
-      ); */
-      }
+      );  */
     }
     // eslint-disable-next-line no-param-reassign
     dataSources.userData = null;
@@ -402,7 +397,7 @@ async function logout(_, { id }, { dataSources, res, req }) {
     return true;
   } catch (error) {
     debug('error', error);
-    throw new ApolloError('Error logout');
+    throw new GraphQLError('Error logout', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 /**
@@ -423,13 +418,13 @@ async function deleteUser(_, { id }, { dataSources, res }) {
   try {
     // Check if the user is logged in
     if (dataSources.userData === null || dataSources.userData.id !== id) {
-      throw new AuthenticationError('Unauthorized');
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
     }
 
     const user = await dataSources.dataDB.user.findByPk(id);
 
     if (!user) {
-      throw new ApolloError('User not found', 'NOT_FOUND');
+      throw new GraphQLError('User not found', { extensions: { code: 'NOT_FOUND' } });
     }
 
     // delete the old profile picture in folder
@@ -464,27 +459,27 @@ async function deleteUser(_, { id }, { dataSources, res }) {
     // delete all subscriptions of the user
     const deletedSubscription = await dataSources.dataDB.subscription.deleteByUserId(id);
     if (!deletedSubscription) {
-      throw new ApolloError('Error deleting subscription', 'BAD_REQUEST');
+      throw new GraphQLError('Error deleting subscription', { extensions: { code: 'BAD REQUEST' } });
     }
 
     // delete all notViewedConversation of the user
     const deletedNotViewedConversation = await
     dataSources.dataDB.notViewedConversation.deleteByUserId(id);
     if (!deletedNotViewedConversation) {
-      throw new ApolloError('Error deleting notViewedConversation', 'BAD_REQUEST');
+      throw new GraphQLError('Error deleting notViewedConversation', { extensions: { code: 'BAD REQUEST' } });
     }
 
     // delete user setting
     const deletedUserSetting = await dataSources.dataDB.userSetting.deleteByUserId(id);
     if (!deletedUserSetting) {
-      throw new ApolloError('Error deleting user setting', 'BAD_REQUEST');
+      throw new GraphQLError('Error deleting user setting', { extensions: { code: 'BAD REQUEST' } });
     }
 
     logout(null, { id }, { dataSources, res });
     return true;
   } catch (error) {
     debug('error', error);
-    throw new ApolloError('Error delete user');
+    throw new GraphQLError('Error delete user', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 /**
@@ -502,7 +497,7 @@ async function forgotPassword(_, { input }, { dataSources }) {
   try {
     const user = await dataSources.dataDB.user.findUserByEmail(input.email);
     if (!user) {
-      throw new ApolloError('User not found', 'BAD_REQUEST');
+      throw new GraphQLError('User not found', { extensions: { code: 'BAD REQUEST' } });
     }
     debug('Token is generated');
     const resetToken = jwt.sign({ id: user.id, email: input.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
@@ -513,7 +508,7 @@ async function forgotPassword(_, { input }, { dataSources }) {
     return true;
   } catch (error) {
     debug('error', error);
-    throw new ApolloError('Error forgot password');
+    throw new GraphQLError('Error forgot password', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 /**
@@ -534,17 +529,17 @@ async function validateForgotPassword(_, { input }, { dataSources }) {
     const { token } = input;
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
     if (!decodedToken.id) {
-      throw new ApolloError('Token is invalid', 'BAD_REQUEST');
+      throw new GraphQLError('Token is invalid', { extensions: { code: 'BAD REQUEST' } });
     }
 
     // Check if user exists
     const existingUser = await dataSources.dataDB.user.findUserByEmail(decodedToken.email);
     if (!existingUser) {
-      throw new ApolloError('Email ou mot de passe incorrect', 'BAD_REQUEST');
+      throw new GraphQLError('Email ou mot de passe incorrect', { extensions: { code: 'BAD REQUEST' } });
     }
     // Check if the token is the same as the one in the database
     if (existingUser.remember_token !== token && decodedToken.id !== existingUser.id) {
-      throw new UserInputError('Error token');
+      throw new GraphQLError('Error token', { extensions: { code: 'BAD REQUEST' } });
     }
 
     // Hash the password using bcrypt
@@ -563,7 +558,7 @@ async function validateForgotPassword(_, { input }, { dataSources }) {
     return true;
   } catch (error) {
     debug('error', error);
-    throw new ApolloError('Error validate forgot password');
+    throw new GraphQLError('Error validate forgot password', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 /**
@@ -601,7 +596,7 @@ async function updateUser(_, { id, input }, { dataSources }) {
     dataSources.dataDB.user.findByPkLoader.clear(dataSources.userData.id);
 
     if (dataSources.userData === null || dataSources.userData.id !== id) {
-      throw new AuthenticationError('Unauthorized');
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
     }
     // Remove siret and company_name if the user is not a pro
     const updateInput = { ...input };
@@ -624,7 +619,7 @@ async function updateUser(_, { id, input }, { dataSources }) {
     }
 
     if (!user) {
-      throw new ApolloError('User not found', 'NOT_FOUND');
+      throw new GraphQLError('User not found', { extensions: { code: 'NOT_FOUND' } });
     }
 
     // mapping the media array to createReadStream
@@ -633,7 +628,7 @@ async function updateUser(_, { id, input }, { dataSources }) {
       const ReadStreamArray = await Promise.all(input.image.map(async (upload) => {
         const fileUpload = upload.file;
         if (!fileUpload) {
-          throw new Error('File upload not complete');
+          throw new GraphQLError('File upload not complete', { extensions: { code: 'BAD REQUEST' } });
         }
         const { createReadStream, filename, mimetype } = await fileUpload;
         const readStream = createReadStream();
@@ -650,7 +645,7 @@ async function updateUser(_, { id, input }, { dataSources }) {
 
       // replace input.image with the media url
       if (!media) {
-        throw new ApolloError('Error creating media');
+        throw new GraphQLError('Error creating media', { extensions: { code: 'BAD REQUEST' } });
       }
 
       imageInput = media[0].url;
@@ -674,11 +669,11 @@ async function updateUser(_, { id, input }, { dataSources }) {
 
     return dataSources.dataDB.user.update(id, updateInput);
   } catch (error) {
-    if (error instanceof AuthenticationError) {
+    if (error instanceof GraphQLError) {
       throw error;
     }
     debug('error', error);
-    throw new ApolloError('Error updating user');
+    throw new GraphQLError('Error updating user', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 /**
@@ -701,15 +696,15 @@ async function changePassword(_, { id, input }, { dataSources }) {
   try {
     // Check if the user is logged in
     if (dataSources.userData === null || dataSources.userData.id !== id) {
-      throw new AuthenticationError('Unauthorized');
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
     }
     const user = await dataSources.dataDB.user.findByPk(id);
     if (!user) {
-      throw new ApolloError('User not found', 'BAD_REQUEST');
+      throw new GraphQLError('User not found', { extensions: { code: 'BAD REQUEST' } });
     }
     const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
     if (!isOldPasswordValid) {
-      throw new ApolloError('Incorrect password', 'BAD_REQUEST');
+      throw new GraphQLError('Incorrect password', { extensions: { code: 'BAD REQUEST' } });
     }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
@@ -721,10 +716,10 @@ async function changePassword(_, { id, input }, { dataSources }) {
     return true;
   } catch (error) {
     debug(error);
-    if (error instanceof AuthenticationError) {
+    if (error instanceof GraphQLError) {
       throw error;
     }
-    throw new ApolloError('Error', 'BAD_REQUEST');
+    throw new GraphQLError('Error', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 /**
@@ -744,12 +739,12 @@ async function deleteProfilePicture(_, { id }, { dataSources }) {
   try {
     // Check if the user is logged in
     if (dataSources.userData === null || dataSources.userData.id !== id) {
-      throw new AuthenticationError('Unauthorized');
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
     }
 
     const user = await dataSources.dataDB.user.findByPk(id);
     if (!user) {
-      throw new ApolloError('User not found', 'NOT_FOUND');
+      throw new GraphQLError('User not found', { extensions: { code: 'NOT_FOUND' } });
     }
 
     // delete the old profile picture in folder
@@ -765,10 +760,10 @@ async function deleteProfilePicture(_, { id }, { dataSources }) {
     return true;
   } catch (error) {
     debug(error);
-    if (error instanceof AuthenticationError) {
+    if (error instanceof GraphQLError) {
       throw error;
     }
-    throw new ApolloError('Error delete profile picture');
+    throw new GraphQLError('Error delete profile picture', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 

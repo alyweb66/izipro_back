@@ -1,5 +1,5 @@
 import Debug from 'debug';
-import { ApolloError } from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:category`);
 
@@ -23,7 +23,7 @@ const categoryResolver = {
       return dataSources.dataDB.job.findJobsByCategory(id);
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error creating contact');
+      throw new GraphQLError(error, { extensions: { code: 'BAD REQUEST' } });
     }
   },
 };
