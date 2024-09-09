@@ -1,4 +1,5 @@
 import winston from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
 
 const {
   combine,
@@ -19,18 +20,21 @@ const logger = winston.createLogger({
   ),
   defaultMeta: { service: 'izipro' },
   transports: [
-    new winston.transports.File({
-      filename: 'logs/error.log',
+    new DailyRotateFile({
+      filename: 'logs/error-%DATE%.log',
+      datePattern: 'YYYY-MM-DD', // Rotation quotidienne
+      zippedArchive: true, // Compresser les anciens fichiers de log
+      maxSize: '20m', // Taille max de chaque fichier
+      maxFiles: '14d', // Garder les logs pour 14 jours
       level: 'error',
     }),
-    /*  new winston.transports.File({
-      filename: 'logs/http.log',
-      level: 'http',
-    }), */
-    new winston.transports.File({
-      filename: 'logs/infoServer.log',
+    new DailyRotateFile({
+      filename: 'logs/info-%DATE%.log',
+      datePattern: 'YYYY-MM-DD',
+      zippedArchive: true,
+      maxSize: '20m',
+      maxFiles: '14d',
       level: 'info',
-
     }),
   ],
 });
