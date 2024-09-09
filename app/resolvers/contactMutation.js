@@ -1,5 +1,5 @@
 import Debug from 'debug';
-import { ApolloError } from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 import { contactSendEmail } from '../middleware/sendEmail.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:contactMutation`);
@@ -33,7 +33,7 @@ async function contactEmail(_, { input }) {
     return true;
   } catch (error) {
     debug('Error', error);
-    throw new ApolloError('Error creating contact');
+    throw new GraphQLError(error, { extensions: { code: 'BAD REQUEST' } });
   }
 }
 

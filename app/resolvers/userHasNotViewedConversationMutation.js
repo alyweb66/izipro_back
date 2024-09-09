@@ -1,5 +1,5 @@
 import Debug from 'debug';
-import { ApolloError } from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:UserHasViewedConversationMutation`);
 
@@ -31,7 +31,7 @@ async function deleteNotViewedConversation(_, { input }, { dataSources }) {
 
   try {
     if (dataSources.userData.id !== input.user_id) {
-      throw new ApolloError('Unauthorized');
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
     }
 
     const isDeletedNotViewedConversation = await
@@ -39,13 +39,13 @@ async function deleteNotViewedConversation(_, { input }, { dataSources }) {
       input,
     );
     if (!isDeletedNotViewedConversation) {
-      throw new ApolloError('Error deleting viewed conversation');
+      throw new GraphQLError('Error deleting viewed conversation', { extensions: { code: 'BAD REQUEST' } });
     }
 
     return true;
   } catch (error) {
     debug('error', error);
-    throw new ApolloError('Error deleting viewed conversation');
+    throw new GraphQLError('Error deleting viewed conversation', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 

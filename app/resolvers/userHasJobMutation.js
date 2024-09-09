@@ -1,4 +1,4 @@
-import { ApolloError, AuthenticationError } from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 import Debug from 'debug';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:UserHasJobMutation`);
@@ -27,7 +27,7 @@ async function createUserJob(_, { input }, { dataSources }) {
   debug('create user_has_job');
   debugInDevelopment('input', input);
   if (dataSources.userData.id !== input.user_id) {
-    throw new AuthenticationError('Unauthorized');
+    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
   }
   try {
     dataSources.dataDB.userHasJob.cache.clear();
@@ -37,14 +37,14 @@ async function createUserJob(_, { input }, { dataSources }) {
     );
 
     if (!userHasJob) {
-      throw new ApolloError('Error creating user_has_job');
+      throw new GraphQLError('Error creating user_has_job', { extensions: { code: 'BAD REQUEST' } });
     }
 
     debugInDevelopment(userHasJob);
     return userHasJob;
   } catch (error) {
     debug('error', error);
-    throw new ApolloError('Error creating user_has_job');
+    throw new GraphQLError('Error creating user_has_job', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 
@@ -66,7 +66,7 @@ async function deleteUserJob(_, { input }, { dataSources }) {
   debug('delete user_has_job');
   debugInDevelopment('input', input);
   if (dataSources.userData.id !== input.user_id) {
-    throw new AuthenticationError('Unauthorized');
+    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
   }
   try {
     const userHasJob = await dataSources.dataDB.userHasJob.deleteUserHasJob(
@@ -75,14 +75,14 @@ async function deleteUserJob(_, { input }, { dataSources }) {
     );
 
     if (!userHasJob) {
-      throw new ApolloError('Error deleting user_has_job');
+      throw new GraphQLError('Error deleting user_has_job', { extensions: { code: 'BAD REQUEST' } });
     }
 
     debugInDevelopment(userHasJob);
     return userHasJob;
   } catch (error) {
     debug('error', error);
-    throw new ApolloError('Error deleting user_has_job');
+    throw new GraphQLError('Error deleting user_has_job', { extensions: { code: 'BAD REQUEST' } });
   }
 }
 export default {

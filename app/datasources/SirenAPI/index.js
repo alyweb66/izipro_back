@@ -28,7 +28,7 @@ class SirenAPI extends RESTDataSource {
       return response.etablissement;
     } catch (error) {
       debug('error', error);
-      throw new ApolloError('Error getting siret data', 'SIREN_API_ERROR');
+      throw new GraphQLError('Error getting siret data', 'SIREN_API_ERROR');
     }
   }
 }
