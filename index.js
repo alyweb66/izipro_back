@@ -31,7 +31,7 @@ import { InMemoryLRUCache } from '@apollo/utils.keyvaluecache';
 // that together define the "shape" of queries that are executed against
 // your data.
 import cookie from 'cookie';
-
+// import webPush from 'web-push';
 import typeDefs from './app/schemas/index.js';
 import resolvers from './app/resolvers/index.js';
 import getUserByToken from './app/middleware/getUserByToken.js';
@@ -44,10 +44,21 @@ const debug = Debug(`${process.env.DEBUG_MODULE}:httpserver`);
 
 const app = express();
 
+//* VAPID keys for web push notifications
+/* const vapidKeys = webPush.generateVAPIDKeys();
+console.log('Public Key:', vapidKeys.publicKey);
+console.log('Private Key:', vapidKeys.privateKey); */
+//* VAPID keys for web push notifications
+
+// Trust the first proxy for the IP address and the X-Forwarded-Proto header
+// to use express rate limit
+app.set('trust proxy', 'loopback');
+
 //* HTTPS server
 // Chemins vers les fichiers de certificat et de clé
 /* const key = fs.readFileSync('./server.key');
 const cert = fs.readFileSync('./server.cert'); */
+//* HTTPS server
 
 app.use(express.json());
 

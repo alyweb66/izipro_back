@@ -347,18 +347,13 @@ async function logout(_, { id }, { dataSources, res, req }) {
   debug('logout is starting');
   try {
     // Controle if it's the good user who want to logout
-    // let TokenCookie;
-    // let refreshTokenCookie;
-    // let refreshToken;
-    if (dataSources.userData.id === id) {
+    if (id && dataSources.userData && dataSources.userData.id === id) {
       // get refresh_token from cookie
       const cookies = cookie.parse(req.headers.cookie || '');
 
       const refreshToken = cookies['refresh-token'] || '';
 
-      // const pastDate = new Date(0);
       // remove refresh_token from the database
-
       if (refreshToken) {
         const tokenRemoved = await dataSources.dataDB.user.modifyRefreshToken(
           id,
@@ -369,31 +364,19 @@ async function logout(_, { id }, { dataSources, res, req }) {
         if (!tokenRemoved) {
           throw new GraphQLError('Error removing refresh token', { extensions: { code: 'BAD REQUEST' } });
         }
-
-        /*  refreshTokenCookie = cookie.serialize(
-          'refresh-token',
-          '',
-          {
-            httpOnly: true, sameSite: 'strict', secure: secureEnv(), expires: pastDate,
-          },
-        ); */
       }
-
-      /* TokenCookie = cookie.serialize(
-        'auth-token',
-        '',
-        {
-          httpOnly: true, sameSite: 'strict', secure: secureEnv(), expires: pastDate,
-        },
-      );  */
     }
+
     // eslint-disable-next-line no-param-reassign
     dataSources.userData = null;
 
     // res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
-    res.clearCookie('auth-token', { httpOnly: true, sameSite: 'strict', secure: secureEnv() });
-    res.clearCookie('refresh-token', { httpOnly: true, sameSite: 'strict', secure: secureEnv() });
-
+    res.clearCookie('auth-token', {
+      httpOnly: true, sameSite: 'strict', domain: process.env.DOMAIN, secure: secureEnv(),
+    });
+    res.clearCookie('refresh-token', {
+      httpOnly: true, sameSite: 'strict', domain: process.env.DOMAIN, secure: secureEnv(),
+    });
     return true;
   } catch (error) {
     debug('error', error);
