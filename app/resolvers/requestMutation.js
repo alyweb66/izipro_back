@@ -62,7 +62,7 @@ async function createRequest(_, { input }, { dataSources }) {
   debugInDevelopment('input', input.media);
 
   if (dataSources.userData.id !== input.user_id) {
-    throw new AuthenticationError('Unauthorized');
+    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
   }
   try {
     const requestInput = { ...input };
@@ -165,7 +165,7 @@ async function createRequest(_, { input }, { dataSources }) {
     const flattenedNotifications = usersNotification.flat();
 
     // send push notification to users that have not viewed the conversation
-    if (flattenedNotifications > 0 && flattenedNotifications[0].endpoint) {
+    if (flattenedNotifications.length > 0 && flattenedNotifications[0].endpoint) {
       flattenedNotifications.forEach((element) => {
         const subscriptionPush = {
           endpoint: element.endpoint,
@@ -177,11 +177,13 @@ async function createRequest(_, { input }, { dataSources }) {
 
         const payload = JSON.stringify({
           title: 'Vous avez une nouvelle demande',
-          message: 'Cliquez pour la consulter',
+          body: 'Cliquez pour la consulter',
           // body: message[0].content, // Assurez-vous que `message[0].content`
-          // contient le texte du message
           icon: process.env.LOGO_NOTIFICATION_URL,
           // url: `https://yourwebsite.com/conversation/${input.conversation_id}`,
+          badge: process.env.LOGO_NOTIFICATION_URL,
+          tag: input.conversation_id,
+          renotify: true,
         });
 
         // Envoyer la notification push
