@@ -79,7 +79,7 @@ app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
 // Rate limiter middleware for ddos protection
 const limiter = rateLimit({
   windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 100, // limit each IP to 100 requests per windows
+  max: 1000, // limit each IP to 100 requests per windows
 });
 
 app.use(limiter);
