@@ -11,7 +11,7 @@ type Message {
 }
 
 input NewMessageInput {
-    content: String! @length(max: 500)
+    content: String! @length(max: 1000)
     user_id: Int!
     conversation_id: Int!
     media: [Upload]
@@ -20,5 +20,6 @@ input NewMessageInput {
 input UpdateViewedMessage {
     id: [Int!]
 }
+
 
 
