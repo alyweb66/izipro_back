@@ -68,6 +68,7 @@ async function handleUploadedFiles(media) {
       const fileName = path.basename(filePath);
       // Returning image details
       const pictureUrl = process.env.NODE_ENV === 'development' ? `${process.env.FILE_URL}${process.env.PORT}/public/media/${fileName}` : `${process.env.FILE_URL}/public/media/${fileName}`;
+
       return {
         url: pictureUrl,
         name: uniqueFileName,
