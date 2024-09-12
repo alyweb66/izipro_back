@@ -199,7 +199,7 @@ async function createRequest(_, { input }, { dataSources }) {
         dataSources,
         flattenedNotifications,
       );
-    }, 60000);
+    }, 300000);
 
     debug('isUpdatedSubscription', isUpdatedSubscription);
 

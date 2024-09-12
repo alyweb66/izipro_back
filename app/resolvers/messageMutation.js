@@ -149,7 +149,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
         userNotification[0].user_id,
         userNotification[0].email_notification,
       );
-    }, 100);
+    }, 300000);
 
     debugInDevelopment('subscriptionResult', message);
     // publish the request to the client
