@@ -29,7 +29,7 @@ async function createHiddenClientRequest(_, { input }, { dataSources }) {
 
   try {
     if (dataSources.userData.id !== input.user_id) {
-      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' , httpStatus: 401} });
     }
     // create hidden client request
     const isCreatedHiddenClientRequest = await
@@ -37,13 +37,13 @@ async function createHiddenClientRequest(_, { input }, { dataSources }) {
       input,
     );
     if (!isCreatedHiddenClientRequest) {
-      throw new GraphQLError('Error creating hidden client request', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error creating hidden client request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     return isCreatedHiddenClientRequest;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error creating hidden client request', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error creating hidden client request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 

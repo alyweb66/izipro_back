@@ -24,7 +24,7 @@ export default {
       return dataSources.dataDB.user.findUsersByIds(ids, offset, limit);
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get all users conversations where ids', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get all users conversations where ids', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -46,7 +46,7 @@ export default {
       return dataSources.dataDB.conversation.getConversationByUser(offset, limit);
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get all conversations', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get all conversations', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -67,7 +67,7 @@ export default {
       return dataSources.dataDB.conversation.findByPk(id);
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get conversation with id', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get conversation with id', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -90,7 +90,7 @@ export default {
       return dataSources.dataDB.message.findByConversationId(conversationId, offset, limit);
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get all messages by conversation_id', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get all messages by conversation_id', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -111,7 +111,7 @@ export default {
       return dataSources.dataDB.message.findByPk(id);
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get message with id', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get message with id', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -129,7 +129,7 @@ export default {
   async user(_, __, { dataSources }) {
     try {
       if (!dataSources.userData) {
-        throw new GraphQLError('User not found', { extensions: { code: 'UNAUTHENTICATED' } });
+        throw new GraphQLError('User not found', { extensions: { code: 'UNAUTHORIZED', httpStatus: 403 } });
       }
       debug(`get user with id ${dataSources.userData.id}`);
       // clear cache
@@ -138,7 +138,7 @@ export default {
       return userData;
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get user with id', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get user with id', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -159,7 +159,7 @@ export default {
       return dataSources.dataDB.request.findByPk(id);
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get request with id', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get request with id', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -179,7 +179,7 @@ export default {
       return dataSources.dataDB.media.findAll();
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get all medias', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get all medias', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -200,7 +200,7 @@ export default {
       return dataSources.dataDB.media.findByPk(id);
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get media with id', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get media with id', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -220,7 +220,7 @@ export default {
       return dataSources.dataDB.category.findAll();
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get all categories', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get all categories', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -241,7 +241,7 @@ export default {
       return dataSources.dataDB.category.findByPk(id);
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get category with id', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get category with id', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -265,7 +265,7 @@ export default {
       return jobs;
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get job with id', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get job with id', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -295,10 +295,11 @@ export default {
         offset,
         limit,
       );
+
       return result;
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get all request by job', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get all request by job', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -322,7 +323,7 @@ export default {
       return rules[0];
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get rules', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get rules', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
 

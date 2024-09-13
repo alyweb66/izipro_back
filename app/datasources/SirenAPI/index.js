@@ -1,6 +1,6 @@
 import Debug from 'debug';
 import { RESTDataSource } from '@apollo/datasource-rest';
-import { ApolloError } from 'apollo-server-core';
+import { GraphQLError } from 'graphql';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:SirenAPI`);
 
@@ -28,7 +28,7 @@ class SirenAPI extends RESTDataSource {
       return response.etablissement;
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error getting siret data', 'SIREN_API_ERROR');
+      throw new GraphQLError('Error getting siret data', { extensions: { code: 'NOT_FOUND', httpStatus: 404 } });
     }
   }
 }

@@ -59,8 +59,6 @@ export default async function getUserByToken(req, res, dataSources) {
     }
     // If the token is not found, go to logout
     debugInDevelopment('getUserByToken: token not found');
-    // serverLogout(null, null, { res, dataSources, req });
-    // throw new GraphQLError('Token not found', 'BAD_REQUEST');
     return null;
   } catch (tokenError) {
     debug('Failed to verify token', tokenError);
@@ -69,9 +67,7 @@ export default async function getUserByToken(req, res, dataSources) {
       if (userDataDecoded && !userDataDecoded.activeSession) {
         debug('Outdated session', tokenError);
         subscribeToLogout(userDataDecoded.id);
-        // serverLogout(null, null, { res, dataSources, req });
         return null;
-        // throw new GraphQLError('Outdated session');
       }
       // If the error is token expired, refresh the token
       debug('refreshToken is starting');
@@ -80,8 +76,6 @@ export default async function getUserByToken(req, res, dataSources) {
         if (!refreshToken) {
           debug('refreshToken not found');
           subscribeToLogout(userDataDecoded.id);
-          // serverLogout(null, null, { res, dataSources, req });
-          // throw new GraphQLError('Refresh token not found', 'BAD_REQUEST');
           return null;
         }
         // decode the refresh token to get the user id
@@ -95,15 +89,13 @@ export default async function getUserByToken(req, res, dataSources) {
         // If the refresh token is not valid, go to logout
         if (!verifyRefreshToken) {
           debugInDevelopment('refreshToken: verifyRefreshToken failed');
-          throw new GraphQLError('Error token', { extensions: { code: 'YOUR_ERROR_CODE' } });
+          throw new GraphQLError('Error token', { extensions: { code: 'UNAUTHENTICATED', httpStatus: 401 } });
         }
 
         // If the user is not found, go to logout
         if (!user) {
           debugInDevelopment('refreshToken: user failed');
           subscribeToLogout(verifyRefreshToken.id);
-          // serverLogout(null, null, { res, dataSources, req });
-          // throw new GraphQLError('User not found', 'BAD_REQUEST');
           return null;
         }
 
@@ -114,8 +106,6 @@ export default async function getUserByToken(req, res, dataSources) {
         if (!findRefreshToken || findRefreshToken !== refreshToken) {
           debugInDevelopment('refreshToken: refresh_token failed', verifyRefreshToken);
           subscribeToLogout(user.id);
-          // serverLogout(null, null, { res, dataSources, req });
-          // throw new GraphQLError('Error token', 'BAD_REQUEST');
           return null;
         }
 

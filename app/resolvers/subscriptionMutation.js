@@ -26,7 +26,7 @@ async function createSubscription(_, { input }, { dataSources }) {
 
   try {
     if (dataSources.userData.id !== input.user_id) {
-      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' , httpStatus: 401} });
     }
 
     const subscription = await dataSources.dataDB.subscription.createSubscription(
@@ -36,13 +36,13 @@ async function createSubscription(_, { input }, { dataSources }) {
     );
 
     if (!subscription) {
-      throw new GraphQLError('Error creating subscription', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error creating subscription', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     return subscription;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error creating subscription', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error creating subscription', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 
