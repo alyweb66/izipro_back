@@ -62,7 +62,7 @@ async function createRequest(_, { input }, { dataSources }) {
   debugInDevelopment('input', input.media);
 
   if (dataSources.userData.id !== input.user_id) {
-    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
+    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
   }
   try {
     const requestInput = { ...input };
@@ -71,18 +71,18 @@ async function createRequest(_, { input }, { dataSources }) {
     // create request
     const isCreatedRequest = await dataSources.dataDB.request.create(requestInput);
     if (!isCreatedRequest) {
-      throw new GraphQLError('Error creating request', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error creating request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     // mapping the media array to createReadStream
     const ReadStreamArray = await Promise.all(input.media.map(async (upload, index) => {
       if (!upload.file.promise) {
-        throw new GraphQLError(`File upload not complete for media at index ${index}`, { extensions: { code: 'BAD REQUEST' } });
+        throw new GraphQLError(`File upload not complete for media at index ${index}`, { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
       }
       const fileUpload = await upload.file.promise;
 
       if (!fileUpload) {
-        throw new GraphQLError('File upload not complete', { extensions: { code: 'BAD REQUEST' } });
+        throw new GraphQLError('File upload not complete', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
       }
       const { createReadStream, filename, mimetype } = await fileUpload;
       const readStream = createReadStream();
@@ -100,7 +100,7 @@ async function createRequest(_, { input }, { dataSources }) {
     // create media
     const createMedia = await dataSources.dataDB.media.createMedia(media);
     if (!createMedia) {
-      throw new GraphQLError('Error creating media', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error creating media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     // get the media ids from the createMedia array
@@ -115,7 +115,7 @@ async function createRequest(_, { input }, { dataSources }) {
 
     if (!isCreatedRequestMedia
       || (isCreatedRequestMedia.insert_request_has_media === false)) {
-      throw new GraphQLError('Error creating request_has_media', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error creating request_has_media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
     // get the request with media and conversation
     const subscriptionResult = await dataSources.dataDB.request.getSubscritpionRequest(
@@ -213,7 +213,7 @@ async function createRequest(_, { input }, { dataSources }) {
     return subscriptionResult[0];
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error create request', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error create request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 
@@ -239,7 +239,7 @@ async function deleteRequest(_, { input }, { dataSources }) {
   debug('delete request');
   try {
     if (dataSources.userData.id !== input.user_id) {
-      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
     }
 
     const newInput = { deleted_at: new Date() };
@@ -247,7 +247,7 @@ async function deleteRequest(_, { input }, { dataSources }) {
     const isDeletedRequest = await dataSources.dataDB.request.update(input.id, newInput);
 
     if (!isDeletedRequest) {
-      throw new GraphQLError('Error deleting request', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error deleting request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     // read the public folder and delete all the files
@@ -264,7 +264,7 @@ async function deleteRequest(_, { input }, { dataSources }) {
     return true;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error delete request', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error delete request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 
