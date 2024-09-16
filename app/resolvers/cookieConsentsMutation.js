@@ -28,7 +28,7 @@ async function createCookieConsents(_, { id, input }, { dataSources }) {
 
   try {
     if (dataSources.userData.id !== id) {
-      throw new GraphQLError('Access denied', { extensions: { code: 'UNAUTHENTICATED' } });
+      throw new GraphQLError('Access denied', { extensions: { code: 'UNAUTHORIZED', httpStatus: 403 } });
     }
     // add the user id to the input object
     const newInput = { ...input, user_id: id };
@@ -38,13 +38,13 @@ async function createCookieConsents(_, { id, input }, { dataSources }) {
       newInput,
     );
     if (!isCreatedCookieConsents) {
-      throw new GraphQLError('Error cookieConsents', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error cookieConsents', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     return isCreatedCookieConsents;
   } catch (error) {
     debug('Error', error);
-    throw new GraphQLError(error, { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError(error, { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
   }
 }
 
@@ -66,7 +66,7 @@ async function updateCookieConsents(_, { id, input }, { dataSources }) {
 
   try {
     if (dataSources.userData.id !== id) {
-      throw new GraphQLError('Access denied', { extensions: { code: 'UNAUTHORIZED' } });
+      throw new GraphQLError('Access denied', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
     }
 
     // get the cookie id and remove it from the input object
@@ -79,13 +79,13 @@ async function updateCookieConsents(_, { id, input }, { dataSources }) {
     );
 
     if (!isUpdatedCookieConsents) {
-      throw new GraphQLError('No CookieConsents', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('No CookieConsents', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     return isUpdatedCookieConsents;
   } catch (error) {
     debug('Error', error);
-    throw new GraphQLError(error, { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError(error, { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
   }
 }
 

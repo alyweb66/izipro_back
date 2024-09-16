@@ -24,18 +24,18 @@ async function createConversation(_, { id, input }, { dataSources }) {
 
   try {
     if (dataSources.userData.id !== id) {
-      throw new GraphQLError('Access denied', { extensions: { code: 'UNAUTHENTICATED' } });
+      throw new GraphQLError('Access denied', { extensions: { code: 'UNAUTHORIZED' , httpStatus: 403} });
     }
     // create a new variable to store the updated input object
     const updatedInput = { ...input, updated_at: new Date() };
     const conversation = await dataSources.dataDB.conversation.create(updatedInput);
     if (!conversation) {
-      throw new GraphQLError('No conversation', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('No conversation', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
     return conversation;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError(error, { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError(error, { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
   }
 }
 

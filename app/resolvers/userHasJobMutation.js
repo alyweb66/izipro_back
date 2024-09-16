@@ -27,7 +27,7 @@ async function createUserJob(_, { input }, { dataSources }) {
   debug('create user_has_job');
   debugInDevelopment('input', input);
   if (dataSources.userData.id !== input.user_id) {
-    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
+    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' , httpStatus: 401} });
   }
   try {
     dataSources.dataDB.userHasJob.cache.clear();
@@ -37,14 +37,14 @@ async function createUserJob(_, { input }, { dataSources }) {
     );
 
     if (!userHasJob) {
-      throw new GraphQLError('Error creating user_has_job', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error creating user_has_job', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     debugInDevelopment(userHasJob);
     return userHasJob;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error creating user_has_job', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error creating user_has_job', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 
@@ -66,7 +66,7 @@ async function deleteUserJob(_, { input }, { dataSources }) {
   debug('delete user_has_job');
   debugInDevelopment('input', input);
   if (dataSources.userData.id !== input.user_id) {
-    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
+    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' , httpStatus: 401} });
   }
   try {
     const userHasJob = await dataSources.dataDB.userHasJob.deleteUserHasJob(
@@ -75,14 +75,14 @@ async function deleteUserJob(_, { input }, { dataSources }) {
     );
 
     if (!userHasJob) {
-      throw new GraphQLError('Error deleting user_has_job', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error deleting user_has_job', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     debugInDevelopment(userHasJob);
     return userHasJob;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error deleting user_has_job', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error deleting user_has_job', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 export default {

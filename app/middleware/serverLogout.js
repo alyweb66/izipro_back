@@ -32,7 +32,7 @@ export default async function serverLogout(_, __, {
           'array_remove',
         );
         if (!removedToken) {
-          throw new GraphQLError('Error removing refresh token', { extensions: { code: 'NOT_FOUND' } });
+          throw new GraphQLError('Error removing refresh token', { extensions: { code: 'NOT_FOUND', httpStatus: 404 } });
         }
       }
     }
@@ -71,6 +71,6 @@ export default async function serverLogout(_, __, {
     debug(error);
     /*  throw new GraphQLError('Error serveur logout'); */
     debug('serverLogout error:', error.message, error.stack);
-    throw new GraphQLError(error, { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError(error, { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
   }
 }

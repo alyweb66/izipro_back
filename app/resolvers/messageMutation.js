@@ -31,7 +31,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
 
   debugInDevelopment('input', input);
   if (dataSources.userData.id !== id) {
-    throw new GraphQLError('Access denied', { extensions: { code: 'UNAUTHORIZED' } });
+    throw new GraphQLError('Access denied', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
   }
   try {
     const messageInput = { ...input };
@@ -40,7 +40,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
     // create message
     const isCreatedMessage = await dataSources.dataDB.message.create(messageInput);
     if (!isCreatedMessage) {
-      throw new GraphQLError('No created message', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('No created message', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     // mapping the media array to createReadStream
@@ -49,12 +49,12 @@ async function createMessage(_, { id, input }, { dataSources }) {
       const ReadStreamArray = await Promise.all(input.media.map(async (upload, index) => {
         if (!upload.file.promise) {
           throw new GraphQLError(`File upload not complete for media at index ${index}`, {
-            extensions: { code: 'BAD REQUEST' },
+            extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
           });
         }
         const fileUpload = await upload.file.promise;
         if (!fileUpload) {
-          throw new GraphQLError('File upload not complete', { extensions: { code: 'BAD REQUEST' } });
+          throw new GraphQLError('File upload not complete', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
         }
         const { createReadStream, filename, mimetype } = await fileUpload;
         const readStream = createReadStream();
@@ -72,7 +72,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
       // create media
       const createMedia = await dataSources.dataDB.media.createMedia(media);
       if (!createMedia) {
-        throw new GraphQLError('Error creating media', { extensions: { code: 'BAD REQUEST' } });
+        throw new GraphQLError('Error creating media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
       }
 
       // get the media ids from the createMedia array
@@ -87,7 +87,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
 
       if (!isCreatedMessageMedia
         || (isCreatedMessageMedia.insert_message_has_media === false)) {
-        throw new GraphQLError('Error creating message_has_media', { extensions: { code: 'BAD REQUEST' } });
+        throw new GraphQLError('Error creating message_has_media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
       }
     }
 
@@ -149,7 +149,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
         userNotification[0].user_id,
         userNotification[0].email_notification,
       );
-    }, 100);
+    }, 300000);
 
     debugInDevelopment('subscriptionResult', message);
     // publish the request to the client
@@ -161,7 +161,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
     return true;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError(error, { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError(error, { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
   }
 }
 

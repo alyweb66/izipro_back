@@ -71,7 +71,7 @@ async function deleteFile(file) {
     debugInDevelopment(`File ${file} deleted successfully`);
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error deleting file', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error deleting file', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 /**
@@ -94,7 +94,7 @@ async function createUserFunction(_, { input }, { dataSources }) {
     // Check if user exists
     const existingUser = await dataSources.dataDB.user.findUserByEmail(input.email);
     if (existingUser) {
-      throw new GraphQLError('incorrect email or password', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('incorrect email or password', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     // Hash the password using bcrypt
@@ -117,10 +117,10 @@ async function createUserFunction(_, { input }, { dataSources }) {
       const sirenAPI = new SirenAPI();
       siretData = await sirenAPI.getSiretData(siret);
       if (!siretData.siret) {
-        throw new GraphQLError('Siret not found', { extensions: { code: 'BAD REQUEST' } });
+        throw new GraphQLError('Siret not found', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
       }
       if (Number(siretData.siret) !== input.siret) {
-        throw new GraphQLError('Siret not found', { extensions: { code: 'BAD REQUEST' } });
+        throw new GraphQLError('Siret not found', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
       }
     }
 
@@ -144,7 +144,7 @@ async function createUserFunction(_, { input }, { dataSources }) {
 
     const createdUser = await dataSources.dataDB.user.create(userInputWithHashedPassword);
     if (!createdUser.id) {
-      throw new GraphQLError('Error creating user', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error creating user', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     // Create a default notification setting in the notification table
@@ -153,20 +153,20 @@ async function createUserFunction(_, { input }, { dataSources }) {
     });
 
     if (!createNotification.id) {
-      throw new GraphQLError('Error creating notification', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error creating notification', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     // Create a default user setting in the user_setting table
     const createSetting = await dataSources.dataDB.userSetting.create({ user_id: createdUser.id });
 
     if (!createSetting.id) {
-      throw new GraphQLError('Error creating user setting', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error creating user setting', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     return { __typename: 'User', ...createdUser };
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error creating user', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error creating user', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 /**
@@ -199,10 +199,10 @@ async function confirmRegisterEmail(_, { input }, { dataSources }) {
     }
 
     if (!user) {
-      throw new GraphQLError('User not found', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('User not found', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
     if (user.remember_token !== token) {
-      throw new GraphQLError('Error token', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error token', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
     await dataSources.dataDB.user.update(user.id, {
       email: decodedToken.email,
@@ -212,7 +212,7 @@ async function confirmRegisterEmail(_, { input }, { dataSources }) {
     return true;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error confirm register mail', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error confirm register mail', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 /**
@@ -240,18 +240,18 @@ async function login(_, { input }, { dataSources, res }) {
 
     if (!user) {
       debugInDevelopment('login:user failed', user);
-      throw new GraphQLError('Incorrect email or password', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Incorrect email or password', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
     if (user.verified_email === false) {
       debugInDevelopment('login:verified_email false');
-      throw new GraphQLError('Unverified email', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Unverified email', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     const validPassword = await bcrypt.compare(input.password, user.password);
 
     if (!validPassword) {
       debugInDevelopment('login:validPassword failed', validPassword);
-      throw new GraphQLError('EIncorrect email or password', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('EIncorrect email or password', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     // Create a token
@@ -328,7 +328,7 @@ async function login(_, { input }, { dataSources, res }) {
     return true;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error login', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error login', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 /**
@@ -362,7 +362,7 @@ async function logout(_, { id }, { dataSources, res, req }) {
         );
 
         if (!tokenRemoved) {
-          throw new GraphQLError('Error removing refresh token', { extensions: { code: 'BAD REQUEST' } });
+          throw new GraphQLError('Error removing refresh token', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
         }
       }
     }
@@ -380,7 +380,7 @@ async function logout(_, { id }, { dataSources, res, req }) {
     return true;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error logout', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error logout', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 /**
@@ -401,13 +401,13 @@ async function deleteUser(_, { id }, { dataSources, res }) {
   try {
     // Check if the user is logged in
     if (dataSources.userData === null || dataSources.userData.id !== id) {
-      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
     }
 
     const user = await dataSources.dataDB.user.findByPk(id);
 
     if (!user) {
-      throw new GraphQLError('User not found', { extensions: { code: 'NOT_FOUND' } });
+      throw new GraphQLError('User not found', { extensions: { code: 'NOT_FOUND', httpStatus: 404 } });
     }
 
     // delete the old profile picture in folder
@@ -442,27 +442,27 @@ async function deleteUser(_, { id }, { dataSources, res }) {
     // delete all subscriptions of the user
     const deletedSubscription = await dataSources.dataDB.subscription.deleteByUserId(id);
     if (!deletedSubscription) {
-      throw new GraphQLError('Error deleting subscription', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error deleting subscription', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     // delete all notViewedConversation of the user
     const deletedNotViewedConversation = await
     dataSources.dataDB.notViewedConversation.deleteByUserId(id);
     if (!deletedNotViewedConversation) {
-      throw new GraphQLError('Error deleting notViewedConversation', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error deleting notViewedConversation', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     // delete user setting
     const deletedUserSetting = await dataSources.dataDB.userSetting.deleteByUserId(id);
     if (!deletedUserSetting) {
-      throw new GraphQLError('Error deleting user setting', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error deleting user setting', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     logout(null, { id }, { dataSources, res });
     return true;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error delete user', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error delete user', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 /**
@@ -480,7 +480,7 @@ async function forgotPassword(_, { input }, { dataSources }) {
   try {
     const user = await dataSources.dataDB.user.findUserByEmail(input.email);
     if (!user) {
-      throw new GraphQLError('User not found', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('User not found', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
     debug('Token is generated');
     const resetToken = jwt.sign({ id: user.id, email: input.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
@@ -491,7 +491,7 @@ async function forgotPassword(_, { input }, { dataSources }) {
     return true;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error forgot password', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error forgot password', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 /**
@@ -512,17 +512,17 @@ async function validateForgotPassword(_, { input }, { dataSources }) {
     const { token } = input;
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
     if (!decodedToken.id) {
-      throw new GraphQLError('Token is invalid', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Token is invalid', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     // Check if user exists
     const existingUser = await dataSources.dataDB.user.findUserByEmail(decodedToken.email);
     if (!existingUser) {
-      throw new GraphQLError('Email ou mot de passe incorrect', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Email ou mot de passe incorrect', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
     // Check if the token is the same as the one in the database
     if (existingUser.remember_token !== token && decodedToken.id !== existingUser.id) {
-      throw new GraphQLError('Error token', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error token', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     // Hash the password using bcrypt
@@ -541,7 +541,7 @@ async function validateForgotPassword(_, { input }, { dataSources }) {
     return true;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error validate forgot password', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error validate forgot password', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 /**
@@ -579,7 +579,7 @@ async function updateUser(_, { id, input }, { dataSources }) {
     dataSources.dataDB.user.findByPkLoader.clear(dataSources.userData.id);
 
     if (dataSources.userData === null || dataSources.userData.id !== id) {
-      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
     }
     // Remove siret and company_name if the user is not a pro
     const updateInput = { ...input };
@@ -602,7 +602,7 @@ async function updateUser(_, { id, input }, { dataSources }) {
     }
 
     if (!user) {
-      throw new GraphQLError('User not found', { extensions: { code: 'NOT_FOUND' } });
+      throw new GraphQLError('User not found', { extensions: { code: 'NOT_FOUND', httpStatus: 404 } });
     }
 
     // mapping the media array to createReadStream
@@ -611,7 +611,7 @@ async function updateUser(_, { id, input }, { dataSources }) {
       const ReadStreamArray = await Promise.all(input.image.map(async (upload) => {
         const fileUpload = upload.file;
         if (!fileUpload) {
-          throw new GraphQLError('File upload not complete', { extensions: { code: 'BAD REQUEST' } });
+          throw new GraphQLError('File upload not complete', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
         }
         const { createReadStream, filename, mimetype } = await fileUpload;
         const readStream = createReadStream();
@@ -628,7 +628,7 @@ async function updateUser(_, { id, input }, { dataSources }) {
 
       // replace input.image with the media url
       if (!media) {
-        throw new GraphQLError('Error creating media', { extensions: { code: 'BAD REQUEST' } });
+        throw new GraphQLError('Error creating media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
       }
 
       imageInput = media[0].url;
@@ -656,7 +656,7 @@ async function updateUser(_, { id, input }, { dataSources }) {
       throw error;
     }
     debug('error', error);
-    throw new GraphQLError('Error updating user', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error updating user', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 /**
@@ -679,15 +679,15 @@ async function changePassword(_, { id, input }, { dataSources }) {
   try {
     // Check if the user is logged in
     if (dataSources.userData === null || dataSources.userData.id !== id) {
-      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
     }
     const user = await dataSources.dataDB.user.findByPk(id);
     if (!user) {
-      throw new GraphQLError('User not found', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('User not found', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
     const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
     if (!isOldPasswordValid) {
-      throw new GraphQLError('Incorrect password', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Incorrect password', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
@@ -702,7 +702,7 @@ async function changePassword(_, { id, input }, { dataSources }) {
     if (error instanceof GraphQLError) {
       throw error;
     }
-    throw new GraphQLError('Error', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 /**
@@ -722,12 +722,12 @@ async function deleteProfilePicture(_, { id }, { dataSources }) {
   try {
     // Check if the user is logged in
     if (dataSources.userData === null || dataSources.userData.id !== id) {
-      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
     }
 
     const user = await dataSources.dataDB.user.findByPk(id);
     if (!user) {
-      throw new GraphQLError('User not found', { extensions: { code: 'NOT_FOUND' } });
+      throw new GraphQLError('User not found', { extensions: { code: 'NOT_FOUND', httpStatus: 404 } });
     }
 
     // delete the old profile picture in folder
@@ -746,7 +746,7 @@ async function deleteProfilePicture(_, { id }, { dataSources }) {
     if (error instanceof GraphQLError) {
       throw error;
     }
-    throw new GraphQLError('Error delete profile picture', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error delete profile picture', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 
