@@ -43,6 +43,7 @@ export default async function getUserByToken(req, res, dataSources) {
 
   const cookies = cookie.parse(req.headers.cookie || '');
   debugInDevelopment('cookies', cookies);
+console.log('cookies', cookies);
 
   const token = cookies['auth-token'] || '';
   const refreshToken = cookies['refresh-token'] || '';
