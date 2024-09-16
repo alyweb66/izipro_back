@@ -44,7 +44,7 @@ CREATE TABLE "user"(
 
 CREATE TABLE "cookie_consents" (
     "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    "user_id" INT NOT NULL UNIQUE REFERENCES "user"(id),
+    "user_id" INT NOT NULL UNIQUE REFERENCES "user"(id) ON DELETE CASCADE,
     "consented_at" timestamptz NOT NULL DEFAULT now(),
     "ip_address" TEXT CHECK (LENGTH("ip_address") <= 50),
     "cookies_necessary" BOOLEAN NOT NULL DEFAULT FALSE,
@@ -56,7 +56,7 @@ CREATE TABLE "cookie_consents" (
 -- 4 subscriber : request, jobrequest, clientConversation, conversation
 CREATE TABLE "subscription"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "user_id" INT NOT NULL REFERENCES "user"(id),
+   "user_id" INT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
    "subscriber" TEXT NOT NULL CHECK (LENGTH("subscriber") <= 50),
    "subscriber_id" INT[] NOT NULL,
    "created_at" timestamptz NOT NULL DEFAULT now(),
@@ -65,7 +65,7 @@ CREATE TABLE "subscription"(
 
 CREATE TABLE "notification_push"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "user_id" INT NOT NULL REFERENCES "user"(id),
+   "user_id" INT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
    "endpoint" TEXT NOT NULL,
    "public_key" TEXT NOT NULL,
    "auth_token" TEXT NOT NULL,
@@ -75,7 +75,7 @@ CREATE TABLE "notification_push"(
 
 CREATE TABLE "notification" (
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "user_id" INT NOT NULL REFERENCES "user"(id),
+   "user_id" INT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
    "email_notification" BOOLEAN NOT NULL DEFAULT TRUE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
@@ -118,7 +118,7 @@ CREATE TABLE "request"(
    "lng" NUMERIC NOT NULL,
    "lat" NUMERIC NOT NULL,
    "range" INT NOT NULL,
-   "user_id" INT NOT NULL REFERENCES "user"(id),
+   "user_id" INT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
    "job_id" INT NOT NULL REFERENCES "job"(id),
    "deleted_at" timestamptz,
    "created_at" timestamptz NOT NULL DEFAULT now(),
@@ -129,7 +129,7 @@ CREATE TABLE "conversation"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "user_1" INT NOT NULL REFERENCES "user"(id),
    "user_2" INT NOT NULL REFERENCES "user"(id),
-   "request_id" INT NOT NULL REFERENCES "request"(id),
+   "request_id" INT NOT NULL REFERENCES "request"(id) ON DELETE CASCADE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
    /* Check if the two participants are different */
@@ -140,7 +140,7 @@ CREATE TABLE "conversation"(
 CREATE TABLE "message"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "content" TEXT CHECK (LENGTH("content") <= 1000),
-   "user_id" INT NOT NULL REFERENCES "user"(id),
+   "user_id" INT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
    "conversation_id" INT NOT NULL REFERENCES "conversation"(id) ON DELETE CASCADE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
@@ -176,14 +176,14 @@ CREATE TABLE "request_has_media"(
 CREATE TABLE "message_has_media"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "media_id" INT NOT NULL REFERENCES "media"(id),
-   "message_id" INT NOT NULL REFERENCES "message"(id),
+   "message_id" INT NOT NULL REFERENCES "message"(id) ON DELETE CASCADE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );
 
 CREATE TABLE "user_has_job"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "user_id" INT NOT NULL REFERENCES "user"(id),
+   "user_id" INT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
    "job_id" INT NOT NULL REFERENCES "job"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
@@ -191,15 +191,15 @@ CREATE TABLE "user_has_job"(
 
 CREATE TABLE "user_has_notViewedRequest"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "user_id" INT NOT NULL REFERENCES "user"(id),
-   "request_id" INT NOT NULL REFERENCES "request"(id),
+   "user_id" INT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+   "request_id" INT NOT NULL REFERENCES "request"(id) ON DELETE CASCADE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );
 
 CREATE TABLE "user_has_notViewedConversation"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "user_id" INT NOT NULL REFERENCES "user"(id),
+   "user_id" INT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
    "conversation_id" INT NOT NULL REFERENCES "conversation"(id),
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
@@ -208,8 +208,8 @@ CREATE TABLE "user_has_notViewedConversation"(
 
 CREATE TABLE "user_has_hiddingClientRequest"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "user_id" INT NOT NULL REFERENCES "user"(id),
-   "request_id" INT NOT NULL REFERENCES "request"(id),
+   "user_id" INT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+   "request_id" INT NOT NULL REFERENCES "request"(id) ON DELETE CASCADE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );

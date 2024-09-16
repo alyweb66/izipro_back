@@ -23,7 +23,7 @@ const categoryResolver = {
       return dataSources.dataDB.job.findJobsByCategory(id);
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError(error, { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError(error, { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
     }
   },
 };

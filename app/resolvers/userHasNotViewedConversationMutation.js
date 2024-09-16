@@ -31,7 +31,7 @@ async function deleteNotViewedConversation(_, { input }, { dataSources }) {
 
   try {
     if (dataSources.userData.id !== input.user_id) {
-      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' , httpStatus: 401} });
     }
 
     const isDeletedNotViewedConversation = await
@@ -39,13 +39,13 @@ async function deleteNotViewedConversation(_, { input }, { dataSources }) {
       input,
     );
     if (!isDeletedNotViewedConversation) {
-      throw new GraphQLError('Error deleting viewed conversation', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error deleting viewed conversation', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     return true;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error deleting viewed conversation', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error deleting viewed conversation', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 

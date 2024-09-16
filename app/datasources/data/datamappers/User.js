@@ -94,7 +94,7 @@ class User extends CoreDatamapper {
     const validActions = ['array_append', 'array_replace', 'array_remove'];
 
     if (!validActions.includes(action)) {
-      throw new GraphQLError(`Invalid action: ${action}`, { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError(`Invalid action: ${action}`, { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
     // Check if the refreshToken already exists in the array
     const checkQuery = {
