@@ -28,7 +28,7 @@ async function createNotification(_, { input }, { dataSources }) {
   debugInDevelopment('input', input);
 
   if (dataSources.userData.id !== input.user_id) {
-    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
+    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' , httpStatus: 401} });
   }
 
   try {
@@ -37,17 +37,17 @@ async function createNotification(_, { input }, { dataSources }) {
     );
 
     if (isCreatedNotification) {
-      throw new GraphQLError('User notification already exists', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('User notification already exists', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     const createdNotification = await dataSources.dataDB.notification.create(input.user_id);
     if (!createdNotification) {
-      throw new GraphQLError('Error creating notification', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error creating notification', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
     return true;
   } catch (error) {
     debug('Error', error);
-    throw new GraphQLError('Error creating notification', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error creating notification', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 
@@ -70,7 +70,7 @@ async function updateNotification(_, { input }, { dataSources }) {
   debugInDevelopment('input', input);
 
   if (dataSources.userData.id !== input.user_id) {
-    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
+    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' , httpStatus: 401} });
   }
 
   try {
@@ -79,7 +79,7 @@ async function updateNotification(_, { input }, { dataSources }) {
     );
 
     if (!isCreatedNotification) {
-      throw new GraphQLError('User notification does not exist', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('User notification does not exist', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     const updatedNotification = await dataSources.dataDB.notification.update(
@@ -87,12 +87,12 @@ async function updateNotification(_, { input }, { dataSources }) {
       { email_notification: input.email_notification },
     );
     if (!updatedNotification) {
-      throw new GraphQLError('Error updating notification', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error updating notification', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
     return true;
   } catch (error) {
     debug('Error', error);
-    throw new GraphQLError('Error updating notification', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error updating notification', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 

@@ -33,7 +33,7 @@ async function contactEmail(_, { input }) {
     return true;
   } catch (error) {
     debug('Error', error);
-    throw new GraphQLError(error, { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError(error, { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
   }
 }
 

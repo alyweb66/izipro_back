@@ -30,7 +30,7 @@ async function createNotificationPush(_, { input }, { dataSources }) {
   debugInDevelopment('input', input);
 
   if (dataSources.userData.id !== input.user_id) {
-    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
+    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' , httpStatus: 401} });
   }
 
   try {
@@ -47,12 +47,12 @@ async function createNotificationPush(_, { input }, { dataSources }) {
 
     const createdNotification = await dataSources.dataDB.notificationPush.create(input);
     if (!createdNotification) {
-      throw new GraphQLError('Error creating notification', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error creating notification', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
     return true;
   } catch (error) {
     debug('Error', error);
-    throw new GraphQLError(error, { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError(error, { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
   }
 }
 
@@ -79,7 +79,7 @@ async function deleteNotificationPush(_, { input }, { dataSources }) {
     return true;
   } catch (error) {
     debug('Error', error);
-    throw new GraphQLError('Error deleting notification', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error deleting notification', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 

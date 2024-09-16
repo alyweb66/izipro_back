@@ -30,7 +30,7 @@ async function userHasNotViewedRequest(_, { input }, { dataSources }) {
 
   try {
     if (dataSources.userData.id !== input.user_id) {
-      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' , httpStatus: 401} });
     }
 
     const isCreatedNotViewedRequest = await
@@ -38,13 +38,13 @@ async function userHasNotViewedRequest(_, { input }, { dataSources }) {
       input,
     );
     if (!isCreatedNotViewedRequest) {
-      throw new GraphQLError('Error creating viewed request', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error creating viewed request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     return true;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error creating viewed request', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error creating viewed request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 /**
@@ -68,7 +68,7 @@ async function deleteNotViewedRequest(_, { input }, { dataSources }) {
 
   try {
     if (dataSources.userData.id !== input.user_id) {
-      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' , httpStatus: 401} });
     }
 
     const isDeletedNotViewedRequest = await
@@ -76,13 +76,13 @@ async function deleteNotViewedRequest(_, { input }, { dataSources }) {
       input,
     );
     if (!isDeletedNotViewedRequest) {
-      throw new GraphQLError('Error deleting viewed request', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error deleting viewed request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
     return true;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error deleting viewed request', { extensions: { code: 'BAD REQUEST' } });
+    throw new GraphQLError('Error deleting viewed request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 

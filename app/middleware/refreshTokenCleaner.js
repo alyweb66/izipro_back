@@ -53,7 +53,7 @@ const checkRefreshTokenValidity = async (userId, dataSources) => {
         );
 
         if (!removedToken) {
-          throw new GraphQLError('Error removing refresh token', { extensions: { code: 'BAD REQUEST' } });
+          throw new GraphQLError('Error removing refresh token', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
         }
       }
     });

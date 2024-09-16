@@ -27,7 +27,7 @@ const UserResolver = {
       return requests;
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get all request from user id ', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get all request from user id ', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -51,7 +51,7 @@ const UserResolver = {
       return request;
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get request by id ', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get request by id ', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -73,7 +73,7 @@ const UserResolver = {
       return dataSources.dataDB.userHasJob.findByUser(id);
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get all jobs from user id ', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get all jobs from user id ', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -97,7 +97,7 @@ const UserResolver = {
       return setting;
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get setting from user id ', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get setting from user id ', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -123,7 +123,7 @@ const UserResolver = {
       return requests;
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get all requests by conversations from user id ', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get all requests by conversations from user id ', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -147,7 +147,7 @@ const UserResolver = {
     try {
       debug(`get all messages from conversation id: ${conversationId}`);
       if (dataSources.userData.id !== id) {
-        throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' } });
+        throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' , httpStatus: 401} });
       }
       const messageDESC = await dataSources.dataDB.message.findByUserConversation(
         conversationId,
@@ -158,7 +158,7 @@ const UserResolver = {
       return messageASC;
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get all messages from conversation id ', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get all messages from conversation id ', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -182,7 +182,7 @@ const UserResolver = {
       return sub;
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get all subscription from user id ', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get all subscription from user id ', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -206,7 +206,7 @@ const UserResolver = {
       return notViewed;
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get all has viewed request from user id ', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get all has viewed request from user id ', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -230,7 +230,7 @@ const UserResolver = {
       return notConvViewed;
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get all has not viewed conversation from user id ', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get all has not viewed conversation from user id ', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -254,7 +254,7 @@ const UserResolver = {
       return conv;
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get all conversation id from user id ', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get all conversation id from user id ', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
   /**
@@ -280,7 +280,7 @@ const UserResolver = {
       return cookieConsents[0];
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get all cookie consents from user id ', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get all cookie consents from user id ', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
 
@@ -318,7 +318,7 @@ const UserResolver = {
       return notification;
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError('Error get all notification from user id ', { extensions: { code: 'BAD REQUEST' } });
+      throw new GraphQLError('Error get all notification from user id ', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
 };
