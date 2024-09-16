@@ -131,7 +131,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
           // contient le texte du message
           icon: process.env.LOGO_NOTIFICATION_URL,
           // url: `https://yourwebsite.com/conversation/${input.conversation_id}`,
-          badge: process.env.LOGO_NOTIFICATION_URL,
+          // badge: process.env.LOGO_NOTIFICATION_URL,
           tag: input.conversation_id,
           renotify: true,
         });

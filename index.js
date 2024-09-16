@@ -90,6 +90,7 @@ const allowedOperations = [
   'ForgotPassword',
   'ResetPassword',
   'ValidateForgotPassword',
+  'ConfirmRegisterEmail',
   'Register',
   'ProRegister',
 ];
