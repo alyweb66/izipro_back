@@ -10,7 +10,6 @@ import { expressMiddleware } from '@apollo/server/express4';
 import { rateLimit } from 'express-rate-limit';
 import cors from 'cors';
 import express from 'express';
-// import { PubSub } from 'graphql-subscriptions';
 //* import fs, https for HTTPS server
 // import fs from 'fs';
 // import https from 'https';
@@ -22,6 +21,7 @@ import url from 'url';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { WebSocketServer } from 'ws';
+
 // eslint-disable-next-line import/extensions
 import { useServer } from 'graphql-ws/lib/use/ws';
 
@@ -31,11 +31,9 @@ import { InMemoryLRUCache } from '@apollo/utils.keyvaluecache';
 // that together define the "shape" of queries that are executed against
 // your data.
 import cookie from 'cookie';
-// import webPush from 'web-push';
 import typeDefs from './app/schemas/index.js';
 import resolvers from './app/resolvers/index.js';
 import getUserByToken from './app/middleware/getUserByToken.js';
-// class DataDB from dataSources
 import DataDB from './app/datasources/data/index.js';
 import logger from './app/middleware/logger.js';
 import updateLastLoginInDatabase from './app/middleware/lastLogin.js';
@@ -83,6 +81,7 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
+
 // List of operations that do not require a token
 const allowedOperations = [
   'Login',
@@ -234,13 +233,13 @@ const wsServer = new WebSocketServer({
 }); */
 
 //* Log mutation or query data
-/* const logMutationData = (req, res, next) => {
+const logMutationData = (req, res, next) => {
   if (req.method === 'POST') {
     console.log('Mutation data:', req.body);
   }
   next();
 };
-app.use(logMutationData); */
+app.use(logMutationData);
 
 //* log request headers
 /* app.use((req, res, next) => {
@@ -302,6 +301,29 @@ app.use(
     origin: process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : process.env.CORS_ORIGIN,
     credentials: true,
   }),
+  /* cors({
+    origin: (origin, callback) => {
+      if (process.env.NODE_ENV === 'development') {
+        callback(null, 'http://localhost:5173');
+      } else {
+        // Liste des origines autorisées
+        const allowedOrigins = [
+          `https://${process.env.DOMAIN}`, // Domaine principal
+          new RegExp(process.env.DYNAMIC_DOMAIN),
+        ];
+
+        // Vérifie si l'origine est autorisée
+        const isOriginAllowed = allowedOrigins.some((pattern) =>
+          (typeof pattern === 'string' ? pattern === origin : pattern.test(origin)));
+
+        if (isOriginAllowed) {
+          callback(null, true); // Origine autorisée
+        } else {
+          callback(new Error('Not allowed by CORS')); // Origine non autorisée
+        }
+      }
+    }, */
+
   // bodyParser.json({ limit: '50mb' }),
   expressMiddleware(server, {
     context: async ({ req, res }) => {

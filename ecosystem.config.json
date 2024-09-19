@@ -4,11 +4,11 @@
       "name": "POP",
       "script": "./index.js",
       "interpreter": "node",
-      "instances": "max",
+      "instances": 1,
       "autorestart": true,
       "watch": false,
       "max_memory_restart": "4G",
-      "exec_mode" : "cluster",
+      "exec_mode" : "fork",
       "node_args": "--env-file=.env"
      }
   ]

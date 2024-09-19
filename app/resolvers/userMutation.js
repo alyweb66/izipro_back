@@ -30,12 +30,12 @@ function debugInDevelopment(message = '', value = '') {
   }
   return 'strict';
 } */
-function secureEnv() {
+/* function secureEnv() {
   if (process.env.NODE_ENV === 'development') {
     return false;
   }
   return true;
-}
+} */
 
 // function to delete the files from the public folder
 /**
@@ -282,8 +282,8 @@ async function login(_, { input }, { dataSources, res }) {
       token,
       {
         httpOnly: true,
-        sameSite: 'strict',
-        secure: secureEnv(),
+        secure: true,
+        sameSite: 'Lax',
         domain: process.env.DOMAIN,
         path: '/',
         ...(input.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
@@ -297,35 +297,37 @@ async function login(_, { input }, { dataSources, res }) {
         refreshToken,
         {
           httpOnly: true,
-          sameSite: 'strict',
-          secure: secureEnv(),
+          secure: true,
+          sameSite: 'Lax',
           domain: process.env.DOMAIN,
           path: '/',
-          ...(input.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
+          maxAge: 60 * 60 * 24 * 365 * 5,
         },
       );
-    } else {
+    } /* else {
       refreshTokenCookie = cookie.serialize(
         'refresh-token',
         '',
         {
           httpOnly: true,
-          sameSite: 'strict',
-          secure: secureEnv(),
+          secure: false,
+          sameSite: 'None',
+          domain: process.env.DOMAIN,
           expires: new Date(0),
         },
       );
-    }
+    } */
 
-    /*  const cookiesToSet = [TokenCookie];
+    const cookiesToSet = [TokenCookie];
 
     if (refreshTokenCookie) {
       cookiesToSet.push(refreshTokenCookie);
-    } */
+    }
+    res.setHeader('set-cookie', cookiesToSet);
 
-    res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
+    // res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
 
-    return true;
+    return user.id;
   } catch (error) {
     debug('error', error);
     throw new GraphQLError('Error login', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
@@ -372,10 +374,14 @@ async function logout(_, { id }, { dataSources, res, req }) {
 
     // res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
     res.clearCookie('auth-token', {
-      httpOnly: true, sameSite: 'strict', domain: process.env.DOMAIN, secure: secureEnv(),
+      httpOnly: true,
+      domain: process.env.DOMAIN,
+      ...(process.env.NODE_ENV === 'development' ? { secure: true } : { sameSite: 'Lax' }),
     });
     res.clearCookie('refresh-token', {
-      httpOnly: true, sameSite: 'strict', domain: process.env.DOMAIN, secure: secureEnv(),
+      httpOnly: true,
+      domain: process.env.DOMAIN,
+      ...(process.env.NODE_ENV === 'development' ? { secure: true } : { sameSite: 'Lax' }),
     });
     return true;
   } catch (error) {
