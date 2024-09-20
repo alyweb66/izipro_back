@@ -26,7 +26,7 @@ async function createSubscription(_, { input }, { dataSources }) {
 
   try {
     if (dataSources.userData.id !== input.user_id) {
-      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' , httpStatus: 401} });
+      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
     }
 
     const subscription = await dataSources.dataDB.subscription.createSubscription(

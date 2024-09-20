@@ -18,20 +18,54 @@ function debugInDevelopment(message = '', value = '') {
   }
 }
 
-function secureEnv() {
-  if (process.env.NODE_ENV === 'development') {
-    return false;
-  }
-  return true;
-}
-
-function subscribeToLogout(userId) {
+/**
+ * Publishes a logout event for a given user.
+ *
+ * This function is used to notify subscribers that a user has logged out.
+ * It publishes an event to the `LOGOUT` channel with the user's ID
+ * and a value indicating the logout status.
+ *
+ * @param {string|number} userId - The ID of the user who is logging out.
+ */
+function subscribeToLogout(userId, multipleSession = false) {
   debugInDevelopment('subscribeToLogout', userId);
-  const subValue = { id: userId, value: true };
+  const subValue = { id: userId, value: true, multiple: multipleSession };
   pubsub.publish('LOGOUT', {
     logout: subValue,
   });
 }
+
+/* function changeCookieDomain(userDataDecoded, res, token, refreshToken) {
+  // change cookie for subdomain
+  const TokenCookie = cookie.serialize(
+    'auth_token',
+    token,
+    {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'Lax',
+      domain: `user${userDataDecoded.id}.${process.env.DOMAIN}`,
+      path: '/',
+      ...(userDataDecoded.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
+    },
+  );
+
+  if (userDataDecoded.activeSession) {
+    const refreshTokenCookie = cookie.serialize(
+      'refresh_token',
+      refreshToken,
+      {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'Lax',
+        domain: `user${userDataDecoded.id}.${process.env.DOMAIN}`,
+        maxAge: 60 * 60 * 24 * 365 * 5,
+      },
+    );
+
+    res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
+  }
+} */
 
 let cookieOptions;
 
@@ -43,10 +77,10 @@ export default async function getUserByToken(req, res, dataSources) {
 
   const cookies = cookie.parse(req.headers.cookie || '');
   debugInDevelopment('cookies', cookies);
-console.log('cookies', cookies);
 
   const token = cookies['auth-token'] || '';
   const refreshToken = cookies['refresh-token'] || '';
+  // const currentDomain = req.headers.host;
 
   let decodeToken;
   let userDataDecoded;
@@ -54,15 +88,24 @@ console.log('cookies', cookies);
     // If the token is valid, return the user data
     if (token) {
       userDataDecoded = jwt.decode(token, process.env.JWT_SECRET);
+
+      if (req.headers.userid && parseInt(req.headers.userid, 10) !== userDataDecoded.id) {
+        debug('Wrong session');
+        subscribeToLogout(userDataDecoded.id, true);
+        subscribeToLogout(parseInt(req.headers.userid, 10), true);
+        return null;
+      }
+
       const userData = jwt.verify(token, process.env.JWT_SECRET);
       debugInDevelopment('userData', userData);
+
       return userData;
     }
     // If the token is not found, go to logout
     debugInDevelopment('getUserByToken: token not found');
     return null;
   } catch (tokenError) {
-    debug('Failed to verify token', tokenError);
+    debug('Failed to verify token', tokenError, userDataDecoded);
 
     if (tokenError instanceof jwt.TokenExpiredError) {
       if (userDataDecoded && !userDataDecoded.activeSession) {
@@ -114,9 +157,9 @@ console.log('cookies', cookies);
 
         cookieOptions = {
           httpOnly: true,
-          sameSite: 'strict',
-          secure: secureEnv(),
-          domain: process.env.DOMAIN,
+          secure: true,
+          sameSite: 'Lax',
+          domain: `user${user.id}.${process.env.DOMAIN}`,
           path: '/',
           ...(decodeToken.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
         };

@@ -10,7 +10,6 @@ import { expressMiddleware } from '@apollo/server/express4';
 import { rateLimit } from 'express-rate-limit';
 import cors from 'cors';
 import express from 'express';
-// import { PubSub } from 'graphql-subscriptions';
 //* import fs, https for HTTPS server
 // import fs from 'fs';
 // import https from 'https';
@@ -22,6 +21,7 @@ import url from 'url';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { WebSocketServer } from 'ws';
+
 // eslint-disable-next-line import/extensions
 import { useServer } from 'graphql-ws/lib/use/ws';
 
@@ -31,11 +31,9 @@ import { InMemoryLRUCache } from '@apollo/utils.keyvaluecache';
 // that together define the "shape" of queries that are executed against
 // your data.
 import cookie from 'cookie';
-// import webPush from 'web-push';
 import typeDefs from './app/schemas/index.js';
 import resolvers from './app/resolvers/index.js';
 import getUserByToken from './app/middleware/getUserByToken.js';
-// class DataDB from dataSources
 import DataDB from './app/datasources/data/index.js';
 import logger from './app/middleware/logger.js';
 import updateLastLoginInDatabase from './app/middleware/lastLogin.js';
@@ -83,6 +81,7 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
+
 // List of operations that do not require a token
 const allowedOperations = [
   'Login',
@@ -302,6 +301,7 @@ app.use(
     origin: process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : process.env.CORS_ORIGIN,
     credentials: true,
   }),
+
   // bodyParser.json({ limit: '50mb' }),
   expressMiddleware(server, {
     context: async ({ req, res }) => {
