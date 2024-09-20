@@ -24,18 +24,6 @@ function debugInDevelopment(message = '', value = '') {
     debug('⚠️', message, value);
   }
 }
-/* function sameSiteEnv() {
-  if (process.env.NODE_ENV === 'development') {
-    return 'none';
-  }
-  return 'strict';
-} */
-/* function secureEnv() {
-  if (process.env.NODE_ENV === 'development') {
-    return false;
-  }
-  return true;
-} */
 
 // function to delete the files from the public folder
 /**
@@ -304,19 +292,7 @@ async function login(_, { input }, { dataSources, res }) {
           maxAge: 60 * 60 * 24 * 365 * 5,
         },
       );
-    } /* else {
-      refreshTokenCookie = cookie.serialize(
-        'refresh-token',
-        '',
-        {
-          httpOnly: true,
-          secure: false,
-          sameSite: 'None',
-          domain: process.env.DOMAIN,
-          expires: new Date(0),
-        },
-      );
-    } */
+    }
 
     const cookiesToSet = [TokenCookie];
 
@@ -324,8 +300,6 @@ async function login(_, { input }, { dataSources, res }) {
       cookiesToSet.push(refreshTokenCookie);
     }
     res.setHeader('set-cookie', cookiesToSet);
-
-    // res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
 
     return user.id;
   } catch (error) {
