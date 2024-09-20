@@ -61,7 +61,7 @@ const Subscription = {
       () => pubsub.asyncIterator('LOGOUT'),
       (payload, variables) => {
         debugInDevelopment('logout subscription: payload', payload, 'variables', variables);
-        return variables.user_id === payload.logout.id;
+        return parseInt(variables.user_id, 10) === parseInt(payload.logout.id, 10);
       },
     ),
   },

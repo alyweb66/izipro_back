@@ -8,6 +8,7 @@ type Subscription {
 type Logout {
     id: Int!
     value: Boolean!
+    multiple: Boolean!
 }
 
 type UserSubscription {
