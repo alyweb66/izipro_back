@@ -6,7 +6,7 @@ extend type Mutation {
     createProUser(input: CreateProUserInput!): UserResult
     updateUser(id: Int!, input: UpdateUserInput!): User
     deleteUser(id: Int!): Boolean
-    login(input: loginInput!): Boolean
+    login(input: loginInput!): Int!
     logout(id: Int): Boolean
     forgotPassword(input: ForgotPasswordInput!): Boolean
     validateForgotPassword(input: ValidateForgotPasswordInput!): Boolean
