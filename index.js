@@ -233,13 +233,13 @@ const wsServer = new WebSocketServer({
 }); */
 
 //* Log mutation or query data
-const logMutationData = (req, res, next) => {
+/* const logMutationData = (req, res, next) => {
   if (req.method === 'POST') {
     console.log('Mutation data:', req.body);
   }
   next();
 };
-app.use(logMutationData);
+app.use(logMutationData); */
 
 //* log request headers
 /* app.use((req, res, next) => {
@@ -301,28 +301,6 @@ app.use(
     origin: process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : process.env.CORS_ORIGIN,
     credentials: true,
   }),
-  /* cors({
-    origin: (origin, callback) => {
-      if (process.env.NODE_ENV === 'development') {
-        callback(null, 'http://localhost:5173');
-      } else {
-        // Liste des origines autorisées
-        const allowedOrigins = [
-          `https://${process.env.DOMAIN}`, // Domaine principal
-          new RegExp(process.env.DYNAMIC_DOMAIN),
-        ];
-
-        // Vérifie si l'origine est autorisée
-        const isOriginAllowed = allowedOrigins.some((pattern) =>
-          (typeof pattern === 'string' ? pattern === origin : pattern.test(origin)));
-
-        if (isOriginAllowed) {
-          callback(null, true); // Origine autorisée
-        } else {
-          callback(new Error('Not allowed by CORS')); // Origine non autorisée
-        }
-      }
-    }, */
 
   // bodyParser.json({ limit: '50mb' }),
   expressMiddleware(server, {

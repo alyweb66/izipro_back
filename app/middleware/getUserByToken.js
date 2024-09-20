@@ -18,13 +18,6 @@ function debugInDevelopment(message = '', value = '') {
   }
 }
 
-/* function secureEnv() {
-  if (process.env.NODE_ENV === 'development') {
-    return false;
-  }
-  return true;
-} */
-
 /**
  * Publishes a logout event for a given user.
  *
@@ -34,9 +27,9 @@ function debugInDevelopment(message = '', value = '') {
  *
  * @param {string|number} userId - The ID of the user who is logging out.
  */
-function subscribeToLogout(userId) {
+function subscribeToLogout(userId, multipleSession = false) {
   debugInDevelopment('subscribeToLogout', userId);
-  const subValue = { id: userId, value: true };
+  const subValue = { id: userId, value: true, multiple: multipleSession };
   pubsub.publish('LOGOUT', {
     logout: subValue,
   });
@@ -95,23 +88,16 @@ export default async function getUserByToken(req, res, dataSources) {
     // If the token is valid, return the user data
     if (token) {
       userDataDecoded = jwt.decode(token, process.env.JWT_SECRET);
-      console.log('userId headers', parseInt(req.headers.userid, 10));
-      console.log('userDataDecoded', userDataDecoded.id);
 
       if (req.headers.userid && parseInt(req.headers.userid, 10) !== userDataDecoded.id) {
         debug('Wrong session');
-        subscribeToLogout(userDataDecoded.id);
-        subscribeToLogout(parseInt(req.headers.userid, 10));
+        subscribeToLogout(userDataDecoded.id, true);
+        subscribeToLogout(parseInt(req.headers.userid, 10), true);
         return null;
       }
 
       const userData = jwt.verify(token, process.env.JWT_SECRET);
       debugInDevelopment('userData', userData);
-
-      // If the domain is the same as the one in the token, change the cookie domain
-      /*     if (currentDomain === process.env.DOMAIN && process.env.NODE_ENV !== 'development') {
-        changeCookieDomain(userDataDecoded, res, token, refreshToken, currentDomain);
-      } */
 
       return userData;
     }
@@ -119,7 +105,7 @@ export default async function getUserByToken(req, res, dataSources) {
     debugInDevelopment('getUserByToken: token not found');
     return null;
   } catch (tokenError) {
-    debug('Failed to verify token', tokenError);
+    debug('Failed to verify token', tokenError, userDataDecoded);
 
     if (tokenError instanceof jwt.TokenExpiredError) {
       if (userDataDecoded && !userDataDecoded.activeSession) {
