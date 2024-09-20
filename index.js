@@ -224,7 +224,7 @@ const wsServer = new WebSocketServer({
   path: '/subscriptions',
 });
 
-//* Log incoming connections
+//* Log incoming connections subscribers
 /* wsServer.on('connection', (ws) => {
   console.log('A new client Connected!');
   ws.on('message', (message) => {

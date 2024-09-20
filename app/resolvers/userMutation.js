@@ -259,10 +259,8 @@ async function login(_, { input }, { dataSources, res }) {
         refreshToken,
         'array_append',
       );
-    } /* else {
-      refreshToken = jwt.sign({ id: user.id, role: user.role },
-      process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
-    } */
+    }
+
     debugInDevelopment('saveRefreshToken', saveRefreshToken);
 
     const TokenCookie = cookie.serialize(
@@ -271,7 +269,22 @@ async function login(_, { input }, { dataSources, res }) {
       {
         httpOnly: true,
         secure: true,
-        sameSite: 'Lax',
+        sameSite: 'Strict',
+        domain: process.env.DOMAIN,
+        path: '/',
+        ...(input.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
+      },
+    );
+
+    // Create a unique id for browser session
+    const uniqueId = Date.now();
+    const sessionId = cookie.serialize(
+      'session-id',
+      uniqueId,
+      {
+        httpOnly: false,
+        secure: true,
+        sameSite: 'Strict',
         domain: process.env.DOMAIN,
         path: '/',
         ...(input.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
@@ -286,7 +299,7 @@ async function login(_, { input }, { dataSources, res }) {
         {
           httpOnly: true,
           secure: true,
-          sameSite: 'Lax',
+          sameSite: 'Strict',
           domain: process.env.DOMAIN,
           path: '/',
           maxAge: 60 * 60 * 24 * 365 * 5,
@@ -294,7 +307,7 @@ async function login(_, { input }, { dataSources, res }) {
       );
     }
 
-    const cookiesToSet = [TokenCookie];
+    const cookiesToSet = [TokenCookie, sessionId];
 
     if (refreshTokenCookie) {
       cookiesToSet.push(refreshTokenCookie);
