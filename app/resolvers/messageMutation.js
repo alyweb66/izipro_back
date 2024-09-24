@@ -14,17 +14,21 @@ function debugInDevelopment(message = '', value = '') {
 }
 
 /**
- * create a message
+ * Create a message
  *
+ * @param {Object} _ - Unused parameter.
+ * @param {Object} args - The arguments object.
  * @param {number} args.id - The ID of the user creating the message.
- * @param {{content: string,
- * user_id: number,
- * conversation_id:
- * number, media: Array}} args.input - The input object containing the message details.
-  * @param {Object} context.dataSources - The data sources available in the context.
+ * @param {Object} args.input - The input object containing the message details.
+ * @param {string} args.input.content - The content of the message.
+ * @param {number} args.input.user_id - The ID of the user creating the message.
+ * @param {number} args.input.conversation_id - The ID of the conversation.
+ * @param {Array<Object>} args.input.media - An array of media objects.
+ * @param {Object} context - The context object.
+ * @param {Object} context.dataSources - The data sources available in the context.
  * @returns {Promise<boolean>} A promise that resolves to true
  * if the message was created successfully.
- * @throws {ApolloError} If there is an error creating the message.
+ * @throws {GraphQLError} If there is an error creating the message.
  */
 async function createMessage(_, { id, input }, { dataSources }) {
   debug('create message');
@@ -45,7 +49,8 @@ async function createMessage(_, { id, input }, { dataSources }) {
 
     // mapping the media array to createReadStream
     let isCreatedMessageMedia;
-    if (input.media && input.media.length > 0 /* && input.media[0].file */) {
+
+    if (input.media && input.media.length > 0) {
       const ReadStreamArray = await Promise.all(input.media.map(async (upload, index) => {
         if (!upload.file.promise) {
           throw new GraphQLError(`File upload not complete for media at index ${index}`, {
@@ -87,14 +92,20 @@ async function createMessage(_, { id, input }, { dataSources }) {
 
       if (!isCreatedMessageMedia
         || (isCreatedMessageMedia.insert_message_has_media === false)) {
+        // remove message from database if media creation failed and no content
+        if (!input.content) {
+          await dataSources.dataDB.message.delete(messageId);
+        }
         throw new GraphQLError('Error creating message_has_media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
       }
     }
 
+    // update conversation updated_at
     await dataSources.dataDB.conversation.updateUpdatedAtConversation(
       input.conversation_id,
     );
 
+    // get the message
     const message = await dataSources.dataDB.message.findByUserConversation(
       // dataSources.userData.id,
       input.conversation_id,
