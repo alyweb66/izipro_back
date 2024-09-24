@@ -34,6 +34,7 @@ import cookie from 'cookie';
 import typeDefs from './app/schemas/index.js';
 import resolvers from './app/resolvers/index.js';
 import getUserByToken from './app/middleware/getUserByToken.js';
+import sheduleCleanData from './app/middleware/cleanOldData.js';
 import DataDB from './app/datasources/data/index.js';
 import logger from './app/middleware/logger.js';
 import updateLastLoginInDatabase from './app/middleware/lastLogin.js';
@@ -165,6 +166,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// check and clean old data
+sheduleCleanData(dataSources);
+
 // configure the interval to update the last login time in the database
 setInterval(() => {
   const now = Date.now();
@@ -224,7 +228,7 @@ const wsServer = new WebSocketServer({
   path: '/subscriptions',
 });
 
-//* Log incoming connections
+//* Log incoming connections subscribers
 /* wsServer.on('connection', (ws) => {
   console.log('A new client Connected!');
   ws.on('message', (message) => {

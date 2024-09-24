@@ -27,9 +27,11 @@ function debugInDevelopment(message = '', value = '') {
  *
  * @param {string|number} userId - The ID of the user who is logging out.
  */
-function subscribeToLogout(userId, multipleSession = false) {
+function subscribeToLogout(userId, sessionId, multipleSession = false) {
   debugInDevelopment('subscribeToLogout', userId);
-  const subValue = { id: userId, value: true, multiple: multipleSession };
+  const subValue = {
+    id: userId, value: true, multiple: multipleSession, session: String(sessionId),
+  };
   pubsub.publish('LOGOUT', {
     logout: subValue,
   });
@@ -80,6 +82,8 @@ export default async function getUserByToken(req, res, dataSources) {
 
   const token = cookies['auth-token'] || '';
   const refreshToken = cookies['refresh-token'] || '';
+  const sessionId = cookies['session-id'] || '';
+
   // const currentDomain = req.headers.host;
 
   let decodeToken;
@@ -91,8 +95,8 @@ export default async function getUserByToken(req, res, dataSources) {
 
       if (req.headers.userid && parseInt(req.headers.userid, 10) !== userDataDecoded.id) {
         debug('Wrong session');
-        subscribeToLogout(userDataDecoded.id, true);
-        subscribeToLogout(parseInt(req.headers.userid, 10), true);
+        subscribeToLogout(userDataDecoded.id, sessionId, true);
+        subscribeToLogout(parseInt(req.headers.userid, 10), sessionId, true);
         return null;
       }
 
@@ -110,7 +114,7 @@ export default async function getUserByToken(req, res, dataSources) {
     if (tokenError instanceof jwt.TokenExpiredError) {
       if (userDataDecoded && !userDataDecoded.activeSession) {
         debug('Outdated session', tokenError);
-        subscribeToLogout(userDataDecoded.id);
+        subscribeToLogout(userDataDecoded.id, sessionId);
         return null;
       }
       // If the error is token expired, refresh the token
@@ -119,7 +123,7 @@ export default async function getUserByToken(req, res, dataSources) {
       try {
         if (!refreshToken) {
           debug('refreshToken not found');
-          subscribeToLogout(userDataDecoded.id);
+          subscribeToLogout(userDataDecoded.id, sessionId);
           return null;
         }
         // decode the refresh token to get the user id
@@ -139,7 +143,7 @@ export default async function getUserByToken(req, res, dataSources) {
         // If the user is not found, go to logout
         if (!user) {
           debugInDevelopment('refreshToken: user failed');
-          subscribeToLogout(verifyRefreshToken.id);
+          subscribeToLogout(verifyRefreshToken.id, sessionId);
           return null;
         }
 
@@ -149,7 +153,7 @@ export default async function getUserByToken(req, res, dataSources) {
         // If the refresh token is not the same as the one in the database, go to logout
         if (!findRefreshToken || findRefreshToken !== refreshToken) {
           debugInDevelopment('refreshToken: refresh_token failed', verifyRefreshToken);
-          subscribeToLogout(user.id);
+          subscribeToLogout(user.id, sessionId);
           return null;
         }
 
@@ -158,8 +162,8 @@ export default async function getUserByToken(req, res, dataSources) {
         cookieOptions = {
           httpOnly: true,
           secure: true,
-          sameSite: 'Lax',
-          domain: `user${user.id}.${process.env.DOMAIN}`,
+          sameSite: 'Strict',
+          domain: process.env.DOMAIN,
           path: '/',
           ...(decodeToken.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
         };
@@ -224,7 +228,7 @@ export default async function getUserByToken(req, res, dataSources) {
             extensions: error.extensions,
           });
           debug('Failed to verify refresh token1');
-          subscribeToLogout(decodeToken.id);
+          subscribeToLogout(decodeToken.id, sessionId);
         }
         logger.error({
           message: refreshTokenError.message,
@@ -235,7 +239,7 @@ export default async function getUserByToken(req, res, dataSources) {
     }
 
     debug('Failed to verify refresh token2');
-    subscribeToLogout(decodeToken.id);
+    subscribeToLogout(decodeToken.id, sessionId);
     return null;
   }
 }
