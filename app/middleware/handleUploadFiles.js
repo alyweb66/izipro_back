@@ -57,6 +57,7 @@ async function handleUploadedFiles(media) {
       if (mimetype.startsWith('image/')) {
         const imageBuffer = await getBuffer(buffer);
         await sharp(imageBuffer)
+          .rotate() // correct orientation
           .resize({ width: 1920, withoutEnlargement: true })
           .webp({ quality: 75, effort: 4 })
           .toFile(filePath);
