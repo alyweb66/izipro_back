@@ -28,6 +28,17 @@ class Media extends CoreDatamapper {
 
     return requestMedia;
   }
+
+  async getAllMediaNames() {
+    debug('get all media names');
+    const query = {
+      text: `SELECT name FROM ${this.tableName}`,
+    };
+    const { rows } = await this.client.query(query);
+    const mediaNames = rows.map((media) => media.name);
+
+    return mediaNames;
+  }
 }
 
 export default Media;

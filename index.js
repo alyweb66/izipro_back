@@ -34,6 +34,7 @@ import cookie from 'cookie';
 import typeDefs from './app/schemas/index.js';
 import resolvers from './app/resolvers/index.js';
 import getUserByToken from './app/middleware/getUserByToken.js';
+import sheduleCleanData from './app/middleware/cleanOldData.js';
 import DataDB from './app/datasources/data/index.js';
 import logger from './app/middleware/logger.js';
 import updateLastLoginInDatabase from './app/middleware/lastLogin.js';
@@ -164,6 +165,9 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+// check and clean old data
+sheduleCleanData(dataSources);
 
 // configure the interval to update the last login time in the database
 setInterval(() => {

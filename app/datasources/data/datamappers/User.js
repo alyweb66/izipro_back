@@ -138,6 +138,19 @@ class User extends CoreDatamapper {
     // eslint-disable-next-line consistent-return
     return false;
   }
+
+  /**
+   * Deletes users with deleted_at older than 1 month.
+   *
+   * @returns {Promise<void>}
+   */
+  async deleteObsoleteUsers() {
+    debug('Deleting obsolete users');
+    const query = {
+      text: `DELETE FROM "${this.tableName}" WHERE "deleted_at" < NOW() - INTERVAL '1 day'`,
+    };
+    await this.client.query(query);
+  }
 }
 
 export default User;
