@@ -42,6 +42,7 @@ async function deleteFile(file) {
   }
   try {
     const filePath = path.join(directoryPath, file);
+
     // Vérifier si le fichier existe
     try {
       await fs.access(filePath);
@@ -259,10 +260,8 @@ async function login(_, { input }, { dataSources, res }) {
         refreshToken,
         'array_append',
       );
-    } /* else {
-      refreshToken = jwt.sign({ id: user.id, role: user.role },
-      process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
-    } */
+    }
+
     debugInDevelopment('saveRefreshToken', saveRefreshToken);
 
     const TokenCookie = cookie.serialize(
@@ -271,7 +270,22 @@ async function login(_, { input }, { dataSources, res }) {
       {
         httpOnly: true,
         secure: true,
-        sameSite: 'Lax',
+        sameSite: 'Strict',
+        domain: process.env.DOMAIN,
+        path: '/',
+        ...(input.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
+      },
+    );
+
+    // Create a unique id for browser session
+    const uniqueId = Date.now();
+    const sessionId = cookie.serialize(
+      'session-id',
+      uniqueId,
+      {
+        httpOnly: false,
+        secure: true,
+        sameSite: 'Strict',
         domain: process.env.DOMAIN,
         path: '/',
         ...(input.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
@@ -286,7 +300,7 @@ async function login(_, { input }, { dataSources, res }) {
         {
           httpOnly: true,
           secure: true,
-          sameSite: 'Lax',
+          sameSite: 'Strict',
           domain: process.env.DOMAIN,
           path: '/',
           maxAge: 60 * 60 * 24 * 365 * 5,
@@ -294,7 +308,7 @@ async function login(_, { input }, { dataSources, res }) {
       );
     }
 
-    const cookiesToSet = [TokenCookie];
+    const cookiesToSet = [TokenCookie, sessionId];
 
     if (refreshTokenCookie) {
       cookiesToSet.push(refreshTokenCookie);
@@ -704,7 +718,7 @@ async function deleteProfilePicture(_, { id }, { dataSources }) {
     if (dataSources.userData === null || dataSources.userData.id !== id) {
       throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
     }
-
+    dataSources.dataDB.user.findByPkLoader.clear(id);
     const user = await dataSources.dataDB.user.findByPk(id);
     if (!user) {
       throw new GraphQLError('User not found', { extensions: { code: 'NOT_FOUND', httpStatus: 404 } });
