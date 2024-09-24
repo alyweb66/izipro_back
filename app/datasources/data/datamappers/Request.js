@@ -167,5 +167,18 @@ class Request extends CoreDatamapper {
     }
     return null;
   }
+
+  /**
+   * Deletes requests with deleted_at older than 1 month.
+   *
+   * @returns {Promise<void>}
+   */
+  async deleteObsoleteRequests() {
+    debug('Deleting obsolete requests');
+    const query = {
+      text: `DELETE FROM "${this.tableName}" WHERE "deleted_at" < NOW() - INTERVAL '1 day'`,
+    };
+    await this.client.query(query);
+  }
 }
 export default Request;
