@@ -32,8 +32,6 @@ function subscribeToLogout(userId, sessionId, multipleSession = false) {
   const subValue = {
     id: userId, value: true, multiple: multipleSession, session: String(sessionId),
   };
-  console.log('subValue', subValue);
-
   pubsub.publish('LOGOUT', {
     logout: subValue,
   });
@@ -85,7 +83,6 @@ export default async function getUserByToken(req, res, dataSources) {
   const token = cookies['auth-token'] || '';
   const refreshToken = cookies['refresh-token'] || '';
   const sessionId = cookies['session-id'] || '';
-  console.log('sessionId', sessionId);
 
   // const currentDomain = req.headers.host;
 

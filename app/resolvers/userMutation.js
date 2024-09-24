@@ -42,6 +42,7 @@ async function deleteFile(file) {
   }
   try {
     const filePath = path.join(directoryPath, file);
+
     // Vérifier si le fichier existe
     try {
       await fs.access(filePath);
@@ -717,7 +718,7 @@ async function deleteProfilePicture(_, { id }, { dataSources }) {
     if (dataSources.userData === null || dataSources.userData.id !== id) {
       throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
     }
-
+    dataSources.dataDB.user.findByPkLoader.clear(id);
     const user = await dataSources.dataDB.user.findByPk(id);
     if (!user) {
       throw new GraphQLError('User not found', { extensions: { code: 'NOT_FOUND', httpStatus: 404 } });
