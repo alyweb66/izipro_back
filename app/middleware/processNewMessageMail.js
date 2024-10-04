@@ -7,9 +7,15 @@ const debug = Debug(`${process.env.DEBUG_MODULE}:middleware:checkViewedBeforeSen
 /**
  * Check if the message has been viewed before sending an email
  *
- * @param {string} message - The message object containing conversation_id and request_id
+ * @param {{id: number,
+ * conversation_id: number,
+ * content: string,
+ * user_id: number,
+ * created_at: string,
+ * request_id: number,
+ * }} message - The message object containing conversation_id and request_id
  * @param {Object} dataSources - The data sources object containing the database access methods
- * @param {number} userId - An array of user IDs who have not viewed the conversation
+ * @param {boolean} emailNotification - The email notification status
  * @returns {Promise<boolean>} -
  * Returns false if the user has not viewed the conversation or if an error occurs
  * @throws {ApolloError} - Throws an error if there is an issue with the database query
@@ -17,17 +23,17 @@ const debug = Debug(`${process.env.DEBUG_MODULE}:middleware:checkViewedBeforeSen
 export default async function checkViewedBeforeSendEmail(
   message,
   dataSources,
-  userId,
   emailNotification,
 ) {
   try {
     if (!emailNotification) {
       return;
     }
-    /* const userId = await
+    // get user id who has not viewed the conversation
+    const userId = await
     dataSources.dataDB.userHasNotViewedConversation.getUserByConversationId(
       message.conversation_id,
-    ); */
+    );
 
     if (!userId) {
       return;

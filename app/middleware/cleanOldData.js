@@ -1,5 +1,4 @@
 import Debug from 'debug';
-import cron from 'node-cron';
 import fs from 'fs';
 import path from 'path';
 import logger from './logger.js';
@@ -27,8 +26,18 @@ async function checkObsoleteMedia(dataSources) {
     // read all files in the media directory
     const files = fs.readdirSync(mediaDirectory);
 
-    // Get all media names from the database
+    // Get all media names from the database table media
     const mediaNames = await dataSources.dataDB.media.getAllMediaNames();
+
+    // Get all profile pictures from the database
+    const profilePictures = await dataSources.dataDB.user.getImageUsers();
+    // Extract file names from profilePictures URLs and add them to mediaNames
+    const profilePictureNames = profilePictures.map((picture) => {
+      const url = new URL(picture.image);
+      return path.basename(url.pathname);
+    });
+
+    mediaNames.push(...profilePictureNames);
 
     // verify if the file is in the database
     files.forEach((file) => {
@@ -108,11 +117,11 @@ async function checkObsoleteRequests(dataSources) {
 
 function sheduleCleanData(dataSources) {
   // Execute every day at 00h00
-  cron.schedule('0 0 * * *', () => {
-    checkObsoleteMedia(dataSources);
-    checkObsoleteUsers(dataSources);
-    checkObsoleteRequests(dataSources);
-  });
+//  cron.schedule('0 0 * * *', () => {
+  checkObsoleteMedia(dataSources);
+  checkObsoleteUsers(dataSources);
+  checkObsoleteRequests(dataSources);
+  // });
 }
 
 export default sheduleCleanData;
