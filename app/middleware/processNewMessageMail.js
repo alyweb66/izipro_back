@@ -29,6 +29,7 @@ export default async function checkViewedBeforeSendEmail(
     if (!emailNotification) {
       return;
     }
+
     // get user id who has not viewed the conversation
     const userId = await
     dataSources.dataDB.userHasNotViewedConversation.getUserByConversationId(
@@ -39,8 +40,8 @@ export default async function checkViewedBeforeSendEmail(
       return;
     }
 
-    if (userId !== 0) {
-      const userData = await dataSources.dataDB.user.findByPk(userId);
+    if (userId.length > 0) {
+      const userData = await dataSources.dataDB.user.findByPk(userId[0].user_id);
 
       const request = await dataSources.dataDB.request.findByPk(message.request_id);
 

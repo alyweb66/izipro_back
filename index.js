@@ -73,7 +73,7 @@ const cache = new InMemoryLRUCache({
 const dataSources = { dataDB: new DataDB({ cache }) };
 
 // middleware to handle file uploads
-app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
+app.use(graphqlUploadExpress({ maxFileSize: 15000000, maxFiles: 10 }));
 
 // Rate limiter middleware for ddos protection
 const limiter = rateLimit({
