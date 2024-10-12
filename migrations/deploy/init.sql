@@ -25,7 +25,7 @@ CREATE TABLE "user"(
    "verified_email" BOOLEAN NOT NULL DEFAULT FALSE,
    "address" TEXT CHECK (LENGTH("address") <= 100),
    "postal_code" postal_code_domain,
-   "city" TEXT CHECK (LENGTH("city") <= 50),
+   "city" TEXT CHECK (LENGTH("city") <= 100),
    "lat" NUMERIC,
    "lng" NUMERIC,
    "password" TEXT UNIQUE,

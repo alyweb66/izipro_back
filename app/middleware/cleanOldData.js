@@ -1,6 +1,7 @@
 import Debug from 'debug';
 import fs from 'fs';
 import path from 'path';
+import cron from 'node-cron';
 import logger from './logger.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:middleware:cleanOldData`);
@@ -117,11 +118,11 @@ async function checkObsoleteRequests(dataSources) {
 
 function sheduleCleanData(dataSources) {
   // Execute every day at 00h00
-//  cron.schedule('0 0 * * *', () => {
-  checkObsoleteMedia(dataSources);
-  checkObsoleteUsers(dataSources);
-  checkObsoleteRequests(dataSources);
-  // });
+  cron.schedule('0 0 * * *', () => {
+    checkObsoleteMedia(dataSources);
+    checkObsoleteUsers(dataSources);
+    checkObsoleteRequests(dataSources);
+  });
 }
 
 export default sheduleCleanData;
