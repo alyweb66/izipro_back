@@ -42,8 +42,8 @@ BEGIN
     FOR record IN SELECT * FROM jsonb_array_elements(data)
     LOOP
         -- Insert data into request_media table and retrieve inserted ID
-        INSERT INTO media (url, name)
-        VALUES (record->>'url', record->>'name')
+        INSERT INTO media (url, name, thumbnail)
+        VALUES (record->>'url', record->>'name', record->>'thumbnail')
         RETURNING id INTO inserted_id;
         
         -- Add the inserted ID to the table of inserted IDs
