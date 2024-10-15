@@ -73,12 +73,14 @@ const cache = new InMemoryLRUCache({
 const dataSources = { dataDB: new DataDB({ cache }) };
 
 // middleware to handle file uploads
-app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
+app.use(graphqlUploadExpress({ maxFileSize: 15000000, maxFiles: 10 }));
 
 // Rate limiter middleware for ddos protection
 const limiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 1000, // limit each IP to 100 requests per windows
+  windowMs: 5 * 60 * 1000, // 10 minutes
+  max: 1000, // limit each IP to 1000 requests per windows
+  message: 'Too many requests from this IP, please try again after 5 minutes',
+  headers: true,
 });
 
 app.use(limiter);
@@ -302,7 +304,17 @@ await server.start();
 app.use(
   '/',
   cors({
-    origin: process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : process.env.CORS_ORIGIN,
+    origin: (origin, callback) => {
+      const allowedOrigins = ['http://localhost:5173', 'http://localhost:4173'];
+      if (process.env.NODE_ENV !== 'development') {
+        allowedOrigins.push(process.env.CORS_ORIGIN);
+      }
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   }),
 

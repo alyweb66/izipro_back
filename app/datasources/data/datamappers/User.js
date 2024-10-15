@@ -151,6 +151,22 @@ class User extends CoreDatamapper {
     };
     await this.client.query(query);
   }
+
+  /**
+   * Get all image profile from users .
+   *
+   * @returns {Promise<void>}
+   */
+  async getImageUsers() {
+    debug('Getting image users');
+    const query = {
+      text: `SELECT image FROM "${this.tableName}" WHERE image IS NOT NULL`,
+    };
+    const { rows } = await this.client.query(query);
+    const users = rows;
+
+    return users;
+  }
 }
 
 export default User;
