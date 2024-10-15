@@ -25,7 +25,7 @@ CREATE TABLE "user"(
    "verified_email" BOOLEAN NOT NULL DEFAULT FALSE,
    "address" TEXT CHECK (LENGTH("address") <= 100),
    "postal_code" postal_code_domain,
-   "city" TEXT CHECK (LENGTH("city") <= 50),
+   "city" TEXT CHECK (LENGTH("city") <= 100),
    "lat" NUMERIC,
    "lng" NUMERIC,
    "password" TEXT UNIQUE,
@@ -150,6 +150,7 @@ CREATE TABLE "message"(
 CREATE TABLE "media"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "url" TEXT NOT NULL UNIQUE,
+   "thumbnail" TEXT NOT NULL UNIQUE,
    "name" TEXT NOT NULL UNIQUE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz

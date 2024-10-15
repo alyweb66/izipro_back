@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const logoAttachment = {
-  filename: 'logo-email.jpg',
+  filename: 'logo-notification.png',
   path: `${process.env.LOGO_PATH_EMAIL}`,
   cid: 'logoEmail',
 };

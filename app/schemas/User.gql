@@ -85,7 +85,7 @@ input UpdateUserInput {
     description: String @length(max: 200)
     address: String @length(max: 100)
     postal_code: validatePostalCode
-    city: String @length(max: 50)
+    city: String @length(max: 100)
     siret: validateSiret @length(max: 14)
     denomination: String @length(max: 50)
     lat: Float

@@ -4,6 +4,7 @@ type Media {
     id: Int
     url: String
     name: String
+    thumbnail: String
 }
 
 scalar Upload
