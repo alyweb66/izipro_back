@@ -72,7 +72,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
       }));
 
       // calling the handleUploadedFiles function to compress the images and save them
-      const media = await handleUploadedFiles(ReadStreamArray);
+      const media = await handleUploadedFiles(ReadStreamArray, true);
 
       // create media
       const createMedia = await dataSources.dataDB.media.createMedia(media);
@@ -112,6 +112,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
       0,
       1,
     );
+
     //* Notification push starting
     // get the user that has not viewed the conversation
     const targetUser = await
