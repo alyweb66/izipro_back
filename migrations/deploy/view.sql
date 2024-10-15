@@ -61,7 +61,7 @@ m.user_id,
 m.conversation_id,
 m.created_at,
 c.request_id,
-json_agg(row_to_json((SELECT x FROM (SELECT rm.id, rm.url, rm.name) AS x))) AS "media"
+json_agg(row_to_json((SELECT x FROM (SELECT rm.id, rm.url, rm.name, rm.thumbnail) AS x))) AS "media"
 FROM "message" m
 LEFT JOIN "message_has_media" mhm ON mhm."message_id"= m."id"
 LEFT JOIN "media" rm ON rm."id"=mhm."media_id"
