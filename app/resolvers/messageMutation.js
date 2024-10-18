@@ -37,6 +37,11 @@ async function createMessage(_, { id, input }, { dataSources }) {
   if (dataSources.userData.id !== id) {
     throw new GraphQLError('Access denied', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
   }
+
+  if (!input.content && (!input.media || input.media.length === 0)) {
+    throw new GraphQLError('No content or media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+  }
+
   try {
     const messageInput = { ...input };
     delete messageInput.media;
