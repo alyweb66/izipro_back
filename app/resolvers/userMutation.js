@@ -244,7 +244,7 @@ async function login(_, { input }, { dataSources, res }) {
     }
 
     // Create a token
-    const token = jwt.sign({ id: user.id, role: user.role, activeSession: input.activeSession }, process.env.JWT_SECRET, { expiresIn: input.activeSession ? '1m' : '1m' });
+    const token = jwt.sign({ id: user.id, role: user.role, activeSession: input.activeSession }, process.env.JWT_SECRET, { expiresIn: input.activeSession ? '1h' : '1h' });
 
     // Remove the old refresh token if it's expired
     checkRefreshTokenValidity(user.id, dataSources);
