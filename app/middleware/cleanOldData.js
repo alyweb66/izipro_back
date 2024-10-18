@@ -30,6 +30,16 @@ async function checkObsoleteMedia(dataSources) {
     // Get all media names from the database table media
     const mediaNames = await dataSources.dataDB.media.getAllMediaNames();
 
+    // Create thumb media names
+    const thumbMediaNames = mediaNames.map((name) => {
+      const extIndex = name.lastIndexOf('.');
+      const baseName = name.substring(0, extIndex);
+      const extension = name.substring(extIndex);
+      return `${baseName}_thumb${extension}`;
+    });
+    // Combine media names and thumb media names
+    const allMediaNames = [...mediaNames, ...thumbMediaNames];
+
     // Get all profile pictures from the database
     const profilePictures = await dataSources.dataDB.user.getImageUsers();
     // Extract file names from profilePictures URLs and add them to mediaNames
@@ -38,13 +48,13 @@ async function checkObsoleteMedia(dataSources) {
       return path.basename(url.pathname);
     });
 
-    mediaNames.push(...profilePictureNames);
+    allMediaNames.push(...profilePictureNames);
 
     // verify if the file is in the database
     files.forEach((file) => {
       const filePath = path.join(mediaDirectory, file);
       // if the file is not in the database, delete it
-      if (!mediaNames.includes(file)) {
+      if (!allMediaNames.includes(file)) {
         // delete the file
         fs.unlinkSync(filePath);
       }

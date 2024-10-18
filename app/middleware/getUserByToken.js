@@ -157,7 +157,7 @@ export default async function getUserByToken(req, res, dataSources) {
           return null;
         }
 
-        const newToken = jwt.sign({ id: user.id, role: user.role, activeSession: userDataDecoded.activeSession }, process.env.JWT_SECRET, { expiresIn: '1m' });
+        const newToken = jwt.sign({ id: user.id, role: user.role, activeSession: userDataDecoded.activeSession }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
         cookieOptions = {
           httpOnly: true,
@@ -192,7 +192,7 @@ export default async function getUserByToken(req, res, dataSources) {
           if (refreshTokenError instanceof jwt.TokenExpiredError && decodeToken.activeSession) {
             debug('refreshToken is expired, new refresh token is starting');
             // make a new refreshtoken
-            const newToken = jwt.sign({ id: decodeToken.id, role: decodeToken.role, activeSession: decodeToken.activeSession }, process.env.JWT_SECRET, { expiresIn: '30m' });
+            const newToken = jwt.sign({ id: decodeToken.id, role: decodeToken.role, activeSession: decodeToken.activeSession }, process.env.JWT_SECRET, { expiresIn: '1h' });
             const newRefreshToken = jwt.sign({ id: decodeToken.id, role: decodeToken.role, activeSession: decodeToken.activeSession }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
             // update the refresh token in the database
             await dataSources.dataDB.user.modifyRefreshToken(
