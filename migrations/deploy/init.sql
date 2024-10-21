@@ -150,7 +150,7 @@ CREATE TABLE "message"(
 CREATE TABLE "media"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "url" TEXT NOT NULL UNIQUE,
-   "thumbnail" TEXT NOT NULL UNIQUE,
+   "thumbnail" TEXT NULL UNIQUE,
    "name" TEXT NOT NULL UNIQUE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
