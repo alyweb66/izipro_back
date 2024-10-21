@@ -619,6 +619,7 @@ async function updateUser(_, { id, input }, { dataSources }) {
 
       // calling the handleUploadedFiles function to compress the images and save them
       const media = await handleUploadedFiles(ReadStreamArray);
+console.log(media);
 
       // replace input.image with the media url
       if (!media || media.length === 0 || !media[0].url) {
