@@ -12,7 +12,7 @@ import SirenAPI from '../datasources/SirenAPI/index.js';
 import logger from '../middleware/logger.js';
 import checkRefreshTokenValidity from '../middleware/refreshTokenCleaner.js';
 
-const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:mutation`);
+const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:userMutation`);
 
 // __dirname not on module, this is the way to use it.
 const fileName = url.fileURLToPath(import.meta.url);
@@ -621,7 +621,7 @@ async function updateUser(_, { id, input }, { dataSources }) {
       const media = await handleUploadedFiles(ReadStreamArray);
 
       // replace input.image with the media url
-      if (!media) {
+      if (!media || media.length === 0 || !media[0].url) {
         throw new GraphQLError('Error creating media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
       }
 
