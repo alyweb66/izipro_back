@@ -158,7 +158,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
     }
     //* Notification push ending
 
-    // send email to users that have not viewed the conversation after 5 min
+    // send email to users that have not viewed the conversation after 3 min
     setTimeout(() => {
       checkViewedBeforeSendEmail(
         message[0],
