@@ -2,6 +2,7 @@
 import Debug from 'debug';
 import path from 'path';
 import sharp from 'sharp';
+import convert from 'heic-convert';
 import { pipeline } from 'stream';
 import { GraphQLError } from 'graphql';
 import fs from 'fs';
@@ -61,7 +62,16 @@ async function handleUploadedFiles(media, message = false) {
 
       // Compression of images with Sharp
       if (mimetype.startsWith('image/')) {
-        const imageBuffer = await getBuffer(buffer);
+        let imageBuffer = await getBuffer(buffer);
+
+        // Check if the image is in HEIC format
+        if (mimetype === 'image/heic' || mimetype === 'image/heif') {
+          imageBuffer = await convert({
+            buffer,
+            format: 'JPEG',
+          });
+        }
+
         await sharp(imageBuffer)
           .rotate() // correct orientation
           .resize({ width: 1920, withoutEnlargement: true })
