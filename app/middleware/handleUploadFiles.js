@@ -48,7 +48,7 @@ async function handleUploadedFiles(media, message = false) {
       console.log('fileNameWithoutExtension', fileNameWithoutExtension);
       const validExtensions = ['.jpg', '.jpeg', '.png', '.heic', '.heif', '.pdf'];
       if (!validExtensions.includes(extension)) {
-        throw new GraphQLError('Invalid file extension', { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
+        throw new GraphQLError('Invalid file extension', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
       }
 
       if (!fileNameWithoutExtension) {
@@ -80,9 +80,8 @@ async function handleUploadedFiles(media, message = false) {
         } else if (extension === '.heif') {
           try {
             const bufferData = await getBuffer(buffer);
-            console.log('bufferData', bufferData);
 
-            // Convertir HEIC/HEIF en JPEG
+            // Convertir HEIF en JPEG
             imageBuffer = await sharp(bufferData)
               .rotate()
               .toFormat('jpeg')
@@ -94,6 +93,7 @@ async function handleUploadedFiles(media, message = false) {
         } else if (extension === '.heic') {
           try {
             const bufferData = await getBuffer(buffer);
+            // Convertir HEIC en JPEG
             imageBuffer = await convert({
               buffer: bufferData,
               format: 'JPEG',
@@ -147,6 +147,10 @@ async function handleUploadedFiles(media, message = false) {
         name: uniqueFileName,
       };
     }));
+
+    if (compressedFiles.length === 0) {
+      throw new GraphQLError('No files were uploaded', { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
+    }
 
     return compressedFiles;
   } catch (error) {
