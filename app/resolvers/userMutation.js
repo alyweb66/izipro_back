@@ -619,15 +619,18 @@ async function updateUser(_, { id, input }, { dataSources }) {
 
       // calling the handleUploadedFiles function to compress the images and save them
       const media = await handleUploadedFiles(ReadStreamArray);
-console.log(media);
+      console.log(media);
 
-      // replace input.image with the media url
       if (!media || media.length === 0 || !media[0].url) {
         throw new GraphQLError('Error creating media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
       }
-
-      imageInput = media[0].url;
-
+      // replace input.image with the media url
+      // Check if the image is a webp
+      if (media[0].url && media[0].url.endsWith('.webp')) {
+        imageInput = media[0].url;
+      } else {
+        throw new GraphQLError('Invalid file extension', { extensions: { code: 'INTERNAT_SERVER_ERROR', httpStatus: 500 } });
+      }
       // delete the old profile picture in folder
       if (user.image) {
         const urlObject = new URL(user.image);
