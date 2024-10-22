@@ -95,6 +95,7 @@ const allowedOperations = [
   'ConfirmRegisterEmail',
   'Register',
   'ProRegister',
+  'ContactEmail',
 ];
 // Middleware to get user data from token
 app.use(async (req, res, next) => {
@@ -157,6 +158,7 @@ const checkInterval = 12 * 60 * 60 * 1000;
 // minimum interval to update the last login time in the database (1 minute)
 const minUpdateInterval = 60 * 1000;
 
+// Middleware to update the last login time in the database
 app.use((req, res, next) => {
   if (req.userData && req.userData.id) {
     const userId = req.userData.id;
@@ -316,6 +318,7 @@ app.use(
       }
     },
     credentials: true,
+    exposedHeaders: ['X-Session-ID'],
   }),
 
   // bodyParser.json({ limit: '50mb' }),
@@ -340,6 +343,18 @@ app.use(
         });
 
         throw error;
+      }
+
+      // put sessionId of browser in headers
+      const cookies = cookie.parse(req.headers.cookie || '');
+      const sessionId = cookies['session-id'] || '';
+      console.log('sessionId', sessionId);
+      // Add the session ID to the response header if it exists
+      if (sessionId && !allowedOperations.includes(req.body.operationName)) {
+        res.setHeader('X-Session-ID', sessionId);
+        console.log('X-Session-ID header set:', sessionId);
+      } else {
+        console.log('No sessionId found in cookies');
       }
 
       // input authentifield user data in context

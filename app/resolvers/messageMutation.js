@@ -118,6 +118,12 @@ async function createMessage(_, { id, input }, { dataSources }) {
       1,
     );
 
+    if (!message[0].content && !message[0].media.length === 0 && message[0].id) {
+      // delete message if no content and media
+      await dataSources.dataDB.message.delete(message[0].id);
+      throw new GraphQLError('No content or media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+    }
+
     //* Notification push starting
     // get the user that has not viewed the conversation
     const targetUser = await
