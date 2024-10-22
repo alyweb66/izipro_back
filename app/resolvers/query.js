@@ -135,6 +135,11 @@ export default {
       // clear cache
       dataSources.dataDB.user.findByPkLoader.clear(dataSources.userData.id);
       const userData = await dataSources.dataDB.user.findByPk(dataSources.userData.id);
+      // if id of user is not the same as the id of the user in the context throw error
+      if (userData.id !== dataSources.userData.id) {
+        throw new GraphQLError('User not found', { extensions: { code: 'UNAUTHORIZED', httpStatus: 403 } });
+      }
+
       return userData;
     } catch (error) {
       debug('error', error);
