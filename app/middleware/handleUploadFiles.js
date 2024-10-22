@@ -2,6 +2,7 @@
 import Debug from 'debug';
 import path from 'path';
 import sharp from 'sharp';
+import convert from 'heic-convert';
 import { pipeline } from 'stream';
 import { GraphQLError } from 'graphql';
 import fs from 'fs';
@@ -43,9 +44,11 @@ async function handleUploadedFiles(media, message = false) {
       const fileNameWithoutExtension = path.parse(filename).name;
       // Get the extension of the file
       const extension = path.extname(filename).toLowerCase();
-
-      if (extension !== ('.jpg' || '.jpeg' || '.png' || '.heic' || '.heif' || '.pdf')) {
-        throw new GraphQLError('Invalid file extension', { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
+      console.log('extension', extension);
+      console.log('fileNameWithoutExtension', fileNameWithoutExtension);
+      const validExtensions = ['.jpg', '.jpeg', '.png', '.heic', '.heif', '.pdf'];
+      if (!validExtensions.includes(extension)) {
+        throw new GraphQLError('Invalid file extension', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
       }
 
       if (!fileNameWithoutExtension) {
@@ -74,20 +77,33 @@ async function handleUploadedFiles(media, message = false) {
         let imageBuffer;
         if (mimetype.startsWith('image/')) {
           imageBuffer = await getBuffer(buffer);
-        } else if (extension === '.heic' || extension === '.heif') {
+        } else if (extension === '.heif') {
           try {
             const bufferData = await getBuffer(buffer);
 
-            // Convertir HEIC/HEIF en JPEG
+            // Convertir HEIF en JPEG
             imageBuffer = await sharp(bufferData)
               .rotate()
               .toFormat('jpeg')
               .toBuffer();
           } catch (error) {
-            debug('Error converting HEIC/HEIF to JPEG');
+            debug('Error converting HEIF to JPEG');
+            throw new GraphQLError(error, { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
+          }
+        } else if (extension === '.heic') {
+          try {
+            const bufferData = await getBuffer(buffer);
+            // Convertir HEIC en JPEG
+            imageBuffer = await convert({
+              buffer: bufferData,
+              format: 'JPEG',
+            });
+          } catch (error) {
+            debug('Error converting HEIC to JPEG');
             throw new GraphQLError(error, { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
           }
         }
+        console.log('imageBuffer', imageBuffer);
 
         await sharp(imageBuffer)
           .rotate() // correct orientation
@@ -131,6 +147,10 @@ async function handleUploadedFiles(media, message = false) {
         name: uniqueFileName,
       };
     }));
+
+    if (compressedFiles.length === 0) {
+      throw new GraphQLError('No files were uploaded', { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
+    }
 
     return compressedFiles;
   } catch (error) {
