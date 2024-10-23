@@ -599,9 +599,13 @@ async function updateUser(_, { id, input }, { dataSources }) {
       throw new GraphQLError('User not found', { extensions: { code: 'NOT_FOUND', httpStatus: 404 } });
     }
 
+    const validExtensions = ['.jpg', '.jpeg', '.png', '.heic', '.heif'];
     // mapping the media array to createReadStream
     let imageInput;
-    if (input.image && input.image.length > 0 && input.image[0].file) {
+    if (input.image
+      && input.image.length > 0
+      && input.image[0].file
+      && input.image[0].file.filename.includes(validExtensions)) {
       const ReadStreamArray = await Promise.all(input.image.map(async (upload) => {
         const fileUpload = upload.file;
         if (!fileUpload) {

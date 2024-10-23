@@ -48,19 +48,26 @@ class Conversation extends CoreDatamapper {
     return request;
   }
 
-  /*  async updateConversation(id) {
-    debug('Updating conversation');
+  /**
+ * Retrieves conversations for a given request ID.
+ *
+ * @param {number} requestId - The ID of the user to find conversations for.
+ * @returns {Promise<Array>} A promise that resolves to an array of conversation objects.
+ * @throws {Error} If there is an issue with the database query.
+ */
+  async getConversationByRequest(requestId) {
+    debug('Finding conversation by user id');
     debug(`SQL function ${this.tableName} called`);
     // call sql function
     const query = {
-      text: `UPDATE "${this.tableName}" SET sender = 0 WHERE id = $1`,
-      values: [id],
+      text: `SELECT * FROM "${this.tableName}" WHERE request_id = $1`,
+      values: [requestId],
     };
-    const { rowCount } = await this.client.query(query);
-    const request = rowCount;
+    const { rows } = await this.client.query(query);
+    const request = rows;
 
     return request;
-  } */
+  }
 }
 
 export default Conversation;

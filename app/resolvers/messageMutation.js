@@ -117,6 +117,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
       0,
       1,
     );
+    console.log('message', message);
 
     if (!message[0].content && !message[0].media.length === 0 && message[0].id) {
       // delete message if no content and media
@@ -130,14 +131,19 @@ async function createMessage(_, { id, input }, { dataSources }) {
     dataSources.dataDB.userHasNotViewedConversation.getUserByConversationId(
       input.conversation_id,
     );
+    console.log('targetUser', targetUser);
 
     // get the notification subscription of the target user
-    const userNotification = await dataSources.dataDB.notification.getAllNotifications(
-      targetUser[0].user_id,
-    );
+    let userNotification = [];
+    if (targetUser.length > 0) {
+      userNotification = await dataSources.dataDB.notification.getAllNotifications(
+        targetUser[0]?.user_id,
+      );
+    }
+    console.log('userNotification', userNotification);
 
     // send push notification to users that have not viewed the conversation
-    if (userNotification[0].endpoint) {
+    if (userNotification.length > 0 && userNotification[0].endpoint) {
       userNotification.forEach((element) => {
         const subscription = {
           endpoint: element.endpoint,
