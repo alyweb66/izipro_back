@@ -3,6 +3,7 @@ import { GraphQLError } from 'graphql';
 /* import fs from 'fs';
 import path from 'path';
 import url from 'url'; */
+// import { request } from 'express';
 import pubsub from '../middleware/pubSub.js';
 import handleUploadedFiles from '../middleware/handleUploadFiles.js';
 import checkViewedBeforeSendRequestEmail from '../middleware/processNewClientRequestMail.js';
@@ -13,7 +14,7 @@ import sendPushNotification from '../middleware/webPush.js';
 const dirname = path.dirname(fileName);
 const directoryPath = path.join(dirname, '..', '..', 'public', 'media'); */
 
-const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:mutation`);
+const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:requestMutation`);
 
 function debugInDevelopment(message = '', value = '') {
   if (process.env.NODE_ENV === 'development') {
@@ -59,7 +60,7 @@ function debugInDevelopment(message = '', value = '') {
  */
 async function createRequest(_, { input }, { dataSources }) {
   debug('create request');
-  debugInDevelopment('input', input.media);
+  debugInDevelopment('input', input);
 
   if (dataSources.userData.id !== input.user_id) {
     throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
@@ -74,54 +75,58 @@ async function createRequest(_, { input }, { dataSources }) {
       throw new GraphQLError('Error creating request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
+    let requestId;
+    let isCreatedRequestMedia;
     // mapping the media array to createReadStream
-    const ReadStreamArray = await Promise.all(input.media.map(async (upload, index) => {
-      if (!upload.file.promise) {
-        throw new GraphQLError(`File upload not complete for media at index ${index}`, { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+    if (input.media && input.media.length > 0) {
+      const ReadStreamArray = await Promise.all(input.media.map(async (upload, index) => {
+        if (!upload.file.promise) {
+          throw new GraphQLError(`File upload not complete for media at index ${index}`, { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+        }
+        const fileUpload = await upload.file.promise;
+
+        if (!fileUpload) {
+          throw new GraphQLError('File upload not complete', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+        }
+        const { createReadStream, filename, mimetype } = await fileUpload;
+        const readStream = createReadStream();
+        const file = {
+          filename,
+          mimetype,
+          buffer: readStream,
+        };
+        return file;
+      }));
+
+      // calling the handleUploadedFiles function to compress the images and save them
+      const media = await handleUploadedFiles(ReadStreamArray);
+
+      // create media
+      const createMedia = await dataSources.dataDB.media.createMedia(media);
+      if (!createMedia) {
+        throw new GraphQLError('Error creating media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
       }
-      const fileUpload = await upload.file.promise;
 
-      if (!fileUpload) {
-        throw new GraphQLError('File upload not complete', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
-      }
-      const { createReadStream, filename, mimetype } = await fileUpload;
-      const readStream = createReadStream();
-      const file = {
-        filename,
-        mimetype,
-        buffer: readStream,
-      };
-      return file;
-    }));
+      // get the media ids from the createMedia array
+      const mediaIds = createMedia.map((obj) => obj.insert_media).flat();
 
-    // calling the handleUploadedFiles function to compress the images and save them
-    const media = await handleUploadedFiles(ReadStreamArray);
+      // create request_has_request_media
+      requestId = isCreatedRequest.id;
+      isCreatedRequestMedia = await dataSources.dataDB.requestHasMedia.createRequestHasMedia(
+        requestId,
+        mediaIds,
+      );
 
-    // create media
-    const createMedia = await dataSources.dataDB.media.createMedia(media);
-    if (!createMedia) {
-      throw new GraphQLError('Error creating media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
-    }
-
-    // get the media ids from the createMedia array
-    const mediaIds = createMedia.map((obj) => obj.insert_media).flat();
-
-    // create request_has_request_media
-    const requestId = isCreatedRequest.id;
-    const isCreatedRequestMedia = await dataSources.dataDB.requestHasMedia.createRequestHasMedia(
-      requestId,
-      mediaIds,
-    );
-
-    if (!isCreatedRequestMedia
+      if (!isCreatedRequestMedia
       || (isCreatedRequestMedia.insert_request_has_media === false)) {
-      throw new GraphQLError('Error creating request_has_media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+        throw new GraphQLError('Error creating request_has_media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      }
     }
     // get the request with media and conversation
     const subscriptionResult = await dataSources.dataDB.request.getSubscritpionRequest(
       [isCreatedRequest.job_id],
       dataSources.userData.id,
-      requestId,
+      isCreatedRequest.id,
     );
 
     // get subscription for request
@@ -133,7 +138,7 @@ async function createRequest(_, { input }, { dataSources }) {
       .flatMap((sub) => sub.subscriber_id);
 
     // add request_id in the array of subscriber_id
-    subscriberIds.push(requestId);
+    subscriberIds.push(isCreatedRequest.id);
 
     // update subscription for request
     const isUpdatedSubscription = await dataSources.dataDB.subscription.createSubscription(
@@ -150,45 +155,50 @@ async function createRequest(_, { input }, { dataSources }) {
     );
 
     // filter only the id of the user
-    const userId = targetUser.map((user) => user.user_id);
+    let flattenedNotifications = [];
 
-    // clear cache for the conversation
-    dataSources.dataDB.notificationPush.findByUserIdsLoader.clear(userId);
-    // get the notification subscription of the target users
-    /* const usersNotification = await dataSources.dataDB.notificationPush.findByUser(
+    if (targetUser.length > 0) {
+      const userId = targetUser.map((user) => user.user_id);
+
+      // clear cache for the conversation
+      dataSources.dataDB.notificationPush.findByUserIdsLoader.clear(userId);
+      // get the notification subscription of the target users
+      /* const usersNotification = await dataSources.dataDB.notificationPush.findByUser(
       userId,
     ); */
-    // get the notification subscription of the target user
-    const usersNotification = await dataSources.dataDB.notification.getAllNotifications(
-      userId,
-    );
-    const flattenedNotifications = usersNotification.flat();
+      // get the notification subscription of the target user
+      const usersNotification = await dataSources.dataDB.notification.getAllNotifications(
+        userId,
+      );
 
-    // send push notification to users that have not viewed the conversation
-    if (flattenedNotifications.length > 0 && flattenedNotifications[0].endpoint) {
-      flattenedNotifications.forEach((element) => {
-        const subscriptionPush = {
-          endpoint: element.endpoint,
-          keys: {
-            p256dh: element.public_key,
-            auth: element.auth_token,
-          },
-        };
+      flattenedNotifications = usersNotification.flat();
 
-        const payload = JSON.stringify({
-          title: 'Vous avez une nouvelle demande',
-          body: 'Cliquez pour la consulter',
-          // body: message[0].content, // Assurez-vous que `message[0].content`
-          icon: process.env.LOGO_NOTIFICATION_URL,
-          // url: `https://yourwebsite.com/conversation/${input.conversation_id}`,
-          // badge: process.env.LOGO_NOTIFICATION_URL,
-          tag: input.conversation_id,
-          renotify: true,
+      // send push notification to users that have not viewed the conversation
+      if (flattenedNotifications.length > 0 && flattenedNotifications[0].endpoint) {
+        flattenedNotifications.forEach((element) => {
+          const subscriptionPush = {
+            endpoint: element.endpoint,
+            keys: {
+              p256dh: element.public_key,
+              auth: element.auth_token,
+            },
+          };
+
+          const payload = JSON.stringify({
+            title: 'Vous avez une nouvelle demande',
+            body: 'Cliquez pour la consulter',
+            // body: message[0].content, // Assurez-vous que `message[0].content`
+            icon: process.env.LOGO_NOTIFICATION_URL,
+            // url: `https://yourwebsite.com/conversation/${input.conversation_id}`,
+            // badge: process.env.LOGO_NOTIFICATION_URL,
+            tag: input.conversation_id,
+            renotify: true,
+          });
+
+          // Envoyer la notification push
+          sendPushNotification(subscriptionPush, payload);
         });
-
-        // Envoyer la notification push
-        sendPushNotification(subscriptionPush, payload);
-      });
+      }
     }
     //* Notification push ending
 
@@ -208,8 +218,9 @@ async function createRequest(_, { input }, { dataSources }) {
     pubsub.publish('REQUEST_CREATED', {
       requestAdded: subscriptionResult,
     });
-
-    debug('created media', isCreatedRequestMedia.insert_request_has_media);
+    if (input.media && input.media.length > 0) {
+      debug('created media', isCreatedRequestMedia.insert_request_has_media);
+    }
     return subscriptionResult[0];
   } catch (error) {
     debug('error', error);
@@ -250,16 +261,45 @@ async function deleteRequest(_, { input }, { dataSources }) {
       throw new GraphQLError('Error deleting request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
-    // read the public folder and delete all the files
-    /* fs.readdir(path.join(directoryPath), (err) => {
-      if (err) {
-        debugInDevelopment(`Error reading directory: ${err}`);
-      } else {
-        input.image_names.forEach((file) => {
-          deleteFile(file);
-        });
-      }
-    }); */
+    const subscription = await dataSources.dataDB.subscription.findByUser(input.user_id);
+
+    // remove request_id in the array of subscriber_id
+    // for subscriber request and subscriber conversation
+    if (subscription.length === 0) {
+      return true;
+    }
+
+    const subscriberRequestIds = subscription
+      ?.filter((sub) => sub.subscriber === 'request')
+      .flatMap((sub) => sub.subscriber_id) || [];
+
+    const subscriberConversationIds = subscription
+      ?.filter((sub) => sub.subscriber === 'conversation')
+      .flatMap((sub) => sub.subscriber_id) || [];
+
+    // get all conversation id for the request
+    const requestConversation = await dataSources.dataDB.conversation
+      .getConversationByRequest(input.id);
+
+    const requestConversationids = requestConversation?.map(
+      (conversation) => conversation.id,
+    ) || [];
+
+    const newSubscriberConversationIds = subscriberConversationIds?.filter(
+      (id) => !requestConversationids?.includes(id),
+    );
+    const newSubscriberRequestIds = subscriberRequestIds?.filter((id) => id !== input.id);
+
+    // Update subscription for request and conversation
+    await Promise.all([
+      dataSources.dataDB.subscription.createSubscription(input.user_id, 'request', newSubscriberRequestIds),
+      dataSources.dataDB.subscription.createSubscription(input.user_id, 'conversation', newSubscriberConversationIds),
+      dataSources.dataDB.userHasNotViewedConversation.deleteNotViewedConversation({
+        user_id: input.user_id,
+        conversation_id: requestConversationids, // Convert Set back to Array
+      }),
+    ]);
+    // remove request
 
     return true;
   } catch (error) {
