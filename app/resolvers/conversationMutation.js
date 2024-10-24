@@ -24,7 +24,7 @@ async function createConversation(_, { id, input }, { dataSources }) {
 
   try {
     if (dataSources.userData.id !== id) {
-      throw new GraphQLError('Access denied', { extensions: { code: 'UNAUTHORIZED' , httpStatus: 403} });
+      throw new GraphQLError('Access denied', { extensions: { code: 'UNAUTHORIZED', httpStatus: 403 } });
     }
     // create a new variable to store the updated input object
     const updatedInput = { ...input, updated_at: new Date() };

@@ -261,6 +261,7 @@ async function deleteRequest(_, { input }, { dataSources }) {
       throw new GraphQLError('Error deleting request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
+    // get all subscription for the user
     const subscription = await dataSources.dataDB.subscription.findByUser(input.user_id);
 
     // remove request_id in the array of subscriber_id

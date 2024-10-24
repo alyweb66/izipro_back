@@ -102,7 +102,7 @@ export async function newMessageEmail(user, request, message, ownerMessageData) 
       <h2 style="fontSize: 1rem"> Demande concernée : <span style="color: #028eef">${request.title}</span></h2>
 
       <p>Bonjour,</p>
-      <p>Vous avez reçu un nouveau message le ${new Date(Number(message.created_at)).toLocaleDateString('fr-FR')} à ${new Date(Number(message.created_at)).toLocaleTimeString('fr-FR', { hour12: false })} de <span style="color: #f37c04;">${ownerMessageData.role === 'pro' ? ownerMessageData.denomination : `${ownerMessageData.first_name} ${ownerMessageData.last_name}`} </span></p>
+      <p>Vous avez reçu un nouveau message le ${new Date(Number(message.created_at)).toLocaleDateString('fr-FR')} à ${new Date(Number(message.created_at)).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', 'h')} de <span style="color: #f37c04;">${ownerMessageData.role === 'pro' ? ownerMessageData.denomination : `${ownerMessageData.first_name} ${ownerMessageData.last_name}`} </span></p>
       <a href="${process.env.CORS_ORIGIN}" style="background-color: #F79323; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Consulter le message</a>
       
     `,
@@ -124,7 +124,7 @@ export async function newRequestEmail(user, request, ownerRequestData) {
       <h2 style="fontSize: 1rem"> Demande : <span style="color: #028eef">${request.title}</span></h2>
 
       <p>Bonjour,</p>
-      <p>Vous avez reçu une nouvelle demande le ${new Date(Number(request.created_at)).toLocaleDateString('fr-FR')} à ${new Date(Number(request.created_at)).toLocaleTimeString('fr-FR', { hour12: false })} de <span style="color: #f37c04;">${ownerRequestData.role === 'pro' ? ownerRequestData.denomination : `${ownerRequestData.first_name} ${ownerRequestData.last_name}`} </span></p>
+      <p>Vous avez reçu une nouvelle demande le ${new Date(Number(request.created_at)).toLocaleDateString('fr-FR')} à ${new Date(Number(request.created_at)).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', 'h')} de <span style="color: #f37c04;">${ownerRequestData.role === 'pro' ? ownerRequestData.denomination : `${ownerRequestData.first_name} ${ownerRequestData.last_name}`} </span></p>
       <a href="${process.env.CORS_ORIGIN}" style="background-color: #F79323; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Consulter la demande</a>
     `,
     attachments: [logoAttachment],
