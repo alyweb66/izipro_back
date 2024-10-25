@@ -265,7 +265,7 @@ export default {
   async jobs(_, { ids }, { dataSources }) {
     try {
       debug(`get job with id ${ids}`);
-      dataSources.dataDB.job.cache.clear();
+      // dataSources.dataDB.job.cache.clear();
       const jobs = await dataSources.dataDB.job.findJobByPK(ids);
       return jobs;
     } catch (error) {

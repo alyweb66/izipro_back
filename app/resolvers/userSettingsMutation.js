@@ -33,10 +33,10 @@ async function userSetting(_, { input }, { dataSources }) {
     );
 
     if (!userSetting) {
-      throw new GraphQLError('Error updating user setting',{ extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      throw new GraphQLError('Error updating user setting', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
-    dataSources.dataDB.user.cache.clear();
+    // dataSources.dataDB.user.cache.clear();
     return userSettings;
   } catch (error) {
     debug('error', error);

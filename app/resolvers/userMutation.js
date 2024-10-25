@@ -224,7 +224,7 @@ async function login(_, { input }, { dataSources, res }) {
   debug('login is starting');
   debugInDevelopment(input);
   try {
-    dataSources.dataDB.user.cache.clear();
+    // dataSources.dataDB.user.cache.clear();
     const user = await dataSources.dataDB.user.findUserByEmail(input.email);
 
     if (!user) {

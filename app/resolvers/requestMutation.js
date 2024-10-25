@@ -129,16 +129,20 @@ async function createRequest(_, { input }, { dataSources }) {
       isCreatedRequest.id,
     );
 
+    dataSources.dataDB.subscription.findByUserIdsLoader.clear(dataSources.userData.id);
     // get subscription for request
     const subscription = await dataSources.dataDB.subscription.findByUser(dataSources.userData.id);
+    console.log('subscription', subscription);
 
     // get the subscriber_id for request
     const subscriberIds = subscription
       .filter((sub) => sub.subscriber === 'request')
       .flatMap((sub) => sub.subscriber_id);
+    console.log('subscriberIds', subscriberIds);
 
     // add request_id in the array of subscriber_id
     subscriberIds.push(isCreatedRequest.id);
+    console.log('subscriberIds', subscriberIds);
 
     // update subscription for request
     const isUpdatedSubscription = await dataSources.dataDB.subscription.createSubscription(
@@ -146,6 +150,7 @@ async function createRequest(_, { input }, { dataSources }) {
       'request',
       subscriberIds,
     );
+    console.log('isUpdatedSubscription', isUpdatedSubscription);
 
     //* Notification push starting
     // get the user that has not viewed the request
