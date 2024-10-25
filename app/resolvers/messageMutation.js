@@ -223,7 +223,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
       checkViewedBeforeSendEmail(
         message[0],
         dataSources,
-        userNotification[0].email_notification,
+        userNotification[0]?.email_notification,
       );
     }, 300000);
 

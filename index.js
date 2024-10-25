@@ -241,14 +241,13 @@ const wsServer = new WebSocketServer({
 }); */
 
 //* Log mutation or query data
-const logMutationData = (req, res, next) => {
+/* const logMutationData = (req, res, next) => {
   if (req.method === 'POST') {
     console.log('Mutation data:', req.body);
-    console.log('variables:', req.body.variables?.input?.subscriber_id);
   }
   next();
 };
-app.use(logMutationData);
+app.use(logMutationData); */
 
 //* log request headers
 /* app.use((req, res, next) => {
