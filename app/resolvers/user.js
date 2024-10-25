@@ -147,7 +147,7 @@ const UserResolver = {
     try {
       debug(`get all messages from conversation id: ${conversationId}`);
       if (dataSources.userData.id !== id) {
-        throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' , httpStatus: 401} });
+        throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
       }
       const messageDESC = await dataSources.dataDB.message.findByUserConversation(
         conversationId,
