@@ -9,7 +9,7 @@ class UserHasNotViewedConversation extends CoreDatamapper {
   /**
    * delete notViewedConversation
    *
-   * @param {{user_id: number, conversation_id: number}} input - The ID of the user
+   * @param {{user_id: number, conversation_id: number[]}} input - The ID of the user
    * and the conversation to find.
    * @returns {Promise<object[]>} A promise that resolves to an object of notViewedConversation.
    * @throws {Error} If there is an issue with the database query.

@@ -1,11 +1,15 @@
 import Debug from 'debug';
 import DataLoader from 'dataloader';
-import { createHash } from 'crypto';
+// import { createHash } from 'crypto';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:CoreDatamapper`);
 
 class CoreDatamapper {
   tableName;
+
+  clearCache() {
+    this.cache.clear(); // Vide le cache
+  }
 
   constructor(options) {
     this.client = options.client;
@@ -79,6 +83,7 @@ class CoreDatamapper {
       return records.map((record) => record || null);
     }
     const record = await this.findByUserIdsLoader.load(userId);
+
     return record || null;
 
     /*  const record = await this.findByUserIdsLoader.load(userId);
@@ -92,7 +97,7 @@ class CoreDatamapper {
   */
   async findAll() {
     const preparedQuery = {
-      text: `SELECT * FROM "${this.tableName}" `,
+      text: `SELECT * FROM "${this.tableName}" ${this.tableName === 'category' ? 'ORDER BY "name" ASC' : ''} `,
     };
     const result = await this.cacheQuery(preparedQuery);
     return result;
@@ -200,22 +205,23 @@ class CoreDatamapper {
   }
 
   // function to create a cache key and configure cache
-  cacheQuery(preparedQuery, ttl = 1) {
-    const cacheKey = createHash('sha1').update(JSON.stringify(preparedQuery)).digest('base64');
-    debug(`cacheKey: ${cacheKey}`);
-    return this.cache.get(cacheKey).then((entry) => {
-      if (entry) {
+  //! cache is disabled
+  cacheQuery(preparedQuery) {
+    /* const cacheKey = createHash('sha1').update(JSON.stringify(preparedQuery)).digest('base64');
+    debug(`cacheKey: ${cacheKey}`); */
+    return this.cache.get(/* cacheKey */).then((/* entry */) => {
+      /* if (entry) {
         debug('The key exists in the cache');
         debug('we return the data contained by the cache');
-        return Promise.resolve(JSON.parse(entry));
-      }
-      debug('The key does not exist in the cache');
+        // return Promise.resolve(JSON.parse(entry));
+      } */
+      debug(/* 'The key does not exist in the cache' */);
       return this.client.query(preparedQuery).then((results) => {
         debug('we retrieve the data from the db');
-        if (results.rows) {
+        /* if (results.rows) {
           debug('we add this data to the cache');
-          this.cache.set(cacheKey, JSON.stringify(results.rows), { ttl });
-        }
+          // this.cache.set(cacheKey, JSON.stringify(results.rows), { ttl });
+        } */
         debug('we return the data received from the db');
         return Promise.resolve(results.rows);
       });

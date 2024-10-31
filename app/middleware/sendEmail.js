@@ -24,6 +24,13 @@ const logoAttachment = {
 };
 
 // Email to send the password reset link
+/**
+ * Sends a password reset email to the specified email address.
+ *
+ * @param {string} email - The email address to send the password reset email to.
+ * @param {string} resetToken - The token to be included in the password reset link.
+ * @returns {Promise<void>} A promise that resolves when the email has been sent.
+ */
 export async function sendPasswordResetEmail(email, resetToken) {
   const mailOptions = {
     from: process.env.EMAIL_SERVER,
@@ -47,6 +54,13 @@ export async function sendPasswordResetEmail(email, resetToken) {
 }
 
 // Email to send the account confirmation link
+/**
+ * Sends a confirmation email to the user with a confirmation token.
+ *
+ * @param {string} email - The email address of the user to send the confirmation email to.
+ * @param {string} confirmToken - The token used to confirm the user's email address.
+ * @returns {Promise<void>} - A promise that resolves when the email has been sent.
+ */
 export async function confirmEmail(email, confirmToken) {
   const mailOptions = {
     from: process.env.EMAIL_SERVER,
@@ -70,6 +84,12 @@ export async function confirmEmail(email, confirmToken) {
 }
 
 // Email to send the password change confirmation
+/**
+ * Sends an email to notify the user about a password change.
+ *
+ * @param {string} email - The email address of the recipient.
+ * @returns {Promise<void>} - A promise that resolves when the email has been sent.
+ */
 export async function changePasswordEmail(email) {
   const mailOptions = {
     from: process.env.EMAIL_SERVER,
@@ -91,7 +111,7 @@ export async function changePasswordEmail(email) {
 }
 
 // Email to send the new message notification
-export async function newMessageEmail(user, request, message) {
+export async function newMessageEmail(user, request, message, ownerMessageData) {
   const mailOptions = {
     from: process.env.EMAIL_SERVER,
     to: `${user.email}`,
@@ -102,7 +122,7 @@ export async function newMessageEmail(user, request, message) {
       <h2 style="fontSize: 1rem"> Demande concernée : <span style="color: #028eef">${request.title}</span></h2>
 
       <p>Bonjour,</p>
-      <p>Vous avez reçu un nouveau message le ${new Date(Number(message.created_at)).toLocaleDateString('fr-FR')} à ${new Date(Number(message.created_at)).toLocaleTimeString('fr-FR', { hour12: false })} de <span style="color: #f37c04;">${user.role === 'pro' ? user.denomination : `${user.first_name} ${user.last_name}`} </span></p>
+      <p>Vous avez reçu un nouveau message le ${new Date(Number(message.created_at)).toLocaleDateString('fr-FR')} à ${new Date(Number(message.created_at)).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', 'h')} de <span style="color: #f37c04;">${ownerMessageData.role === 'pro' ? ownerMessageData.denomination : `${ownerMessageData.first_name} ${ownerMessageData.last_name}`} </span></p>
       <a href="${process.env.CORS_ORIGIN}" style="background-color: #F79323; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Consulter le message</a>
       
     `,
@@ -113,7 +133,7 @@ export async function newMessageEmail(user, request, message) {
 }
 
 // Email to send the new request notification
-export async function newRequestEmail(user, request) {
+export async function newRequestEmail(user, request, ownerRequestData) {
   const mailOptions = {
     from: process.env.EMAIL_SERVER,
     to: `${user.email}`,
@@ -124,7 +144,7 @@ export async function newRequestEmail(user, request) {
       <h2 style="fontSize: 1rem"> Demande : <span style="color: #028eef">${request.title}</span></h2>
 
       <p>Bonjour,</p>
-      <p>Vous avez reçu une nouvelle demande le ${new Date(Number(request.created_at)).toLocaleDateString('fr-FR')} à ${new Date(Number(request.created_at)).toLocaleTimeString('fr-FR', { hour12: false })} de <span style="color: #f37c04;">${user.role === 'pro' ? user.denomination : `${user.first_name} ${user.last_name}`} </span></p>
+      <p>Vous avez reçu une nouvelle demande le ${new Date(Number(request.created_at)).toLocaleDateString('fr-FR')} à ${new Date(Number(request.created_at)).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', 'h')} de <span style="color: #f37c04;">${ownerRequestData.role === 'pro' ? ownerRequestData.denomination : `${ownerRequestData.first_name} ${ownerRequestData.last_name}`} </span></p>
       <a href="${process.env.CORS_ORIGIN}" style="background-color: #F79323; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Consulter la demande</a>
     `,
     attachments: [logoAttachment],

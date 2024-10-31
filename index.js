@@ -348,13 +348,12 @@ app.use(
       // put sessionId of browser in headers
       const cookies = cookie.parse(req.headers.cookie || '');
       const sessionId = cookies['session-id'] || '';
-      console.log('sessionId', sessionId);
+
       // Add the session ID to the response header if it exists
       if (sessionId && !allowedOperations.includes(req.body.operationName)) {
         res.setHeader('X-Session-ID', sessionId);
-        console.log('X-Session-ID header set:', sessionId);
       } else {
-        console.log('No sessionId found in cookies');
+        debug('No sessionId found in cookies');
       }
 
       // input authentifield user data in context

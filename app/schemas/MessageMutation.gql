@@ -1,5 +1,7 @@
+union CreateMessageResult = Message | BooleanResult
+
 extend type Mutation{
     # Request mutations
-    createMessage(id: Int!, input: NewMessageInput!): Boolean
+    createMessage(id: Int!, input: NewMessageInput!): CreateMessageResult
 
 }

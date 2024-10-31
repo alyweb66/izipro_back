@@ -22,6 +22,8 @@ function debugInDevelopment(message = '', value = '') {
  * @param {Object} args.input - The input object containing the message details.
  * @param {string} args.input.content - The content of the message.
  * @param {number} args.input.user_id - The ID of the user creating the message.
+ * @param {number} args.input.request_id - The ID of the request.
+ * @param {number} args.input.user_request_id - The ID of the user who created the request.
  * @param {number} args.input.conversation_id - The ID of the conversation.
  * @param {Array<Object>} args.input.media - An array of media objects.
  * @param {Object} context - The context object.
@@ -43,8 +45,75 @@ async function createMessage(_, { id, input }, { dataSources }) {
   }
 
   try {
-    const messageInput = { ...input };
-    delete messageInput.media;
+    // Chedk if existing request
+    dataSources.dataDB.request.findByPkLoader.clear(input.request_id);
+    const request = await dataSources.dataDB.request.findByPk(input.request_id);
+    // if request does not exist return false
+    if (request.deleted_at !== null || !request || request.id === 0) {
+      return {
+        __typename: 'BooleanResult',
+        success: false,
+      };
+    }
+
+    let newConversation;
+    // create conversation if it does not exist
+    if ((!input.conversation_id || input.conversation_id === 0) && dataSources.userData.role === 'pro') {
+      const conversationInput = {
+        user_1: input.user_id,
+        user_2: input.user_request_id,
+        request_id: input.request_id,
+        updated_at: new Date(),
+      };
+      newConversation = await dataSources.dataDB.conversation.create(conversationInput);
+    }
+
+    if (!input.conversation_id && !newConversation) {
+      throw new GraphQLError('No conversation', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+    }
+
+    // update subscription
+    // get all subscription for the user
+    if (newConversation && newConversation.id && dataSources.userData.role === 'pro') {
+      dataSources.dataDB.subscription.findByUserIdsLoader.clear(input.user_id);
+      const subscription = await dataSources.dataDB.subscription.findByUser(input.user_id);
+
+      const subscriberRequestIds = subscription
+        ?.filter((sub) => sub.subscriber === 'clientConversation')
+        .flatMap((sub) => sub.subscriber_id) || [];
+
+      if (!subscriberRequestIds.includes(input.conversation_id || newConversation.id)) {
+        subscriberRequestIds.push(input.conversation_id || newConversation.id);
+      }
+
+      // create or update subscription for the user who
+      // created the request to this new conversation
+      dataSources.dataDB.subscription.findByUserIdsLoader.clear(input.user_request_id);
+      const userCreatedRequestSubscription = await
+      dataSources.dataDB.subscription.findByUser(input.user_request_id);
+
+      const subscriberConversationRequestIds = userCreatedRequestSubscription
+        ?.filter((sub) => sub.subscriber === 'conversation')
+        .flatMap((sub) => sub.subscriber_id) || [];
+
+      if (!subscriberConversationRequestIds.includes(input.conversation_id || newConversation.id)) {
+        subscriberConversationRequestIds.push(input.conversation_id || newConversation.id);
+      }
+      // update subscription
+      await Promise.all([
+        dataSources.dataDB.subscription.createSubscription(input.user_id, 'clientConversation', subscriberRequestIds),
+        dataSources.dataDB.subscription.createSubscription(input.user_request_id, 'conversation', subscriberConversationRequestIds),
+
+      ]);
+    }
+    // remove request_id in the array of subscriber_id
+    // for subscriber request and subscriber conversation
+
+    const messageInput = {
+      content: input.content,
+      user_id: input.user_id,
+      conversation_id: input.conversation_id || newConversation.id,
+    };
 
     // create message
     const isCreatedMessage = await dataSources.dataDB.message.create(messageInput);
@@ -107,13 +176,13 @@ async function createMessage(_, { id, input }, { dataSources }) {
 
     // update conversation updated_at
     await dataSources.dataDB.conversation.updateUpdatedAtConversation(
-      input.conversation_id,
+      input.conversation_id || newConversation.id,
     );
 
     // get the message
     const message = await dataSources.dataDB.message.findByUserConversation(
       // dataSources.userData.id,
-      input.conversation_id,
+      input.conversation_id || newConversation.id,
       0,
       1,
     );
@@ -128,16 +197,23 @@ async function createMessage(_, { id, input }, { dataSources }) {
     // get the user that has not viewed the conversation
     const targetUser = await
     dataSources.dataDB.userHasNotViewedConversation.getUserByConversationId(
-      input.conversation_id,
+      input.conversation_id || newConversation.id,
     );
 
     // get the notification subscription of the target user
-    const userNotification = await dataSources.dataDB.notification.getAllNotifications(
-      targetUser[0].user_id,
-    );
+    /**
+ * @type {Array<{id: number, user_id: number, email_notification: boolean,
+ * endpoint: string, public_key: string, auth_token: string}>}
+ */
+    let userNotification = [];
+    if (targetUser.length > 0) {
+      userNotification = await dataSources.dataDB.notification.getAllNotifications(
+        targetUser[0]?.user_id,
+      );
+    }
 
     // send push notification to users that have not viewed the conversation
-    if (userNotification[0].endpoint) {
+    if (userNotification.length > 0 && userNotification[0].endpoint) {
       userNotification.forEach((element) => {
         const subscription = {
           endpoint: element.endpoint,
@@ -164,12 +240,12 @@ async function createMessage(_, { id, input }, { dataSources }) {
     }
     //* Notification push ending
 
-    // send email to users that have not viewed the conversation after 3 min
+    // send email to users that have not viewed the conversation after 5 min
     setTimeout(() => {
       checkViewedBeforeSendEmail(
         message[0],
         dataSources,
-        userNotification[0].email_notification,
+        userNotification[0]?.email_notification,
       );
     }, 300000);
 
@@ -180,7 +256,26 @@ async function createMessage(_, { id, input }, { dataSources }) {
     });
 
     debug('created media undefined if no media', isCreatedMessageMedia);
-    return true;
+
+    if (newConversation) {
+      const newMessage = message[0];
+
+      return {
+        __typename: 'Message',
+        id: newMessage.id,
+        content: newMessage.content,
+        user_id: newMessage.user_id,
+        conversation_id: newMessage.conversation_id,
+        created_at: newMessage.created_at,
+        request_id: newMessage.request_id,
+        media: newMessage.media,
+      };
+    }
+
+    return {
+      __typename: 'BooleanResult',
+      success: true,
+    };
   } catch (error) {
     debug('error', error);
     throw new GraphQLError(error, { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
