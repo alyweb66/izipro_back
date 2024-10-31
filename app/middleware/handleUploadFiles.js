@@ -102,9 +102,12 @@ async function handleUploadedFiles(media, message = false) {
             debug('Error converting HEIC to JPEG');
             throw new GraphQLError(error, { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
           }
+        } else {
+          throw new GraphQLError('Invalid file type', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
         }
         console.log('imageBuffer', imageBuffer);
 
+        // Create and save the compressed file
         await sharp(imageBuffer)
           .rotate() // correct orientation
           .resize({ width: 1920, withoutEnlargement: true })
@@ -120,7 +123,7 @@ async function handleUploadedFiles(media, message = false) {
             .blur(80) // Apply blur to make it more "placeholder-like"
             .toFile(thumbnailFilePath); // Save thumbnail file
         }
-      } else if (mimetype === 'application/pdf') {
+      } else if (mimetype === 'application/pdf' && file.size < 1025) {
         // register pdf file without compression
         await new Promise((resolve, reject) => {
           pipeline(buffer, fs.createWriteStream(filePath), (err) => {
@@ -128,7 +131,10 @@ async function handleUploadedFiles(media, message = false) {
             resolve();
           });
         });
+      } else {
+        throw new GraphQLError('Invalid file type', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
       }
+
       // Generate the URLs for both the original and thumbnail
       const baseUrl = process.env.NODE_ENV === 'development'
         ? `${process.env.FILE_URL}:${process.env.PORT}/public/media/`

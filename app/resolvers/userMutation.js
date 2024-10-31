@@ -224,7 +224,7 @@ async function login(_, { input }, { dataSources, res }) {
   debug('login is starting');
   debugInDevelopment(input);
   try {
-    dataSources.dataDB.user.cache.clear();
+    // dataSources.dataDB.user.cache.clear();
     const user = await dataSources.dataDB.user.findUserByEmail(input.email);
 
     if (!user) {
@@ -599,9 +599,13 @@ async function updateUser(_, { id, input }, { dataSources }) {
       throw new GraphQLError('User not found', { extensions: { code: 'NOT_FOUND', httpStatus: 404 } });
     }
 
+    const validExtensions = ['.jpg', '.jpeg', '.png', '.heic', '.heif'];
     // mapping the media array to createReadStream
     let imageInput;
-    if (input.image && input.image.length > 0 && input.image[0].file) {
+    if (input.image
+      && input.image.length > 0
+      && input.image[0].file
+      && input.image[0].file.filename.includes(validExtensions)) {
       const ReadStreamArray = await Promise.all(input.image.map(async (upload) => {
         const fileUpload = upload.file;
         if (!fileUpload) {

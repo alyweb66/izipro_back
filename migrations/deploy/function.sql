@@ -18,15 +18,23 @@ RETURNS TABLE(
 )
 AS $$
 BEGIN
-    -- delete old values
-    DELETE FROM "subscription"
+    -- Update existing subscription if it exists
+    UPDATE "subscription"
+    SET "subscriber_id" = p_subscriber_id,
+        "updated_at" = now()
     WHERE "subscription"."subscriber" = p_subscriber AND "subscription"."user_id" = p_user_id;
 
-    -- Insert data into the subscription table
-    RETURN QUERY
-    INSERT INTO "subscription" ("user_id", "subscriber", "subscriber_id")
-    VALUES (p_user_id, p_subscriber, p_subscriber_id)
-    RETURNING *;
+    -- Insert new subscription if no row was updated
+    IF NOT FOUND THEN
+        RETURN QUERY
+        INSERT INTO "subscription" ("user_id", "subscriber", "subscriber_id")
+        VALUES (p_user_id, p_subscriber, p_subscriber_id)
+        RETURNING *;
+    ELSE
+        RETURN QUERY
+        SELECT * FROM "subscription"
+        WHERE "subscription"."subscriber" = p_subscriber AND "subscription"."user_id" = p_user_id;
+    END IF;
 END;
 $$ LANGUAGE plpgsql;
 

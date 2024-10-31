@@ -1,5 +1,9 @@
 scalar Upload
 
+type BooleanResult {
+    success: Boolean!
+}
+
 type Message {
     id: Int!
     content: String!
@@ -13,7 +17,9 @@ type Message {
 input NewMessageInput {
     content: String! @length(max: 1000)
     user_id: Int!
-    conversation_id: Int!
+    user_request_id: Int
+    request_id: Int
+    conversation_id: Int
     media: [Upload]
 }
 

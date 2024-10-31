@@ -176,9 +176,12 @@ class Request extends CoreDatamapper {
   async deleteObsoleteRequests() {
     debug('Deleting obsolete requests');
     const query = {
-      text: `DELETE FROM "${this.tableName}" WHERE "deleted_at" < NOW() - INTERVAL '1 day'`,
+      text: `DELETE FROM "${this.tableName}" WHERE "deleted_at" < NOW() - INTERVAL '1 minute' 
+      RETURNING*`,
     };
-    await this.client.query(query);
+    const result = await this.client.query(query);
+
+    return result.rowCount;
   }
 }
 export default Request;

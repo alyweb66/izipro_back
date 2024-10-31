@@ -6,4 +6,5 @@ type UserHasHiddenClientRequest {
 input UserHasHiddenClientRequestInput {
   user_id: Int!
   request_id: Int!
+  isWithConversation: Boolean
 }
