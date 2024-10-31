@@ -40,10 +40,10 @@ export default {
  * @returns {Promise<Array>} A promise that resolves to an array of conversations.
  * @throws {ApolloError} If there is an error retrieving conversations.
  */
-  conversations(_, { offset, limit }, { dataSources }) {
+  conversations(_, { userId }, { dataSources }) {
     try {
       debug('get all conversations');
-      return dataSources.dataDB.conversation.getConversationByUser(offset, limit);
+      return dataSources.dataDB.conversation.getConversationByUser(userId);
     } catch (error) {
       debug('error', error);
       throw new GraphQLError('Error get all conversations', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
@@ -265,7 +265,7 @@ export default {
   async jobs(_, { ids }, { dataSources }) {
     try {
       debug(`get job with id ${ids}`);
-      dataSources.dataDB.job.cache.clear();
+      // dataSources.dataDB.job.cache.clear();
       const jobs = await dataSources.dataDB.job.findJobByPK(ids);
       return jobs;
     } catch (error) {

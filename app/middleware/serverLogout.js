@@ -12,6 +12,22 @@ function secureEnv() {
   return true;
 }
 
+/**
+ * Middleware function to handle server logout.
+ *
+ * @param {Object} _ - Unused parameter.
+ * @param {Object} __ - Unused parameter.
+ * @param {Object} context - The context object containing various properties.
+ * @param {Object} context.res - The response object.
+ * @param {Object} context.dataSources - The data sources object.
+ * @param {Object} context.req - The request object.
+ * @param {boolean} [context.server=false] - Flag indicating if the logout is server-initiated.
+ *
+ * @throws {GraphQLError} If there is an error removing the
+ * refresh token or any other internal server error.
+ *
+ * @returns {Promise<boolean>} Returns true if the logout process is successful.
+ */
 export default async function serverLogout(_, __, {
   res, dataSources, req, server = false,
 }) {

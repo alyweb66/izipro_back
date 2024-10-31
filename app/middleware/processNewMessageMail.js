@@ -29,7 +29,8 @@ export default async function checkViewedBeforeSendEmail(
     if (!emailNotification) {
       return;
     }
-
+    dataSources.dataDB.user.findByPkLoader.clear(message.user_id);
+    const ownerMessageData = await dataSources.dataDB.user.findByPk(message.user_id);
     // get user id who has not viewed the conversation
     const userId = await
     dataSources.dataDB.userHasNotViewedConversation.getUserByConversationId(
@@ -46,7 +47,7 @@ export default async function checkViewedBeforeSendEmail(
       const request = await dataSources.dataDB.request.findByPk(message.request_id);
 
       if (userData.id && userData.id !== 0) {
-        newMessageEmail(userData, request, message);
+        newMessageEmail(userData, request, message, ownerMessageData);
       }
     }
   } catch (error) {
