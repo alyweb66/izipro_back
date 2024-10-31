@@ -1,6 +1,6 @@
 import Debug from 'debug';
 import DataLoader from 'dataloader';
-import { createHash } from 'crypto';
+// import { createHash } from 'crypto';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:CoreDatamapper`);
 
@@ -83,7 +83,6 @@ class CoreDatamapper {
       return records.map((record) => record || null);
     }
     const record = await this.findByUserIdsLoader.load(userId);
-    console.log('record', record);
 
     return record || null;
 
@@ -98,7 +97,7 @@ class CoreDatamapper {
   */
   async findAll() {
     const preparedQuery = {
-      text: `SELECT * FROM "${this.tableName}" `,
+      text: `SELECT * FROM "${this.tableName}" ${this.tableName === 'category' ? 'ORDER BY "name" ASC' : ''} `,
     };
     const result = await this.cacheQuery(preparedQuery);
     return result;

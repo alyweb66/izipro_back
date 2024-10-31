@@ -68,6 +68,28 @@ class Conversation extends CoreDatamapper {
 
     return request;
   }
+
+  /**
+   * Retrieves all conversation IDs where request_id is in the provided array of request IDs.
+   *
+   * @param {Array<number>} requestIds - An array of request IDs to find conversations for.
+   * @returns {Promise<Array<number>>} A promise that resolves to an array of conversation IDs.
+   * @throws {Error} If there is an issue with the database query.
+   */
+  async getConversationIdsByDeletedRequest() {
+    debug('Finding conversation ids by request ids');
+    debug(`SQL function ${this.tableName} called`);
+    // call sql function
+    const query = {
+      text: `SELECT conversation.id FROM "${this.tableName}" AS conversation
+      JOIN request ON request.id = conversation.request_id
+      WHERE request.deleted_at IS NOT NULL `,
+    };
+    const { rows } = await this.client.query(query);
+    const conversationIds = rows.map((row) => row.id);
+
+    return conversationIds;
+  }
 }
 
 export default Conversation;

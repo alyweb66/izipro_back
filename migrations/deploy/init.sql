@@ -60,7 +60,8 @@ CREATE TABLE "subscription"(
    "subscriber" TEXT NOT NULL CHECK (LENGTH("subscriber") <= 50),
    "subscriber_id" INT[] NOT NULL,
    "created_at" timestamptz NOT NULL DEFAULT now(),
-   "updated_at" timestamptz
+   "updated_at" timestamptz,
+   CONSTRAINT unique_user_subscriber UNIQUE ("user_id", "subscriber")
 );
 
 CREATE TABLE "notification_push"(
@@ -201,7 +202,7 @@ CREATE TABLE "user_has_notViewedRequest"(
 CREATE TABLE "user_has_notViewedConversation"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "user_id" INT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-   "conversation_id" INT NOT NULL REFERENCES "conversation"(id),
+   "conversation_id" INT NOT NULL REFERENCES "conversation"(id) ON DELETE CASCADE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );
@@ -212,7 +213,8 @@ CREATE TABLE "user_has_hiddingClientRequest"(
    "user_id" INT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
    "request_id" INT NOT NULL REFERENCES "request"(id) ON DELETE CASCADE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
-   "updated_at" timestamptz
+   "updated_at" timestamptz,
+   CONSTRAINT unique_user_request UNIQUE ("user_id", "request_id")
 );
 
 CREATE INDEX "idx_user_email" ON "user"("email");

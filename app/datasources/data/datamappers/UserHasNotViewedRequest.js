@@ -63,6 +63,29 @@ class UserHasNotViewedRequest extends CoreDatamapper {
   }
 
   /**
+   * Deletes a not viewed request by its request ID.
+   *
+   * @param {number} requestId - The ID of the request to delete.
+   * @returns {Promise<number>} - The number of rows affected by the delete operation.
+   */
+  async deleteNotViewedRequestById(requestId) {
+    debug('delete notViewedRequest by request id');
+    // map the ids to placeholders
+    const preparedQuery = {
+      text: `
+    DELETE FROM "${this.tableName}"
+    WHERE request_id = $1 
+  `,
+      values: [requestId],
+    };
+
+    const result = await this.client.query(preparedQuery);
+    const { rowCount } = result;
+
+    return rowCount;
+  }
+
+  /**
    * get user's not viewed request
    *
    * @param {number} requestId - The ID of the user to find.
