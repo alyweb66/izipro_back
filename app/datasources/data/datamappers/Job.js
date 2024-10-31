@@ -19,7 +19,7 @@ class Job extends CoreDatamapper {
       text: `
         SELECT *
         FROM "${this.tableName}"
-        WHERE "category_id" = $1
+        WHERE "category_id" = $1 ORDER BY "name" ASC
       `,
       values: [id],
     };

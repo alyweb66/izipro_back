@@ -31,30 +31,40 @@ async function createHiddenClientRequest(_, { input }, { dataSources }) {
     if (dataSources.userData.id !== input.user_id) {
       throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
     }
+    // Chedk if existing request
+    dataSources.dataDB.request.findByPkLoader.clear(input.request_id);
+    const request = await dataSources.dataDB.request.findByPk(input.request_id);
 
     const { isWithConversation, ...newInput } = input;
 
-    // create hidden client request
-    const isCreatedHiddenClientRequest = await
-    dataSources.dataDB.userHasHiddingClientRequest.create(
-      newInput,
-    );
-    if (!isCreatedHiddenClientRequest) {
-      throw new GraphQLError('Error creating hidden client request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+    let isCreatedHiddenClientRequest;
+    if (request && request.id > 0) {
+      // create hidden client request
+      isCreatedHiddenClientRequest = await
+      dataSources.dataDB.userHasHiddingClientRequest.create(
+        newInput,
+      );
+      if (!isCreatedHiddenClientRequest) {
+        throw new GraphQLError('Error creating hidden client request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      }
     }
 
-    if (!input.isWithConversation || input.isWithConversation === false) {
-      return isCreatedHiddenClientRequest;
+    if (
+      isCreatedHiddenClientRequest
+      && (!input.isWithConversation
+        || input.isWithConversation === false)
+    ) {
+      return true;
     }
-
     // remove subcription for this client conversation
+    dataSources.dataDB.subscription.findByUserIdsLoader.clear(input.user_id);
     const subscription = await dataSources.dataDB.subscription.findByUser(input.user_id);
 
     const userConversations = await
     dataSources.dataDB.conversation.getConversationByUser(input.user_id);
 
     const conversationToDelete = userConversations
-      .find((conversation) => conversation.request_id === input.request_id).id;
+      ?.find((conversation) => conversation.request_id === input.request_id)?.id;
 
     // remove request_id in the array of subscriber_id
     // for subscriber request and subscriber conversation
@@ -64,19 +74,21 @@ async function createHiddenClientRequest(_, { input }, { dataSources }) {
 
     // remove the conversation id from the subscriberRequestIds
     const updatedSubscriberConversationIds = subscriberRequestIds
-      .filter((id) => id !== conversationToDelete);
+      ?.filter((id) => id !== conversationToDelete);
 
     // Update subscription for request and conversation and delete not viewed conversation
     await Promise.all([
       dataSources.dataDB.subscription.createSubscription(input.user_id, 'clientConversation', updatedSubscriberConversationIds),
-      dataSources.dataDB.userHasNotViewedConversation.deleteNotViewedConversation({
-        user_id: input.user_id,
-        conversation_id: [conversationToDelete], // Convert Set back to Array
-      }),
+
+      conversationToDelete
+     && dataSources.dataDB.userHasNotViewedConversation.deleteNotViewedConversation({
+       user_id: input.user_id,
+       conversation_id: [conversationToDelete], // Convert Set back to Array
+     }),
     ]);
     // create new
 
-    return isCreatedHiddenClientRequest;
+    return true;
   } catch (error) {
     debug('error', error);
     throw new GraphQLError('Error creating hidden client request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });

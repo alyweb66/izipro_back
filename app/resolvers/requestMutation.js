@@ -118,7 +118,7 @@ async function createRequest(_, { input }, { dataSources }) {
       );
 
       if (!isCreatedRequestMedia
-      || (isCreatedRequestMedia.insert_request_has_media === false)) {
+        || (isCreatedRequestMedia.insert_request_has_media === false)) {
         throw new GraphQLError('Error creating request_has_media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
       }
     }
@@ -132,17 +132,14 @@ async function createRequest(_, { input }, { dataSources }) {
     dataSources.dataDB.subscription.findByUserIdsLoader.clear(dataSources.userData.id);
     // get subscription for request
     const subscription = await dataSources.dataDB.subscription.findByUser(dataSources.userData.id);
-    console.log('subscription', subscription);
 
     // get the subscriber_id for request
     const subscriberIds = subscription
       .filter((sub) => sub.subscriber === 'request')
       .flatMap((sub) => sub.subscriber_id);
-    console.log('subscriberIds', subscriberIds);
 
     // add request_id in the array of subscriber_id
     subscriberIds.push(isCreatedRequest.id);
-    console.log('subscriberIds', subscriberIds);
 
     // update subscription for request
     const isUpdatedSubscription = await dataSources.dataDB.subscription.createSubscription(
@@ -150,7 +147,6 @@ async function createRequest(_, { input }, { dataSources }) {
       'request',
       subscriberIds,
     );
-    console.log('isUpdatedSubscription', isUpdatedSubscription);
 
     //* Notification push starting
     // get the user that has not viewed the request
@@ -242,7 +238,7 @@ async function createRequest(_, { input }, { dataSources }) {
  * @param {Object} _ - The parent object, which is not used in this resolver.
  * @param {Object} args - The arguments provided to the field in the GraphQL query.
  * @param {{id: number, user_id: number}} args.input -
- * The input object containing the request details.
+ * The input object containing the id of the request.
  * @param {Object} context - The context object,
  * which contains dataSources and other contextual information.
  * @param {Object} context.dataSources - The data sources available in the context.
@@ -267,6 +263,7 @@ async function deleteRequest(_, { input }, { dataSources }) {
     }
 
     // get all subscription for the user
+    dataSources.dataDB.subscription.findByUserIdsLoader.clear(input.user_id);
     const subscription = await dataSources.dataDB.subscription.findByUser(input.user_id);
 
     // remove request_id in the array of subscriber_id
@@ -304,6 +301,8 @@ async function deleteRequest(_, { input }, { dataSources }) {
         user_id: input.user_id,
         conversation_id: requestConversationids, // Convert Set back to Array
       }),
+      // dataSources.dataDB.userHasHiddingClientRequest.deleteUserHiddingClientRequest(input.id),
+      dataSources.dataDB.userHasNotViewedRequest.deleteNotViewedRequestById(input.id),
     ]);
     // remove request
 

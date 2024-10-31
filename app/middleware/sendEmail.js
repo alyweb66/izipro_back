@@ -24,6 +24,13 @@ const logoAttachment = {
 };
 
 // Email to send the password reset link
+/**
+ * Sends a password reset email to the specified email address.
+ *
+ * @param {string} email - The email address to send the password reset email to.
+ * @param {string} resetToken - The token to be included in the password reset link.
+ * @returns {Promise<void>} A promise that resolves when the email has been sent.
+ */
 export async function sendPasswordResetEmail(email, resetToken) {
   const mailOptions = {
     from: process.env.EMAIL_SERVER,
@@ -47,6 +54,13 @@ export async function sendPasswordResetEmail(email, resetToken) {
 }
 
 // Email to send the account confirmation link
+/**
+ * Sends a confirmation email to the user with a confirmation token.
+ *
+ * @param {string} email - The email address of the user to send the confirmation email to.
+ * @param {string} confirmToken - The token used to confirm the user's email address.
+ * @returns {Promise<void>} - A promise that resolves when the email has been sent.
+ */
 export async function confirmEmail(email, confirmToken) {
   const mailOptions = {
     from: process.env.EMAIL_SERVER,
@@ -70,6 +84,12 @@ export async function confirmEmail(email, confirmToken) {
 }
 
 // Email to send the password change confirmation
+/**
+ * Sends an email to notify the user about a password change.
+ *
+ * @param {string} email - The email address of the recipient.
+ * @returns {Promise<void>} - A promise that resolves when the email has been sent.
+ */
 export async function changePasswordEmail(email) {
   const mailOptions = {
     from: process.env.EMAIL_SERVER,

@@ -45,6 +45,17 @@ async function createMessage(_, { id, input }, { dataSources }) {
   }
 
   try {
+    // Chedk if existing request
+    dataSources.dataDB.request.findByPkLoader.clear(input.request_id);
+    const request = await dataSources.dataDB.request.findByPk(input.request_id);
+    // if request does not exist return false
+    if (request.deleted_at !== null || !request || request.id === 0) {
+      return {
+        __typename: 'BooleanResult',
+        success: false,
+      };
+    }
+
     let newConversation;
     // create conversation if it does not exist
     if ((!input.conversation_id || input.conversation_id === 0) && dataSources.userData.role === 'pro') {
@@ -60,11 +71,11 @@ async function createMessage(_, { id, input }, { dataSources }) {
     if (!input.conversation_id && !newConversation) {
       throw new GraphQLError('No conversation', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
-    console.log('newConversation', newConversation);
 
     // update subscription
     // get all subscription for the user
     if (newConversation && newConversation.id && dataSources.userData.role === 'pro') {
+      dataSources.dataDB.subscription.findByUserIdsLoader.clear(input.user_id);
       const subscription = await dataSources.dataDB.subscription.findByUser(input.user_id);
 
       const subscriberRequestIds = subscription
@@ -74,11 +85,26 @@ async function createMessage(_, { id, input }, { dataSources }) {
       if (!subscriberRequestIds.includes(input.conversation_id || newConversation.id)) {
         subscriberRequestIds.push(input.conversation_id || newConversation.id);
       }
-      console.log('subscriberRequestIds', subscriberRequestIds);
 
+      // create or update subscription for the user who
+      // created the request to this new conversation
+      dataSources.dataDB.subscription.findByUserIdsLoader.clear(input.user_request_id);
+      const userCreatedRequestSubscription = await
+      dataSources.dataDB.subscription.findByUser(input.user_request_id);
+
+      const subscriberConversationRequestIds = userCreatedRequestSubscription
+        ?.filter((sub) => sub.subscriber === 'conversation')
+        .flatMap((sub) => sub.subscriber_id) || [];
+
+      if (!subscriberConversationRequestIds.includes(input.conversation_id || newConversation.id)) {
+        subscriberConversationRequestIds.push(input.conversation_id || newConversation.id);
+      }
       // update subscription
-      const newClientConversationSubscription = await dataSources.dataDB.subscription.createSubscription(input.user_id, 'clientConversation', subscriberRequestIds);
-      debug('newClientConversationSubscription', newClientConversationSubscription);
+      await Promise.all([
+        dataSources.dataDB.subscription.createSubscription(input.user_id, 'clientConversation', subscriberRequestIds),
+        dataSources.dataDB.subscription.createSubscription(input.user_request_id, 'conversation', subscriberConversationRequestIds),
+
+      ]);
     }
     // remove request_id in the array of subscriber_id
     // for subscriber request and subscriber conversation
@@ -89,14 +115,11 @@ async function createMessage(_, { id, input }, { dataSources }) {
       conversation_id: input.conversation_id || newConversation.id,
     };
 
-    console.log('messageInput', messageInput);
-
     // create message
     const isCreatedMessage = await dataSources.dataDB.message.create(messageInput);
     if (!isCreatedMessage) {
       throw new GraphQLError('No created message', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
-    console.log('isCreatedMessage', isCreatedMessage);
 
     // mapping the media array to createReadStream
     let isCreatedMessageMedia;
@@ -163,7 +186,6 @@ async function createMessage(_, { id, input }, { dataSources }) {
       0,
       1,
     );
-    console.log('message sending', message);
 
     if (!message[0].content && !message[0].media.length === 0 && message[0].id) {
       // delete message if no content and media
@@ -236,9 +258,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
     debug('created media undefined if no media', isCreatedMessageMedia);
 
     if (newConversation) {
-      console.log('send message to client', message);
       const newMessage = message[0];
-      console.log('newMessage', newMessage);
 
       return {
         __typename: 'Message',
@@ -252,7 +272,6 @@ async function createMessage(_, { id, input }, { dataSources }) {
       };
     }
 
-    console.log('send boolean');
     return {
       __typename: 'BooleanResult',
       success: true,

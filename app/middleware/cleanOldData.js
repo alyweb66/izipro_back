@@ -114,7 +114,26 @@ async function checkObsoleteUsers(dataSources) {
 async function checkObsoleteRequests(dataSources) {
   debug('Checking for obsolete requests...');
   try {
+    // get all conversation id from the requests deleted
+    const conversationIds = await
+    dataSources.dataDB.conversation.getConversationIdsByDeletedRequest();
+
+    // remove all the request.id and conversation id from all subscription
+    const subscriptions = await dataSources.dataDB.subscription.findAll();
+
+    // check if the conversation id is in the subscription and remove it
+    subscriptions.forEach(async (subscription) => {
+      if (subscription.subscriber === 'clientConversation') {
+        const subscriberIds = subscription.subscriber_id;
+
+        const newConversationIds = subscriberIds.filter((id) => !conversationIds.includes(id));
+
+        dataSources.dataDB.subscription.createSubscription(subscription.user_id, 'clientConversation', newConversationIds);
+      }
+    });
+
     await dataSources.dataDB.request.deleteObsoleteRequests();
+
     debug('Obsolete requests check complete.');
   } catch (error) {
     debug('Error while checking obsolete users:', error);
