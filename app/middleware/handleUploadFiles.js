@@ -38,6 +38,8 @@ async function getBuffer(stream) {
 async function handleUploadedFiles(media, message = false) {
   debug('Sharp: sharp is running');
   debugInDevelopment(media);
+  console.log(sharp.format);
+
   try {
     const compressedFiles = await Promise.all(media.map(async (file) => {
       const { mimetype, filename, buffer } = file;
@@ -73,24 +75,11 @@ async function handleUploadedFiles(media, message = false) {
       }
 
       // Compression of images with Sharp
-      if (mimetype.startsWith('image/') || extension === '.heic' || extension === '.heif') {
+      if ((mimetype.startsWith('image/')) || (extension === '.heic') || (extension === '.heif')) {
         let imageBuffer;
-        if (mimetype.startsWith('image/')) {
+        if ((mimetype.startsWith('image/'))) {
           imageBuffer = await getBuffer(buffer);
-        } else if (extension === '.heif') {
-          try {
-            const bufferData = await getBuffer(buffer);
-
-            // Convertir HEIF en JPEG
-            imageBuffer = await sharp(bufferData)
-              .rotate()
-              .toFormat('jpeg')
-              .toBuffer();
-          } catch (error) {
-            debug('Error converting HEIF to JPEG');
-            throw new GraphQLError(error, { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
-          }
-        } else if (extension === '.heic') {
+        } else if ((extension === '.heic') || (extension === '.heif')) {
           try {
             const bufferData = await getBuffer(buffer);
             // Convertir HEIC en JPEG
@@ -105,7 +94,6 @@ async function handleUploadedFiles(media, message = false) {
         } else {
           throw new GraphQLError('Invalid file type', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
         }
-        console.log('imageBuffer', imageBuffer);
 
         // Create and save the compressed file
         await sharp(imageBuffer)
