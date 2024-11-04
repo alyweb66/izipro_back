@@ -601,11 +601,14 @@ async function updateUser(_, { id, input }, { dataSources }) {
 
     const validExtensions = ['.jpg', '.jpeg', '.png', '.heic', '.heif'];
     // mapping the media array to createReadStream
+    console.log('input.file', input.image[0].file);
+
     let imageInput;
     if (input.image
       && input.image.length > 0
       && input.image[0].file
-      && input.image[0].file.filename.includes(validExtensions)) {
+      && validExtensions.some((ext) => input.image[0].file.filename.endsWith(ext))) {
+      console.log('input.image', input.image);
       const ReadStreamArray = await Promise.all(input.image.map(async (upload) => {
         const fileUpload = upload.file;
         if (!fileUpload) {
@@ -647,10 +650,15 @@ async function updateUser(_, { id, input }, { dataSources }) {
         }
       }
     }
+
     // Update the input image with the new url
     if (imageInput) {
+      console.log('imageInput', imageInput);
       updateInput.image = imageInput;
+    } else if (!imageInput && input.image && input.image.length > 0) {
+      throw new GraphQLError('Error updating image', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
+    console.log('updateInput', updateInput);
 
     return dataSources.dataDB.user.update(id, updateInput);
   } catch (error) {
@@ -658,7 +666,7 @@ async function updateUser(_, { id, input }, { dataSources }) {
       throw error;
     }
     debug('error', error);
-    throw new GraphQLError('Error updating user', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+    throw new GraphQLError('Error updating image user', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
 /**
