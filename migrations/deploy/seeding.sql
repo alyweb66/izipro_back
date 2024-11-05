@@ -40,8 +40,9 @@ INSERT INTO "category" (
     ('Informatique et technologies de l''information'),
     ('Immobilier'),
     ('Animaux'),
-    ('Arts et divertissement');
-
+    ('Arts et divertissement'),
+    ('horticulture et jardinage'),
+    ('Services de nettoyage et d''entretien');
 
 
 INSERT INTO "job" (
@@ -59,7 +60,6 @@ INSERT INTO "job" (
     ('Cours particuliers à domicile (soutien scolaire)', 'Enseignement et soutien pédagogique individualisé dans différentes matières.', 1),
     ('Assistant personnel (aide administrative, courses, etc.)', 'Assistance dans les tâches administratives, les courses et les démarches quotidiennes.', 1),
     ('Cuisinier/cuisinière à domicile', 'Préparation de repas à domicile selon les préférences et les besoins spécifiques des clients.', 1),
-    ('Coach sportif personnel', 'Encadrement individuel dans la pratique d''activités physiques et sportives.', 1),
     ('Soins esthétiques à domicile (esthéticien(ne))', 'Soins de beauté et de bien-être à domicile, tels que les massages, les soins du visage, etc.', 1),
     ('Préparateur de repas à domicile', 'Préparation et livraison de repas cuisinés à domicile.', 1),
     ('Entretien de jardin et de plantes d''intérieur', 'Entretien des espaces verts, des jardins et des plantes d''intérieur.', 1),
@@ -67,7 +67,6 @@ INSERT INTO "job" (
     ('Services de massage thérapeutique à domicile', 'Massages thérapeutiques et de relaxation effectués à domicile.', 1),
     ('Plombier', 'Installation, réparation et entretien des systèmes de plomberie.', 2),
     ('Électricien', 'Installation, réparation et maintenance des systèmes électriques et des appareils électriques.', 2),
-    ('Paysagiste', 'Conception, aménagement et entretien des espaces extérieurs, y compris la sélection de plantes et d''arbres.', 2),
     ('Architecte paysagiste', 'Conception de plans et de dessins pour la création ou la rénovation de jardins et d''espaces paysagers.', 2),
     ('Menuisier/charpentier', 'Travail du bois pour la construction, la rénovation et l''aménagement intérieur.', 2),
     ('Maçon', 'Construction, réparation et restauration des structures en maçonnerie (murs, fondations, etc.).', 2),
@@ -221,8 +220,14 @@ INSERT INTO "job" (
     ('Animateur/animatrice', 'Animation d''événements, de spectacles ou de programmes télévisés ou radiophoniques.', 14),
     ('Designer graphique', 'Création d''éléments visuels tels que des logos, des affiches, des emballages, etc.', 14),
     ('Maquilleur/maquilleuse', 'Application de maquillage pour des productions artistiques, des événements ou des séances photo.', 14),
-    ('Costumier/costumière', 'Conception et création de costumes pour des productions théâtrales, cinématographiques ou télévisuelles.', 14);
-
+    ('Costumier/costumière', 'Conception et création de costumes pour des productions théâtrales, cinématographiques ou télévisuelles.', 14),
+    ('Jardinier paysagiste', 'Conception, aménagement et entretien des jardins et espaces verts pour des particuliers ou des entreprises.', 15),
+    ('Maraîcher', 'Culture de légumes, fruits et autres plantes comestibles en plein champ ou sous serre, souvent destinés à la vente directe ou aux marchés locaux.', 15),
+    ('Pépiniériste', 'Production, culture et vente de jeunes plants d''arbres, d''arbustes et de plantes diverses.', 15),
+    ('Fleuriste', 'Création et vente de compositions florales, entretien et vente de fleurs et plantes décoratives.', 15),
+    ('Nettoyeur de véhicules', 'Nettoyage intérieur et extérieur de voitures, motos, engins de chantier ou bateaux, incluant le lavage, le polissage et l''entretien des surfaces et des matériaux.', 16),
+    ('Agent d''entretien', 'Nettoyage et entretien des locaux, bureaux, et espaces publics ou privés.', 16),
+    ('Exterminateur de nuisibles', 'Éradication et contrôle des infestations de nuisibles comme les rats, souris, cafards, punaises de lit et autres parasites, en utilisant des méthodes chimiques, mécaniques ou biologiques.', 16);
 
 
 /* INSERT INTO "request"(
