@@ -46,8 +46,7 @@ async function handleUploadedFiles(media, message = false) {
       const fileNameWithoutExtension = path.parse(filename).name;
       // Get the extension of the file
       const extension = path.extname(filename).toLowerCase();
-      console.log('extension', extension);
-      console.log('fileNameWithoutExtension', fileNameWithoutExtension);
+
       const validExtensions = ['.jpg', '.jpeg', '.png', '.heic', '.heif', '.pdf'];
       if (!validExtensions.includes(extension)) {
         throw new GraphQLError('Invalid file extension', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
