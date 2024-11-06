@@ -263,6 +263,21 @@ const serverCleanup = useServer({ schema }, wsServer);
 const server = new ApolloServer({
   schema,
   csrfPrevention: true,
+  formatError: (err) => {
+    // Check if the error is a GraphQLError
+    if (err.extensions && err.extensions.code) {
+      return {
+        message: err.message,
+        code: err.extensions.code,
+        httpStatus: err.extensions.httpStatus || 500,
+        path: err.path,
+        locations: err.locations,
+      };
+    }
+
+    // Return the error if it is not a GraphQLError
+    return err;
+  },
   plugins: [
     // Proper shutdown for the HTTP server.
     ApolloServerPluginDrainHttpServer({ httpServer }),
