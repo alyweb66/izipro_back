@@ -146,7 +146,8 @@ async function createMessage(_, { id, input }, { dataSources }) {
       }));
 
       // calling the handleUploadedFiles function to compress the images and save them
-      const media = await handleUploadedFiles(ReadStreamArray, true);
+      const media = await
+      handleUploadedFiles(ReadStreamArray, isCreatedMessage.id, dataSources, true);
 
       // create media
       const createMedia = await dataSources.dataDB.media.createMedia(media);

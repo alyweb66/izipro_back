@@ -99,7 +99,7 @@ async function createRequest(_, { input }, { dataSources }) {
       }));
 
       // calling the handleUploadedFiles function to compress the images and save them
-      const media = await handleUploadedFiles(ReadStreamArray);
+      const media = await handleUploadedFiles(ReadStreamArray, isCreatedRequest.id, dataSources);
 
       // create media
       const createMedia = await dataSources.dataDB.media.createMedia(media);
@@ -122,6 +122,7 @@ async function createRequest(_, { input }, { dataSources }) {
         throw new GraphQLError('Error creating request_has_media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
       }
     }
+
     // get the request with media and conversation
     const subscriptionResult = await dataSources.dataDB.request.getSubscritpionRequest(
       [isCreatedRequest.job_id],
