@@ -124,7 +124,7 @@ async function createUserFunction(_, { input }, { dataSources }) {
     const addRole = input.siret ? 'pro' : 'user';
 
     // Create a token and send an email to confirm the email address
-    const token = jwt.sign({ email: input.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ email: input.email }, process.env.JWT_SECRET, { expiresIn: '24h' });
     debugInDevelopment('Token is generated', token);
     await sendEmail.confirmEmail(input.email, token);
     debug('confirmEmail sent');
@@ -576,8 +576,8 @@ async function updateUser(_, { id, input }, { dataSources }) {
     }
     // Remove siret and company_name if the user is not a pro
     const updateInput = { ...input };
+    delete updateInput.siret;
     if (dataSources.userData.role === 'user') {
-      delete updateInput.siret;
       delete updateInput.denomination;
     }
 
@@ -598,7 +598,7 @@ async function updateUser(_, { id, input }, { dataSources }) {
       throw new GraphQLError('User not found', { extensions: { code: 'NOT_FOUND', httpStatus: 404 } });
     }
 
-    const validExtensions = ['.jpg', '.jpeg', '.png', '.heic', '.heif'];
+    const validExtensions = ['.jpg', '.jpeg', '.png'];
     // mapping the media array to createReadStream
 
     let imageInput;
