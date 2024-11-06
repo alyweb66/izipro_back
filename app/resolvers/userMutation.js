@@ -83,7 +83,11 @@ async function createUserFunction(_, { input }, { dataSources }) {
     // Check if user exists
     const existingUser = await dataSources.dataDB.user.findUserByEmail(input.email);
     if (existingUser) {
-      throw new GraphQLError('incorrect email or password', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      if (input.siret) {
+        throw new GraphQLError('incorrect email or password Pro', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      } else {
+        throw new GraphQLError('incorrect email or password', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      }
     }
 
     // Hash the password using bcrypt
@@ -109,6 +113,9 @@ async function createUserFunction(_, { input }, { dataSources }) {
         throw new GraphQLError('Siret not found', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
       }
       if (Number(siretData.siret) !== input.siret) {
+        throw new GraphQLError('Siret not found', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      }
+      if (siretData?.periodesEtablissement?.[0]?.etatAdministratifEtablissement === 'F') {
         throw new GraphQLError('Siret not found', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
       }
     }
@@ -155,7 +162,12 @@ async function createUserFunction(_, { input }, { dataSources }) {
     return { __typename: 'User', ...createdUser };
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error creating user', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+    throw new GraphQLError(error.message || 'Internal Server Error', {
+      extensions: {
+        code: error.extensions?.code || 'INTERNAL_SERVER_ERROR',
+        httpStatus: error.extensions?.httpStatus || 500,
+      },
+    });
   }
 }
 /**
@@ -337,7 +349,7 @@ async function logout(_, { id }, { dataSources, res, req }) {
   debug('logout is starting');
   try {
     // Controle if it's the good user who want to logout
-    if (id && dataSources.userData && dataSources.userData.id === id) {
+    if (id && dataSources.userData && dataSources.userData.id === id && req) {
       // get refresh_token from cookie
       const cookies = cookie.parse(req.headers.cookie || '');
 
@@ -432,25 +444,12 @@ async function deleteUser(_, { id }, { dataSources, res }) {
     };
 
     dataSources.dataDB.user.update(id, cleanUser);
-
-    // delete all subscriptions of the user
-    const deletedSubscription = await dataSources.dataDB.subscription.deleteByUserId(id);
-    if (!deletedSubscription) {
-      throw new GraphQLError('Error deleting subscription', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
-    }
-
-    // delete all notViewedConversation of the user
-    const deletedNotViewedConversation = await
-    dataSources.dataDB.notViewedConversation.deleteByUserId(id);
-    if (!deletedNotViewedConversation) {
-      throw new GraphQLError('Error deleting notViewedConversation', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
-    }
-
-    // delete user setting
-    const deletedUserSetting = await dataSources.dataDB.userSetting.deleteByUserId(id);
-    if (!deletedUserSetting) {
-      throw new GraphQLError('Error deleting user setting', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
-    }
+    // delete all subscriptions, notViewedConversation, and user settings of the user in parallel
+    await Promise.all([
+      dataSources.dataDB.subscription.deleteByUserId(id),
+      dataSources.dataDB.userHasNotViewedConversation.deleteByUserId(id),
+      dataSources.dataDB.userSetting.deleteByUserId(id),
+    ]);
 
     logout(null, { id }, { dataSources, res });
     return true;
