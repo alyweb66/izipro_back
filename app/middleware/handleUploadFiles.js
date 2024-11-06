@@ -2,9 +2,8 @@
 import Debug from 'debug';
 import path from 'path';
 import sharp from 'sharp';
-import convert from 'heic-convert';
+// import convert from 'heic-convert';
 import crypto from 'node:crypto';
-import { pipeline } from 'stream';
 import { GraphQLError } from 'graphql';
 import fs from 'fs';
 
@@ -36,7 +35,7 @@ async function getBuffer(stream) {
 }
 
 // function that uses Sharp to compress images
-async function handleUploadedFiles(media, message = false) {
+async function handleUploadedFiles(media, itemId, dataSources, message = false) {
   debug('Sharp: sharp is running');
   debugInDevelopment(media);
 
@@ -47,7 +46,7 @@ async function handleUploadedFiles(media, message = false) {
       // Get the extension of the file
       const extension = path.extname(filename).toLowerCase();
 
-      const validExtensions = ['.jpg', '.jpeg', '.png', '.heic', '.heif', '.pdf'];
+      const validExtensions = ['.jpg', '.jpeg', '.png', '.pdf'];
       if (!validExtensions.includes(extension)) {
         throw new GraphQLError('Invalid file extension', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
       }
@@ -60,11 +59,11 @@ async function handleUploadedFiles(media, message = false) {
       let uniqueFileName;
       let thumbnailFileName;
       // Create a unique file name
-      if (mimetype.startsWith('image/') || extension === '.heic' || extension === '.heif') {
-        uniqueFileName = `${fileNameWithoutExtension}_${Date.now()}_${uniqueId}.webp`;
-        thumbnailFileName = `${fileNameWithoutExtension}_${Date.now()}_${uniqueId}_thumb.webp`;
+      if (mimetype.startsWith('image/')) {
+        uniqueFileName = `${fileNameWithoutExtension}_${uniqueId}.webp`;
+        thumbnailFileName = `${fileNameWithoutExtension}_${uniqueId}_thumb.webp`;
       } else if (mimetype === 'application/pdf') {
-        uniqueFileName = `${fileNameWithoutExtension}_${Date.now()}_${uniqueId}${path.extname(filename)}`;
+        uniqueFileName = `${fileNameWithoutExtension}_${uniqueId}${path.extname(filename)}`;
       }
 
       // Create the file path
@@ -74,12 +73,13 @@ async function handleUploadedFiles(media, message = false) {
         thumbnailFilePath = `./public/media/${thumbnailFileName}`;
       }
 
+      // Get the buffer of the file
+      const fileBuffer = await getBuffer(buffer);
+
       // Compression of images with Sharp
-      if ((mimetype.startsWith('image/')) || (extension === '.heic') || (extension === '.heif')) {
-        let imageBuffer;
-        if ((mimetype.startsWith('image/'))) {
-          imageBuffer = await getBuffer(buffer);
-        } else if ((extension === '.heic') || (extension === '.heif')) {
+      if (mimetype.startsWith('image/') && fileBuffer.length < 1.5e+7) {
+        // const imageBuffer = await getBuffer(buffer);
+        /* else if ((extension === '.heic') || (extension === '.heif')) {
           try {
             const bufferData = await getBuffer(buffer);
             // Convertir HEIC en JPEG
@@ -89,14 +89,18 @@ async function handleUploadedFiles(media, message = false) {
             });
           } catch (error) {
             debug('Error converting HEIC to JPEG');
-            throw new GraphQLError(error, { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
+            if (message) {
+              dataSources.dataDB.message.delete(itemId);
+            } else {
+              dataSources.dataDB.request.delete(itemId);
+            }
+            throw new GraphQLError('Invalid file type', { e
+            xtensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
           }
-        } else {
-          throw new GraphQLError('Invalid file type', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
-        }
+        } */
 
         // Create and save the compressed file
-        await sharp(imageBuffer)
+        await sharp(fileBuffer)
           .rotate() // correct orientation
           .resize({ width: 1920, withoutEnlargement: true })
           .webp({ quality: 75, effort: 6 })
@@ -104,22 +108,22 @@ async function handleUploadedFiles(media, message = false) {
 
         // Create and save the thumbnail
         if (message) {
-          await sharp(imageBuffer)
+          await sharp(fileBuffer)
             .rotate()
             .resize({ width: 1920, withoutEnlargement: true }) // Same dimensions
             .webp({ quality: 1, effort: 6 }) // Lower quality for placeholder
             .blur(80) // Apply blur to make it more "placeholder-like"
             .toFile(thumbnailFilePath); // Save thumbnail file
         }
-      } else if (mimetype === 'application/pdf' && file.size < 1025) {
-        // register pdf file without compression
-        await new Promise((resolve, reject) => {
-          pipeline(buffer, fs.createWriteStream(filePath), (err) => {
-            if (err) reject(err);
-            resolve();
-          });
-        });
+      } else if (mimetype === 'application/pdf' && fileBuffer.length < 1048576) {
+        // Record the file without compression
+        await fs.promises.writeFile(filePath, fileBuffer);
       } else {
+        if (message) {
+          dataSources.dataDB.message.delete(itemId);
+        } else {
+          dataSources.dataDB.request.delete(itemId);
+        }
         throw new GraphQLError('Invalid file type', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
       }
 

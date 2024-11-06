@@ -71,7 +71,7 @@ export async function confirmEmail(email, confirmToken) {
       <h1 style="fontSize: 1.2rem">Confirmation de compte</h1>
 
       <p>Bonjour,</p>
-      <p>Votre inscription sur notre plateforme a été effectuée avec succès. Veuillez cliquer sur le bouton ci-dessous pour confirmer votre compte. :</p>
+      <p>Votre inscription sur notre plateforme a été effectuée avec succès. Veuillez cliquer sur le bouton ci-dessous pour confirmer votre compte :</p>
       <a href="${process.env.CORS_ORIGIN}/confirm-email?token=${confirmToken}" style="background-color: #F79323; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Confirmer le compte</a>
       <p>Si vous n'avez pas demandé de confirmation de compte, ignorez simplement cet e-mail.</p>
 

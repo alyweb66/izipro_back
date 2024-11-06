@@ -24,6 +24,7 @@ class SirenAPI extends RESTDataSource {
   async getSiretData(siret) {
     try {
       const response = await this.get(siret);
+
       debug('response', response.etablissement);
       return response.etablissement;
     } catch (error) {
