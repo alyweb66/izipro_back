@@ -49,7 +49,7 @@ INSERT INTO "job" (
     "name", 
     "description", 
     "category_id"
-   
+
 ) VALUES
     ('Baby-sitter/garde d''enfants', 'Garde occasionnelle ou régulière d''enfants, souvent réalisée à domicile des parents.', 1),
     ('Aide à domicile/auxiliaire de vie', 'Assistance aux personnes âgées, handicapées ou dépendantes pour les actes de la vie quotidienne.', 1),
@@ -68,7 +68,7 @@ INSERT INTO "job" (
     ('Plombier', 'Installation, réparation et entretien des systèmes de plomberie.', 2),
     ('Électricien', 'Installation, réparation et maintenance des systèmes électriques et des appareils électriques.', 2),
     ('Architecte paysagiste', 'Conception de plans et de dessins pour la création ou la rénovation de jardins et d''espaces paysagers.', 2),
-    ('Menuisier/charpentier', 'Travail du bois pour la construction, la rénovation et l''aménagement intérieur.', 2),
+    ('Menuisier/charpentier/ébéniste', 'Travail du bois pour la construction, la rénovation et l''aménagement intérieur.', 2),
     ('Maçon', 'Construction, réparation et restauration des structures en maçonnerie (murs, fondations, etc.).', 2),
     ('Plâtrier/peintre', 'Application de revêtements muraux, plâtrage et peinture des surfaces intérieures et extérieures.', 2),
     ('Carreleur', 'Pose de carrelage sur les sols et les murs.', 2),
@@ -89,10 +89,6 @@ INSERT INTO "job" (
     ('Technicien informatique', 'Réparation, dépannage et maintenance des ordinateurs et des systèmes informatiques.', 3),
     ('Technicien en électronique', 'Réparation et maintenance des équipements électroniques et des appareils électroniques.', 3),
     ('Technicien en HVAC (Chauffage, Ventilation, Climatisation)', 'Installation, maintenance et réparation des systèmes de chauffage, de ventilation et de climatisation.', 3),
-    ('Plombier', 'Réparation et entretien des installations de plomberie.', 3),
-    ('Électricien', 'Réparation et maintenance des systèmes électriques et des appareils électriques.', 3),
-    ('Menuisier/charpentier', 'Réparation et restauration des structures en bois et des éléments de menuiserie.', 3),
-    ('Plâtrier/peintre', 'Réparation et rénovation des surfaces murs et des revêtements de plâtre et de peinture.', 3),
     ('Coiffeur/coiffeuse', 'Services de coupe, de coloration, de coiffage et de traitement capillaire.', 4),
     ('Esthéticien(ne)', 'Services de soins esthétiques tels que les soins du visage, les épilations, les manucures, etc.', 4),
     ('Maquilleur/maquilleuse', 'Services de maquillage professionnel pour les occasions spéciales et les événements.', 4),
