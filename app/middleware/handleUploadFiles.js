@@ -4,7 +4,6 @@ import path from 'path';
 import sharp from 'sharp';
 // import convert from 'heic-convert';
 import crypto from 'node:crypto';
-import { pipeline } from 'stream';
 import { GraphQLError } from 'graphql';
 import fs from 'fs';
 
