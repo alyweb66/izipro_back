@@ -114,6 +114,7 @@ app.use(async (req, res, next) => {
         const cookies = cookie.parse(req.headers.cookie);
         if (cookies['auth-token'] && req.body.operationName !== 'Login') {
           req.userData = await getUserByToken(req, res, dataSources);
+
           if (!req.userData) {
             setTimeout(() => {
               req.authError = true;
@@ -131,6 +132,7 @@ app.use(async (req, res, next) => {
 
       // Attach userData to dataSources
       dataSources.userData = req.userData;
+
       // next();
     } catch (error) {
       debug('error', error);
