@@ -43,7 +43,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
   if (!input.content && (!input.media || input.media.length === 0)) {
     throw new GraphQLError('No content or media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
-
+  let isCreatedMessage;
   try {
     // stock the user data in a variable to not loose data in dataSource by clearing the cache
     const userDataSources = dataSources.userData;
@@ -118,7 +118,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
     };
 
     // create message
-    const isCreatedMessage = await dataSources.dataDB.message.create(messageInput);
+    isCreatedMessage = await dataSources.dataDB.message.create(messageInput);
     if (!isCreatedMessage) {
       throw new GraphQLError('No created message', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
@@ -281,6 +281,9 @@ async function createMessage(_, { id, input }, { dataSources }) {
     };
   } catch (error) {
     debug('error', error);
+    if (error && isCreatedMessage && isCreatedMessage.id) {
+      dataSources.dataDB.message.delete(isCreatedMessage.id);
+    }
     throw new GraphQLError(error, { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
   }
 }
