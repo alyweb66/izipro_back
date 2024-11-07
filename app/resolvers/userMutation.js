@@ -567,17 +567,19 @@ async function updateUser(_, { id, input }, { dataSources }) {
   debugInDevelopment('input', input);
 
   try {
+    // stock the user data in a variable to not loose data in dataSource by clearing the cache
+    const userDataSources = dataSources.userData;
     // clear the cache
     dataSources.dataDB.user.cache.clear();
     dataSources.dataDB.user.findByPkLoader.clear(dataSources.userData.id);
 
-    if (dataSources.userData === null || dataSources.userData.id !== id) {
+    if (dataSources.userData === null || userDataSources.id !== id) {
       throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
     }
     // Remove siret and company_name if the user is not a pro
     const updateInput = { ...input };
     delete updateInput.siret;
-    if (dataSources.userData.role === 'user') {
+    if (userDataSources.role === 'user') {
       delete updateInput.denomination;
     }
 
