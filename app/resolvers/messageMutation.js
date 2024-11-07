@@ -45,6 +45,8 @@ async function createMessage(_, { id, input }, { dataSources }) {
   }
 
   try {
+    // stock the user data in a variable to not loose data in dataSource by clearing the cache
+    const userDataSources = dataSources.userData;
     // Chedk if existing request
     dataSources.dataDB.request.findByPkLoader.clear(input.request_id);
     const request = await dataSources.dataDB.request.findByPk(input.request_id);
@@ -74,7 +76,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
 
     // update subscription
     // get all subscription for the user
-    if (newConversation && newConversation.id && dataSources.userData.role === 'pro') {
+    if (newConversation && newConversation.id && userDataSources.role === 'pro') {
       dataSources.dataDB.subscription.findByUserIdsLoader.clear(input.user_id);
       const subscription = await dataSources.dataDB.subscription.findByUser(input.user_id);
 

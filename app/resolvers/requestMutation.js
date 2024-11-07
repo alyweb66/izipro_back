@@ -66,6 +66,9 @@ async function createRequest(_, { input }, { dataSources }) {
     throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
   }
   try {
+    // stock the user data in a variable to not loose data in dataSource by clearing the cache
+    const userDataSources = dataSources.userData;
+
     const requestInput = { ...input };
     delete requestInput.media;
 
@@ -132,7 +135,7 @@ async function createRequest(_, { input }, { dataSources }) {
 
     dataSources.dataDB.subscription.findByUserIdsLoader.clear(dataSources.userData.id);
     // get subscription for request
-    const subscription = await dataSources.dataDB.subscription.findByUser(dataSources.userData.id);
+    const subscription = await dataSources.dataDB.subscription.findByUser(userDataSources.id);
 
     // get the subscriber_id for request
     const subscriberIds = subscription
@@ -144,7 +147,7 @@ async function createRequest(_, { input }, { dataSources }) {
 
     // update subscription for request
     const isUpdatedSubscription = await dataSources.dataDB.subscription.createSubscription(
-      dataSources.userData.id,
+      userDataSources.id,
       'request',
       subscriberIds,
     );

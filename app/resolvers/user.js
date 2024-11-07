@@ -313,8 +313,6 @@ const UserResolver = {
       // clear cache
       dataSources.dataDB.notification.findByUserIdsLoader.clear(id);
       const notification = await dataSources.dataDB.notification.getAllNotifications(id);
-      console.log(notification);
-
       return notification;
     } catch (error) {
       debug('error', error);
