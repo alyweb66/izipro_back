@@ -133,15 +133,16 @@ async function handleUploadedFiles(media, itemId, dataSources, message = false) 
         : `${process.env.FILE_URL}/public/media/`;
       // Create the URL for the file
       const pictureUrl = `${baseUrl}${uniqueFileName}`;
+
       // Create the URL for the thumbnail
       let thumbnailUrl;
-      if (message) {
+      if (message && mimetype.startsWith('image/')) {
         thumbnailUrl = `${baseUrl}${thumbnailFileName}`;
       }
 
       return {
         url: pictureUrl,
-        ...(message ? { thumbnail: thumbnailUrl } : {}),
+        ...((message && mimetype.startsWith('image/')) ? { thumbnail: thumbnailUrl } : {}),
         name: uniqueFileName,
       };
     }));

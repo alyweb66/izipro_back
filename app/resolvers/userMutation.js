@@ -583,6 +583,7 @@ async function updateUser(_, { id, input }, { dataSources }) {
       delete updateInput.denomination;
     }
 
+    // get user data
     const user = await dataSources.dataDB.user.findByPk(id);
 
     // Check if the email has changed to send a new confirmation email
@@ -601,8 +602,8 @@ async function updateUser(_, { id, input }, { dataSources }) {
     }
 
     const validExtensions = ['.jpg', '.jpeg', '.png'];
-    // mapping the media array to createReadStream
 
+    // mapping the media array to createReadStream
     let imageInput;
     if (input.image
       && input.image.length > 0
