@@ -28,13 +28,13 @@ INSERT INTO "category" (
     "name"
 ) VALUES
     ('Services à la personne'),
-    ('Métiers du bâtiment et de la construction'),
+    ('Bâtiment et construction'),
     ('Services de réparation et de maintenance'),
-    ('Métiers de la coiffure et de l''esthétique'),
+    ('Coiffure et esthétique'),
     ('Enseignement et tutorat'),
     ('Services de restauration'),
-    ('Métiers de la santé et du bien-être'),
-    ('Métiers de la couture et de la mode'),
+    ('Santé et bien-être'),
+    ('Couture et mode'),
     ('Services de déménagement et de transport'),
     ('Evénementiel'),
     ('Informatique et technologies de l''information'),
