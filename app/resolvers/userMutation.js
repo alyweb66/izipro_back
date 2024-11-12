@@ -439,6 +439,7 @@ async function deleteUser(_, { id }, { dataSources, res }) {
       refresh_token: null,
       siret: null,
       denomination: null,
+      description: null,
       image: null,
       deleted_at: new Date(),
     };

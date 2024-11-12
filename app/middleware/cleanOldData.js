@@ -30,7 +30,7 @@ async function checkObsoleteMedia(dataSources) {
     // Get all media names from the database table media
     const mediaNames = await dataSources.dataDB.media.getAllMediaNames();
 
-    // Create thumb media names
+    // Create thumb media names, remove the extension and add _thumb before the extension
     const thumbMediaNames = mediaNames.map((name) => {
       const extIndex = name.lastIndexOf('.');
       const baseName = name.substring(0, extIndex);
@@ -148,9 +148,9 @@ async function checkObsoleteRequests(dataSources) {
 function sheduleCleanData(dataSources) {
   // Execute every day at 00h00
   cron.schedule('0 0 * * *', () => {
-    checkObsoleteMedia(dataSources);
-    checkObsoleteUsers(dataSources);
     checkObsoleteRequests(dataSources);
+    checkObsoleteUsers(dataSources);
+    checkObsoleteMedia(dataSources);
   });
 }
 
