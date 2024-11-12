@@ -5,7 +5,7 @@ type User {
     id: Int!
     first_name: String
     last_name: String
-    email: String!
+    email: String
     address: String
     postal_code: String
     city: String
