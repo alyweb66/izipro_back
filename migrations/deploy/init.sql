@@ -128,8 +128,8 @@ CREATE TABLE "request"(
 
 CREATE TABLE "conversation"( 
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-   "user_1" INT NOT NULL REFERENCES "user"(id),
-   "user_2" INT NOT NULL REFERENCES "user"(id),
+   "user_1" INT REFERENCES "user"(id) ON DELETE SET NULL,
+   "user_2" INT REFERENCES "user"(id) ON DELETE SET NULL,
    "request_id" INT NOT NULL REFERENCES "request"(id) ON DELETE CASCADE,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz

@@ -47,6 +47,7 @@ LEFT JOIN (
         'request_id', request_id, 
         'updated_at', updated_at)) AS conversation 
     FROM "conversation"
+    WHERE user_1 IS NOT NULL AND user_2 IS NOT NULL
     GROUP BY "request_id"
 ) c ON c."request_id" = r."id"
 ORDER BY r.max_updated_at DESC;

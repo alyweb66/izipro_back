@@ -117,6 +117,8 @@ BEGIN
   DELETE FROM media
   WHERE id = OLD.media_id AND NOT EXISTS (
     SELECT 1 FROM request_has_media WHERE media_id = OLD.media_id
+  ) AND NOT EXISTS (
+    SELECT 1 FROM message_has_media WHERE media_id = OLD.media_id
   );
   RETURN OLD;
 END;
@@ -124,6 +126,10 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER delete_orphaned_media
 AFTER DELETE ON request_has_media
+FOR EACH ROW EXECUTE PROCEDURE delete_orphaned_media_func();
+
+CREATE TRIGGER delete_orphaned_media_from_message
+AFTER DELETE ON message_has_media
 FOR EACH ROW EXECUTE PROCEDURE delete_orphaned_media_func();
 
 -- Function to insert a new row in the user_has_job table
