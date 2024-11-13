@@ -7,7 +7,7 @@ import url from 'url'; */
 import pubsub from '../middleware/pubSub.js';
 import handleUploadedFiles from '../middleware/handleUploadFiles.js';
 import checkViewedBeforeSendRequestEmail from '../middleware/processNewClientRequestMail.js';
-import sendPushNotification from '../middleware/webPush.js';
+import sendNotificationsPush from '../middleware/sendNotificationPush.js';
 
 // __dirname not on module, this is the way to use it.
 /* const fileName = url.fileURLToPath(import.meta.url);
@@ -152,74 +152,18 @@ async function createRequest(_, { input }, { dataSources }) {
       subscriberIds,
     );
 
-    //* Notification push starting
-    // get the user that has not viewed the request
-    const targetUser = await
-    dataSources.dataDB.userHasNotViewedRequest.getUserByRequestId(
-      isCreatedRequest.id,
-    );
+    // send notification to users that have not viewed the request
+    const { notifications } = await
+    sendNotificationsPush(isCreatedRequest.id, dataSources);
 
-    let flattenedNotifications = [];
-    if (targetUser.length > 0) {
-      // filter only the id of the user
-      const userId = targetUser.map((user) => user.user_id);
-      console.log('userId', userId);
-
-      // clear cache for the conversation
-      dataSources.dataDB.notificationPush.findByUserIdsLoader.clear(userId);
-      // get the notification subscription of the target users
-      /* const usersNotification = await dataSources.dataDB.notificationPush.findByUser(
-      userId,
-    ); */
-      // get the notification subscription of the target user
-      const usersNotification = await dataSources.dataDB.notification.getAllNotifications(
-        userId,
-      );
-
-      flattenedNotifications = usersNotification.flat();
-      console.log('flattenedNotifications', flattenedNotifications);
-
-      // send push notification to users that have not viewed the request
-      if (flattenedNotifications.length > 0 && flattenedNotifications[0].endpoint) {
-        flattenedNotifications.forEach(async (element) => {
-          const subscriptionPush = {
-            endpoint: element.endpoint,
-            keys: {
-              p256dh: element.public_key,
-              auth: element.auth_token,
-            },
-          };
-
-          const payload = JSON.stringify({
-            title: `${element.denomination} vous avez une nouvelle demande`,
-            body: 'Cliquez pour la consulter',
-            // body: message[0].content, // Assurez-vous que `message[0].content`
-            icon: process.env.LOGO_NOTIFICATION_URL,
-            // url: `https://yourwebsite.com/conversation/${input.conversation_id}`,
-            // badge: process.env.LOGO_NOTIFICATION_URL,
-            tag: input.conversation_id,
-            renotify: true,
-          });
-          console.log('payload', payload);
-          console.log('subscriptionPush', subscriptionPush);
-
-          // Envoyer la notification push
-          try {
-            await sendPushNotification(subscriptionPush, payload);
-          } catch (error) {
-            console.log('error', error);
-          }
-        });
-      }
-    }
-    //* Notification push ending
+    console.log('notifications', notifications);
 
     // send email to users that have not viewed the request after 5 min
     setTimeout(() => {
       checkViewedBeforeSendRequestEmail(
         subscriptionResult[0],
         dataSources,
-        flattenedNotifications,
+        notifications,
       );
     }, 300000);
 
