@@ -30,7 +30,7 @@ async function createNotificationPush(_, { input }, { dataSources }) {
   debugInDevelopment('input', input);
 
   if (dataSources.userData.id !== input.user_id) {
-    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED' , httpStatus: 401} });
+    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
   }
 
   try {
