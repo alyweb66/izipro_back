@@ -29,6 +29,10 @@ export default async function checkViewedBeforeSendRequestEmail(
   flattenedNotifications,
 ) {
   try {
+    console.log('request', request);
+    console.log('flattenedNotifications', flattenedNotifications);
+    console.log('dataSources', dataSources);
+
     // get user data who has send request
     dataSources.dataDB.user.findByPkLoader.clear(request.user_id);
     const ownerRequestData = await dataSources.dataDB.user.findByPk(request.user_id);
@@ -37,6 +41,7 @@ export default async function checkViewedBeforeSendRequestEmail(
     const userId = await
     dataSources.dataDB.userHasNotViewedRequest.getUserNotViewedConv(request.id);
     //  console.log('userId', userId);
+    console.log('userNotViewedConv', userId);
 
     if (!userId) {
       return false;
