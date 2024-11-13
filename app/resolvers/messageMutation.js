@@ -3,7 +3,7 @@ import { GraphQLError } from 'graphql';
 import handleUploadedFiles from '../middleware/handleUploadFiles.js';
 import pubsub from '../middleware/pubSub.js';
 import checkViewedBeforeSendEmail from '../middleware/processNewMessageMail.js';
-import sendPushNotification from '../middleware/webPush.js';
+import sendNotificationsPush from '../middleware/sendNotificationPush.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:messageMutation`);
 
@@ -196,69 +196,18 @@ async function createMessage(_, { id, input }, { dataSources }) {
       throw new GraphQLError('No content or media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
 
-    //* Notification push starting
-    // get the user that has not viewed the conversation
-    const targetUser = await
-    dataSources.dataDB.userHasNotViewedConversation.getUserByConversationId(
-      input.conversation_id || newConversation.id,
-    );
-    console.log('targetUser message', targetUser);
+    // send notification to the user
+    const { notifications } = await
+    sendNotificationsPush((input.conversation_id || newConversation.id), dataSources, true);
 
-    // get the notification subscription of the target user
-    /**
- * @type {Array<{id: number, user_id: number, denomination: string,
- * first_name: string, last_name: string, email_notification: boolean,
- * endpoint: string, public_key: string, auth_token: string}>}
- */
-    let userNotification = [];
-    if (targetUser.length > 0) {
-      userNotification = await dataSources.dataDB.notification.getAllNotifications(
-        targetUser[0]?.user_id,
-      );
-    }
-    console.log('userNotification message', userNotification);
-
-    // send push notification to users that have not viewed the conversation
-    if (userNotification.length > 0 && userNotification[0].endpoint) {
-      userNotification.forEach(async (element) => {
-        const subscription = {
-          endpoint: element.endpoint,
-          keys: {
-            p256dh: element.public_key,
-            auth: element.auth_token,
-          },
-        };
-
-        const payload = JSON.stringify({
-          title: `${element.role === 'pro' ? element.denomination : element.first_name} vous avez un nouveau message`,
-          body: 'Cliquez pour le consulter',
-          // body: message[0].content, // Assurez-vous que `message[0].content`
-          // contient le texte du message
-          icon: process.env.LOGO_NOTIFICATION_URL,
-          // url: `https://yourwebsite.com/conversation/${input.conversation_id}`,
-          // badge: process.env.LOGO_NOTIFICATION_URL,
-          tag: input.conversation_id,
-          renotify: true,
-        });
-        console.log('payload message', payload);
-        console.log('subscription message', subscription);
-
-        // Envoyer la notification push
-        try {
-          await sendPushNotification(subscription, payload);
-        } catch (error) {
-          console.log('error', error);
-        }
-      });
-    }
-    //* Notification push ending
+    console.log('notifications', notifications);
 
     // send email to users that have not viewed the conversation after 5 min
     setTimeout(() => {
       checkViewedBeforeSendEmail(
         message[0],
         dataSources,
-        userNotification[0]?.email_notification,
+        notifications[0]?.email_notification,
       );
     }, 300000); // 300000
 
