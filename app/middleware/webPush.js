@@ -32,7 +32,8 @@ webpush.setVapidDetails(
  *
  * @param {{endpoint: string, keys: {p256dh: string, auth: string}}}
  * subscription - Subscription object
- * @param {{title: string, message: string, icon: string}} payload - Payload object
+ * @param {{title: string, body: string, icon: string, tag: number, renotify: boolean}}
+ * payload - Payload object
  * @returns {nothing} - Nothing
  * @Error {error} - Error
  */
