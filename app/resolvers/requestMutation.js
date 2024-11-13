@@ -159,11 +159,11 @@ async function createRequest(_, { input }, { dataSources }) {
       isCreatedRequest.id,
     );
 
-    // filter only the id of the user
     let flattenedNotifications = [];
-
     if (targetUser.length > 0) {
+      // filter only the id of the user
       const userId = targetUser.map((user) => user.user_id);
+      console.log('userId', userId);
 
       // clear cache for the conversation
       dataSources.dataDB.notificationPush.findByUserIdsLoader.clear(userId);
@@ -177,6 +177,7 @@ async function createRequest(_, { input }, { dataSources }) {
       );
 
       flattenedNotifications = usersNotification.flat();
+      console.log('flattenedNotifications', flattenedNotifications);
 
       // send push notification to users that have not viewed the conversation
       if (flattenedNotifications.length > 0 && flattenedNotifications[0].endpoint) {
@@ -190,7 +191,7 @@ async function createRequest(_, { input }, { dataSources }) {
           };
 
           const payload = JSON.stringify({
-            title: 'Vous avez une nouvelle demande',
+            title: `${element.denomination} vous avez une nouvelle demande`,
             body: 'Cliquez pour la consulter',
             // body: message[0].content, // Assurez-vous que `message[0].content`
             icon: process.env.LOGO_NOTIFICATION_URL,
@@ -199,6 +200,8 @@ async function createRequest(_, { input }, { dataSources }) {
             tag: input.conversation_id,
             renotify: true,
           });
+          console.log('payload', payload);
+          console.log('subscriptionPush', subscriptionPush);
 
           // Envoyer la notification push
           sendPushNotification(subscriptionPush, payload);
