@@ -22,12 +22,14 @@ class Notification extends CoreDatamapper {
       SELECT 
       n.id, 
       n.user_id, 
-      n.email_notification, 
+      n.email_notification,
+      u.denomination, 
       COALESCE(np.endpoint, '') AS endpoint, 
       COALESCE(np.public_key, '') AS public_key, 
       COALESCE(np.auth_token, '') AS auth_token
       FROM "${this.tableName}" n
       LEFT JOIN "notification_push" np ON np."user_id" = n."user_id" 
+      LEFT JOIN "user" u ON u."id" = n."user_id"
       WHERE n.user_id ${isArray ? '= ANY($1::int[])' : '= $1'}
     `,
       values: [userId],

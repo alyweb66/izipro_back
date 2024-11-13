@@ -29,20 +29,20 @@ INSERT INTO "category" (
 ) VALUES
     ('Services à la personne'),
     ('Bâtiment et construction'),
-    ('Services de réparation et de maintenance'),
+    ('Réparation et maintenance'),
     ('Coiffure et esthétique'),
     ('Enseignement et tutorat'),
-    ('Services de restauration'),
+    ('Restauration'),
     ('Santé et bien-être'),
     ('Couture et mode'),
-    ('Services de déménagement et de transport'),
+    ('Déménagement et transport'),
     ('Evénementiel'),
     ('Informatique et technologies de l''information'),
     ('Immobilier'),
     ('Animaux'),
     ('Arts et divertissement'),
     ('horticulture et jardinage'),
-    ('Services de nettoyage et d''entretien');
+    ('Nettoyage et entretien');
 
 
 INSERT INTO "job" (
