@@ -206,7 +206,8 @@ async function createMessage(_, { id, input }, { dataSources }) {
 
     // get the notification subscription of the target user
     /**
- * @type {Array<{id: number, user_id: number, email_notification: boolean,
+ * @type {Array<{id: number, user_id: number, denomination: string,
+ * first_name: string, last_name: string, email_notification: boolean,
  * endpoint: string, public_key: string, auth_token: string}>}
  */
     let userNotification = [];
@@ -219,7 +220,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
 
     // send push notification to users that have not viewed the conversation
     if (userNotification.length > 0 && userNotification[0].endpoint) {
-      userNotification.forEach((element) => {
+      userNotification.forEach(async (element) => {
         const subscription = {
           endpoint: element.endpoint,
           keys: {
@@ -229,7 +230,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
         };
 
         const payload = JSON.stringify({
-          title: `${element.denomination} vous avez un nouveau message`,
+          title: `${element.role === 'pro' ? element.denomination : element.first_name} vous avez un nouveau message`,
           body: 'Cliquez pour le consulter',
           // body: message[0].content, // Assurez-vous que `message[0].content`
           // contient le texte du message
@@ -243,7 +244,11 @@ async function createMessage(_, { id, input }, { dataSources }) {
         console.log('subscription message', subscription);
 
         // Envoyer la notification push
-        sendPushNotification(subscription, payload);
+        try {
+          await sendPushNotification(subscription, payload);
+        } catch (error) {
+          console.log('error', error);
+        }
       });
     }
     //* Notification push ending

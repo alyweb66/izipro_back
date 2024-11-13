@@ -179,9 +179,9 @@ async function createRequest(_, { input }, { dataSources }) {
       flattenedNotifications = usersNotification.flat();
       console.log('flattenedNotifications', flattenedNotifications);
 
-      // send push notification to users that have not viewed the conversation
+      // send push notification to users that have not viewed the request
       if (flattenedNotifications.length > 0 && flattenedNotifications[0].endpoint) {
-        flattenedNotifications.forEach((element) => {
+        flattenedNotifications.forEach(async (element) => {
           const subscriptionPush = {
             endpoint: element.endpoint,
             keys: {
@@ -204,7 +204,11 @@ async function createRequest(_, { input }, { dataSources }) {
           console.log('subscriptionPush', subscriptionPush);
 
           // Envoyer la notification push
-          sendPushNotification(subscriptionPush, payload);
+          try {
+            await sendPushNotification(subscriptionPush, payload);
+          } catch (error) {
+            console.log('error', error);
+          }
         });
       }
     }
