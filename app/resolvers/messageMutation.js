@@ -202,6 +202,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
     dataSources.dataDB.userHasNotViewedConversation.getUserByConversationId(
       input.conversation_id || newConversation.id,
     );
+    console.log('targetUser message', targetUser);
 
     // get the notification subscription of the target user
     /**
@@ -214,6 +215,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
         targetUser[0]?.user_id,
       );
     }
+    console.log('userNotification message', userNotification);
 
     // send push notification to users that have not viewed the conversation
     if (userNotification.length > 0 && userNotification[0].endpoint) {
@@ -227,7 +229,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
         };
 
         const payload = JSON.stringify({
-          title: 'Vous avez un nouveau message',
+          title: `${element.denomination} vous avez un nouveau message`,
           body: 'Cliquez pour le consulter',
           // body: message[0].content, // Assurez-vous que `message[0].content`
           // contient le texte du message
@@ -237,6 +239,9 @@ async function createMessage(_, { id, input }, { dataSources }) {
           tag: input.conversation_id,
           renotify: true,
         });
+        console.log('payload message', payload);
+        console.log('subscription message', subscription);
+
         // Envoyer la notification push
         sendPushNotification(subscription, payload);
       });
