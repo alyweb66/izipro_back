@@ -23,7 +23,10 @@ class Notification extends CoreDatamapper {
       n.id, 
       n.user_id, 
       n.email_notification,
-      u.denomination, 
+      u.denomination,
+      u.first_name,
+      u.last_name,
+      u.role, 
       COALESCE(np.endpoint, '') AS endpoint, 
       COALESCE(np.public_key, '') AS public_key, 
       COALESCE(np.auth_token, '') AS auth_token
