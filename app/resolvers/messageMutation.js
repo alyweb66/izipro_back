@@ -195,6 +195,8 @@ async function createMessage(_, { id, input }, { dataSources }) {
       await dataSources.dataDB.message.delete(message[0].id);
       throw new GraphQLError('No content or media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
+    console.log('input.conversation_id', input.conversation_id);
+    console.log('newConversation.id', newConversation.id);
 
     // send notification to the user
     const { notifications } = await

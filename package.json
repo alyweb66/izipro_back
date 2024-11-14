@@ -28,7 +28,6 @@
     "express-rate-limit": "^7.4.0",
     "graphql": "^16.8.1",
     "graphql-subscriptions": "^2.0.0",
-    "graphql-tag": "^2.12.6",
     "graphql-upload": "^16.0.2",
     "graphql-ws": "^5.15.0",
     "jsonwebtoken": "^9.0.2",
