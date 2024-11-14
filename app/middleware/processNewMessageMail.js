@@ -36,7 +36,6 @@ export default async function checkViewedBeforeSendEmail(
     dataSources.dataDB.userHasNotViewedConversation.getUserByConversationId(
       message.conversation_id,
     );
-    console.log('userNotVieweedConv', userId);
 
     if (!userId) {
       return;
@@ -46,11 +45,8 @@ export default async function checkViewedBeforeSendEmail(
       const userData = await dataSources.dataDB.user.findByPk(userId[0].user_id);
 
       const request = await dataSources.dataDB.request.findByPk(message.request_id);
-      console.log('userData', userData);
 
       if (userData.id && userData.id !== 0) {
-        console.log('send email');
-
         newMessageEmail(userData, request, message, ownerMessageData);
       }
     }
