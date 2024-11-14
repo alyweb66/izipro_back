@@ -3,12 +3,22 @@ import sendPushNotification from './webPush.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:middleware:sendPushNotification`);
 
+/**
+ * Sends push notifications to users based on the provided item ID and message type.
+ *
+ * @param {number} itemId - The ID of the item (conversation or request) to send notifications for.
+ * @param {Object} dataSources - The data sources object containing database access methods.
+ * @param {boolean} [message=false] -
+ * Indicates whether the notification is for a message (true) or a request (false).
+ * @returns {Promise<{notifications: Array<Object>}>} -
+ * A promise that resolves to an object containing the notifications sent.
+ */
 export default async function sendNotificationsPush(
   itemId,
   dataSources,
   message = false,
 ) {
-  debug('sendNotificationsPush starting');
+  debug('sendNotificationsPush starting', itemId, message);
   let targetUser = [];
   if (message) {
     targetUser = await
@@ -68,8 +78,8 @@ export default async function sendNotificationsPush(
 
       const payload = JSON.stringify({
         title: message
-          ? `${element.role === 'pro' ? element.denomination : element.first_name} vous avez un nouveau message`
-          : `${element.denomination} vous avez une nouvelle demande`,
+          ? `${element.role === 'pro' ? element.denomination : element.first_name}, vous avez un nouveau message`
+          : `${element.denomination}, vous avez une nouvelle demande`,
         body: 'Cliquez pour le consulter',
         icon: process.env.LOGO_NOTIFICATION_URL,
         tag: itemId,
