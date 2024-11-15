@@ -42,6 +42,7 @@ export default async function checkViewedBeforeSendEmail(
     }
 
     if (userId.length > 0) {
+      // get only the user id where created_at is created more than 5 minutes
       const userData = await dataSources.dataDB.user.findByPk(userId[0].user_id);
 
       const request = await dataSources.dataDB.request.findByPk(message.request_id);
