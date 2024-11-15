@@ -32,8 +32,6 @@ export default async function sendNotificationsPush(
     );
   }
 
-  console.log('targetUser', targetUser);
-
   // get the notification subscription of the target user
   /**
  * @type {Array<{id: number, user_id: number, denomination: string,
@@ -44,8 +42,6 @@ export default async function sendNotificationsPush(
   /*  let usersNotification = []; */
   if (message) {
     if (targetUser.length > 0) {
-      console.log('message', message);
-
       notifications = await dataSources.dataDB.notification.getAllNotifications(
         targetUser[0]?.user_id,
       );
@@ -53,7 +49,6 @@ export default async function sendNotificationsPush(
   } else if (targetUser.length > 0) {
     // filter only the id of the user
     const userId = targetUser.map((user) => user.user_id);
-    console.log('userId', userId);
 
     // clear cache for the conversation
     dataSources.dataDB.notificationPush.findByUserIdsLoader.clear(userId);
@@ -64,7 +59,6 @@ export default async function sendNotificationsPush(
 
     notifications = usersNotification.flat();
   }
-  console.log('notifications', notifications);
 
   if (notifications.length > 0 && notifications[0].endpoint) {
     await Promise.all(notifications.map(async (element) => {
@@ -84,6 +78,7 @@ export default async function sendNotificationsPush(
         icon: process.env.LOGO_NOTIFICATION_URL,
         tag: itemId,
         renotify: true,
+        message,
       });
 
       try {
