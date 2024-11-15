@@ -41,7 +41,7 @@ INSERT INTO "category" (
     ('Immobilier'),
     ('Animaux'),
     ('Arts et divertissement'),
-    ('horticulture et jardinage'),
+    ('Horticulture et jardinage'),
     ('Nettoyage et entretien');
 
 
