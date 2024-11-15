@@ -45,7 +45,7 @@ class UserHasNotViewedConversation extends CoreDatamapper {
     debug('get user by conversation id');
     const query = {
       text: `
-    SELECT user_id FROM "${this.tableName}"
+    SELECT user_id, created_at FROM "${this.tableName}"
     WHERE conversation_id = $1
   `,
       values: [conversationId],

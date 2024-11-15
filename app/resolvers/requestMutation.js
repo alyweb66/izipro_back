@@ -156,8 +156,6 @@ async function createRequest(_, { input }, { dataSources }) {
     const { notifications } = await
     sendNotificationsPush(isCreatedRequest.id, dataSources);
 
-    console.log('notifications', notifications);
-
     // send email to users that have not viewed the request after 5 min
     setTimeout(() => {
       checkViewedBeforeSendRequestEmail(
