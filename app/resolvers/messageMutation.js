@@ -195,14 +195,12 @@ async function createMessage(_, { id, input }, { dataSources }) {
       await dataSources.dataDB.message.delete(message[0].id);
       throw new GraphQLError('No content or media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
-    console.log('input.conversation_id', input.conversation_id);
-    console.log('newConversation.id', newConversation.id);
+
+    const conversationId = input.conversation_id ? input.conversation_id : newConversation.id;
 
     // send notification to the user
     const { notifications } = await
-    sendNotificationsPush((input.conversation_id || newConversation.id), dataSources, true);
-
-    console.log('notifications', notifications);
+    sendNotificationsPush(conversationId, dataSources, true);
 
     // send email to users that have not viewed the conversation after 5 min
     setTimeout(() => {
@@ -211,7 +209,7 @@ async function createMessage(_, { id, input }, { dataSources }) {
         dataSources,
         notifications[0]?.email_notification,
       );
-    }, 300000); // 300000
+    }, 60000); // 300000
 
     debugInDevelopment('subscriptionResult', message);
     // publish the request to the client

@@ -96,6 +96,8 @@ async function checkObsoleteUsers(dataSources) {
       extensions: error.extensions,
     });
   }
+
+  checkObsoleteMedia(dataSources);
 }
 
 /**
@@ -143,14 +145,14 @@ async function checkObsoleteRequests(dataSources) {
       extensions: error.extensions,
     });
   }
+
+  checkObsoleteUsers(dataSources);
 }
 
 function sheduleCleanData(dataSources) {
   // Execute every day at 00h00
   cron.schedule('0 0 * * *', () => {
     checkObsoleteRequests(dataSources);
-    checkObsoleteUsers(dataSources);
-    checkObsoleteMedia(dataSources);
   });
 }
 
