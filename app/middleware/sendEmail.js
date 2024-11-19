@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const logoAttachment = {
-  filename: 'logo-notification.png',
+  filename: `${process.env.LOGO_FILENAME}`,
   path: `${process.env.LOGO_PATH_EMAIL}`,
   cid: 'logoEmail',
 };
@@ -38,7 +38,7 @@ export async function sendPasswordResetEmail(email, resetToken) {
     subject: 'Réinitialisation de mot de passe',
     html: `
     <img src="cid:logoEmail" alt="logo" style="width: 60px; height: 60px;"/>
-      <h1 style="fontSize: 1.2rem">Réinitialisation de mot de passe</h1>
+      <h1 style="fontSize: 1.2rem; margin: 0">Réinitialisation de mot de passe</h1>
 
       <p>Bonjour,</p>
       <p>Vous avez demandé une réinitialisation de mot de passe. Cliquez sur le bouton ci-dessous pour réinitialiser votre mot de passe. :</p>
@@ -68,7 +68,7 @@ export async function confirmEmail(email, confirmToken) {
     subject: 'Confirmation de compte',
     html: `
     <img src="cid:logoEmail" alt="logo" style="width: 60px; height: 60px;"/>
-      <h1 style="fontSize: 1.2rem">Confirmation de compte</h1>
+      <h1 style="fontSize: 1.2rem; margin: 0">Confirmation de compte</h1>
 
       <p>Bonjour,</p>
       <p>Votre inscription sur notre plateforme a été effectuée avec succès. Veuillez cliquer sur le bouton ci-dessous pour confirmer votre compte :</p>
@@ -97,7 +97,7 @@ export async function changePasswordEmail(email) {
     subject: 'Changement de mot de passe',
     html: `
     <img src="cid:logoEmail" alt="logo" style="width: 60px; height: 60px;"/>
-      <h1 style="fontSize: 1.2rem">Confirmation de changement de mot de passe</h1>
+      <h1 style="fontSize: 1.2rem; margin: 0">Confirmation de changement de mot de passe</h1>
 
       <p>Bonjour,</p>
       <p>Votre mot de passe a bien été changé :</p>
@@ -117,8 +117,8 @@ export async function newMessageEmail(user, request, message, ownerMessageData) 
     to: `${user.email}`,
     subject: 'Nouveau message',
     html: `
-      <img src="cid:logoEmail" alt="logo" style="width: 100px; height: 100px; margin-bottom: 20px;"/>
-      <h1 style="fontSize: 1.2rem">Nouveau message</h1>
+      <img src="cid:logoEmail" alt="logo" style="width: 60px; height: 60px; margin-bottom: 20px;"/>
+      <h1 style="fontSize: 1.2rem; margin: 0">Nouveau message</h1>
       <h2 style="fontSize: 1rem"> Demande concernée : <span style="color: #028eef">${request.title}</span></h2>
 
       <p>Bonjour,</p>
@@ -142,7 +142,7 @@ export async function newRequestEmail(user, request, ownerRequestData) {
     subject: 'Nouvelle demande',
     html: `
       <img src="cid:logoEmail" alt="logo" style="width: 60px; height: 60px;"/>
-      <h1 style="fontSize: 1.2rem">Nouvelle demande</h1>
+      <h1 style="fontSize: 1.2rem; margin: 0">Nouvelle demande</h1>
       <h2 style="fontSize: 1rem"> Demande : <span style="color: #028eef">${request.title}</span></h2>
 
       <p>Bonjour,</p>
@@ -165,7 +165,7 @@ export async function contactSendEmail(data) {
     subject: 'Nouveau message de contact',
     html: `
       <img src="cid:logoEmail" alt="logo" style="width: 60px; height: 60px;"/>
-      <h1>Nouveau message de contact</h1>
+      <h1 style="margin: 0">Nouveau message de contact</h1>
 
       ${data.enterprise ? `<p>Société: ${data.enterprise}</p>`
     : `<p>Nom: ${data.last_name}</p>
