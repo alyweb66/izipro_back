@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import cron from 'node-cron';
 import logger from './logger.js';
+import sendPushNotification from './webPush.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:middleware:cleanOldData`);
 
@@ -117,8 +118,8 @@ async function checkObsoleteRequests(dataSources) {
   debug('Checking for obsolete requests...');
   try {
     // get all conversation id from the requests deleted
-    const conversationIds = await
-    dataSources.dataDB.conversation.getConversationIdsByDeletedRequest();
+    const conversationIds = await dataSources.dataDB.conversation
+      .getConversationIdsByDeletedRequest();
 
     // remove all the request.id and conversation id from all subscription
     const subscriptions = await dataSources.dataDB.subscription.findAll();
@@ -128,9 +129,15 @@ async function checkObsoleteRequests(dataSources) {
       if (subscription.subscriber === 'clientConversation') {
         const subscriberIds = subscription.subscriber_id;
 
-        const newConversationIds = subscriberIds.filter((id) => !conversationIds.includes(id));
+        const newConversationIds = subscriberIds.filter(
+          (id) => !conversationIds.includes(id),
+        );
 
-        dataSources.dataDB.subscription.createSubscription(subscription.user_id, 'clientConversation', newConversationIds);
+        dataSources.dataDB.subscription.createSubscription(
+          subscription.user_id,
+          'clientConversation',
+          newConversationIds,
+        );
       }
     });
 
@@ -149,10 +156,72 @@ async function checkObsoleteRequests(dataSources) {
   checkObsoleteUsers(dataSources);
 }
 
+/**
+ * Checks for obsolete notification push endpoints and removes invalid ones.
+ *
+ * @param {Object} dataSources - The data sources object containing the database connections.
+ * @param {Object} dataSources.dataDB - The database connection object.
+ * @param {Object} dataSources.dataDB.notificationPush - The notification push database model.
+ * @param {Function} dataSources.dataDB.notificationPush.findAll -
+ * Function to find all notification push entries.
+ * @param {Function} dataSources.dataDB.notificationPush.deleteNotification -
+ * Function to delete a notification push entry.
+ * @returns {Promise<void>} - A promise that resolves when the check is complete.
+ */
+async function checkEndpointsNotificaitonPush(dataSources) {
+  debug('Checking for obsolete endpoints...');
+  try {
+    const allNotificationPush = await dataSources.dataDB.notificationPush.findAll();
+    console.log('allNotificationPush:', allNotificationPush);
+
+    // send notification to all endpoint and remove the endpoint that are not valid
+    allNotificationPush.forEach(async (notificationPush) => {
+      const subscription = {
+        endpoint: notificationPush.endpoint,
+        keys: {
+          p256dh: notificationPush.public_key,
+          auth: notificationPush.auth_token,
+        },
+      };
+
+      // Silently send a test notification to check if the endpoint is still valid
+      const testPayload = JSON.stringify({
+        silent: true,
+      });
+
+      try {
+        const result = await sendPushNotification(subscription, testPayload);
+
+        if (!result.success) {
+          // If the notification fails, remove the endpoint from the database
+          console.log(`Invalid endpoint, removing: ${notificationPush.endpoint}`);
+          await dataSources.dataDB.notificationPush
+            .deleteNotification(notificationPush.user_id, notificationPush.endpoint);
+        }
+      } catch (error) {
+        debug('Error while sending notification:', error);
+      }
+    });
+    debug('Obsolete endpoints check complete.');
+  } catch (error) {
+    debug('Error while checking obsolete endpoints:', error);
+    logger.error({
+      message: error.message,
+      stack: error.stack,
+      extensions: error.extensions,
+    });
+  }
+}
+
 function sheduleCleanData(dataSources) {
+  // minute, hour, day, month, day of the week
   // Execute every day at 00h00
   cron.schedule('0 0 * * *', () => {
     checkObsoleteRequests(dataSources);
+  });
+  // Execute every day at 01h00
+  cron.schedule('0 1 * * *', () => {
+    checkEndpointsNotificaitonPush(dataSources);
   });
 }
 

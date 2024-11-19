@@ -43,7 +43,9 @@ export default async function sendPushNotification(subscription, payload) {
     debug('Notification sent successfully');
   } catch (error) {
     debug('Error sending notification:', error);
+    return { success: false, error };
   }
+  return { success: true };
 }
 
 // Export public key for the frontend
