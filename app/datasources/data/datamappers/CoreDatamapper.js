@@ -97,7 +97,8 @@ class CoreDatamapper {
   */
   async findAll() {
     const preparedQuery = {
-      text: `SELECT * FROM "${this.tableName}" ${this.tableName === 'category' ? 'ORDER BY "name" ASC' : ''} `,
+      text: `SELECT * FROM "${this.tableName}" 
+      ${(this.tableName === 'category' || this.tableName === 'job') ? 'ORDER BY "name" ASC' : ''} `,
     };
     const result = await this.cacheQuery(preparedQuery);
     return result;
