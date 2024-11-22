@@ -1,5 +1,5 @@
 import Debug from 'debug';
-import { GraphQLError } from 'graphql';
+// import { GraphQLError } from 'graphql';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:category`);
 
@@ -17,15 +17,16 @@ const categoryResolver = {
    * @returns {Promise<Array>} A promise that resolves to an array of jobs.
    * @throws {ApolloError} If there is an error retrieving the jobs.
    */
-  jobs({ id }, _, { dataSources }) {
+  /* jobs({ id }, _, { dataSources }) {
     try {
       debug(`get all jobs from category: ${id}`);
       return dataSources.dataDB.job.findJobsByCategory(id);
     } catch (error) {
       debug('error', error);
-      throw new GraphQLError(error, { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
+      throw new GraphQLError(error,
+       { extensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
     }
-  },
+  }, */
 };
 debug('categoryResolver');
 export default categoryResolver;
