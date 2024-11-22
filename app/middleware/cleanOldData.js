@@ -172,8 +172,6 @@ async function checkEndpointsNotificaitonPush(dataSources) {
   debug('Checking for obsolete endpoints...');
   try {
     const allNotificationPush = await dataSources.dataDB.notificationPush.findAll();
-    console.log('allNotificationPush:', allNotificationPush);
-
     // send notification to all endpoint and remove the endpoint that are not valid
     allNotificationPush.forEach(async (notificationPush) => {
       const subscription = {
@@ -194,7 +192,6 @@ async function checkEndpointsNotificaitonPush(dataSources) {
 
         if (!result.success) {
           // If the notification fails, remove the endpoint from the database
-          console.log(`Invalid endpoint, removing: ${notificationPush.endpoint}`);
           await dataSources.dataDB.notificationPush
             .deleteNotification(notificationPush.user_id, notificationPush.endpoint);
         }

@@ -75,7 +75,6 @@ export default async function sendNotificationsPush(
           ? `${element.role === 'pro' ? element.denomination : element.first_name}, vous avez un nouveau message`
           : `${element.denomination}, vous avez une nouvelle demande`,
         body: 'Cliquez pour le consulter',
-        icon: process.env.LOGO_NOTIFICATION_URL,
         tag: itemId,
         renotify: true,
         message,
