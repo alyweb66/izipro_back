@@ -9,23 +9,26 @@ const {
   printf,
 } = winston.format;
 
+// commun timestamp format
+const commonTimestampFormat = 'YYYY-MM-DD HH:mm:ss';
+
 const logger = winston.createLogger({
   level: 'error',
   // ! Please note the order of the methods is important
   // ! the final format must be the last one provided
   // (json, simple…)
   format: combine(
-    timestamp(),
+    timestamp({ commonTimestampFormat }),
     json(),
   ),
-  defaultMeta: { service: 'izipro' },
+  defaultMeta: { service: 'Toupro' },
   transports: [
     new DailyRotateFile({
       filename: 'logs/error-%DATE%.log',
-      datePattern: 'YYYY-MM-DD', // Rotation quotidienne
-      zippedArchive: true, // Compresser les anciens fichiers de log
-      maxSize: '20m', // Taille max de chaque fichier
-      maxFiles: '14d', // Garder les logs pour 14 jours
+      datePattern: 'YYYY-MM-DD', // Roll over daily
+      zippedArchive: true, // Compress last log
+      maxSize: '20m', // max file size
+      maxFiles: '14d', // keep logs for 14 days
       level: 'error',
     }),
     new DailyRotateFile({
@@ -43,7 +46,7 @@ const consoleErrorFormat = printf(({
   // eslint-disable-next-line no-shadow
   level, timestamp, stack, extensions,
 }) => {
-  // Construire le message de log avec les informations supplémentaires
+  // build log info message
   let logMessage = `[${timestamp}] ${level} - ${stack} -`;
 
   if (extensions) {
@@ -67,7 +70,7 @@ if (process.env.NODE_ENV !== 'production') {
     level: 'error',
     format: combine(
       colorize({ all: true }),
-      timestamp({ format: 'YYYY-MM-DD HH:ss' }),
+      timestamp({ format: commonTimestampFormat }),
       consoleErrorFormat,
     ),
   }));
@@ -83,7 +86,7 @@ if (process.env.NODE_ENV !== 'production') {
     level: 'info',
     format: combine(
       colorize({ all: true }),
-      timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+      timestamp({ format: commonTimestampFormat }),
       consoleServerStartFormat,
     ),
   }));

@@ -252,6 +252,29 @@ export default {
       throw new GraphQLError('Error get category with id', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
   },
+
+  /**
+   * Retrieves all jobs from the data source.
+   *
+   * @function
+   * @param {Object} _ - Unused parameter.
+   * @param {Object} __ - Unused parameter.
+   * @param {Object} context - The context object containing data sources.
+   * @param {Object} context.dataSources - The data sources available in the context.
+   * @param {Object} context.dataSources.dataDB - The database data source.
+   * @param {Object} context.dataSources.dataDB.job - The job model in the database.
+   * @returns {Promise<Array>} A promise that resolves to an array of job objects.
+   * @throws {GraphQLError} Throws an error if there is an issue retrieving the jobs.
+   */
+  allJobs(_, __, { dataSources }) {
+    try {
+      debug('get all jobs');
+      return dataSources.dataDB.job.findAll();
+    } catch (error) {
+      debug('error', error);
+      throw new GraphQLError('Error get all jobs', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+    }
+  },
   /**
  * Retrieves jobs by their IDs.
  *
