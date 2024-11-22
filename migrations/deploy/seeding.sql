@@ -22,7 +22,23 @@ BEGIN;
     ('Bob', 'Dylan', 'bob.dylan@example.com', '13005', 'Marseille', 'hashed_password_4', 'token_4', 45678901234567, 'Company D', 'user', '2023-02-14 16:34:00', '2023-02-14 16:34:00'),
     ('Éléonore', 'Rousseau', 'eleonore.rousseau@example.com', '33000', 'Bordeaux', 'hashed_password_5', 'token_5', 89012345678901, 'Company E', 'admin', '2023-02-14 16:34:00', '2023-02-14 16:34:00');
  */
-
+{
+  "Santé et soins": [],
+  "Éducation et formation": [],
+  "Services juridiques": [],
+  "Finances et comptabilité": [],
+  "Technologies et informatique": [],
+  "Art et création": [],
+  "Construction et ingénierie": [],
+  "Commerce et vente": [],
+  "Transport et logistique": [],
+  "Services publics et administration": [],
+  "Hospitalité et tourisme": [],
+  "Alimentation et agriculture": [],
+  "Environnement et écologie": [],
+  "Divertissement et médias": [],
+  "Psychologie et développement personnel": []
+}
 
 INSERT INTO "category" (
     "name"
@@ -51,7 +67,7 @@ INSERT INTO "job" (
     "category_id"
 
 ) VALUES
-    ('Baby-sitter/garde d''enfants', 'Garde occasionnelle ou régulière d''enfants, souvent réalisée à domicile des parents.', 1),
+    ('Garde d''enfants', 'Garde occasionnelle ou régulière d''enfants, souvent réalisée à domicile des parents.', 1),
     ('Aide à domicile/auxiliaire de vie', 'Assistance aux personnes âgées, handicapées ou dépendantes pour les actes de la vie quotidienne.', 1),
     ('Assistant maternel/garde d''enfants à domicile', 'Accueil et garde d''enfants à domicile dans un cadre familial.', 1),
     ('Aide ménager/ménagère', 'Entretien et nettoyage du domicile, du linge et des espaces de vie.', 1),
@@ -298,6 +314,48 @@ INSERT INTO "message_has_chat_media" (
     (4, 4, '2024-02-16T08:20:00Z'),
     (5, 5, '2024-02-17T14:10:00Z');
  */
+
+INSERT INTO "category" (
+    "name"
+) VALUES
+('Animaux'),
+('Art et création'),
+('Assurances et gestion de patrimoine'),
+('Conseil et coaching'),
+('Construction et rénovation'),
+('Éducation et formation'),
+('Entretien et réparation'),
+('Événementiel et loisirs'),
+('Esthétique et soins personnels'),
+('Jardinage et paysagisme'),
+('Marketing et communication'),
+('Nettoyage et entretien'),
+('Psychologie et développement personnel'),
+('Réseaux et télécommunications'),
+('Réparation et entretien mécaniques'),
+('Santé et bien-être'),
+('Sécurité et surveillance'),
+('Services à la personne'),
+('Services financiers et juridiques'),
+('Services techniques et industriels'),
+('Technologies et informatique'),
+('Transport et mobilité'),
+('Vente et commerce');
+
+
+INSERT INTO "job" (
+    "name",  
+    "category_id"
+
+) VALUES
+('Vétérinaire', 1),
+('Toiletteur pour animaux', 1),
+('Garde d''animaux', 1),
+('Educateur canin', 1),
+('Promeneur de chiens', 1),
+('Eleveur d''animaux', 1),
+('Comportementaliste animalier', 1),
+('Photographe animalier', 1);
 
 
 COMMIT;
