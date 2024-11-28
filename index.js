@@ -1,3 +1,4 @@
+/* eslint-disable import/extensions */
 // server creating
 // Environment
 import Debug from 'debug';
@@ -19,6 +20,7 @@ import url from 'url';
 
 // eslint-disable-next-line import/extensions
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
+import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { WebSocketServer } from 'ws';
 
@@ -208,11 +210,11 @@ const authenticate = (req, res, next) => {
 // Protect static files route with authentication
 app.use('/public', authenticate, express.static(path.join(dirname, 'public')));
 // cache-control for static files and notitication access
-app.use('/logo', express.static(path.join(dirname, 'logo'), {
+/* app.use('/logo', express.static(path.join(dirname, 'logo'), {
   setHeaders: (res) => {
     res.set('Cache-Control', 'public, max-age=31536000'); // Cache de 1 an
   },
-}));
+})); */
 // The `listen` method launches a web server.
 //* HTTPS server
 // const httpServer = https.createServer({ key, cert }, app);
@@ -281,6 +283,8 @@ const server = new ApolloServer({
     return err;
   },
   plugins: [
+    // Disable the Apollo Studio landing page
+    ApolloServerPluginLandingPageDisabled(),
     // Proper shutdown for the HTTP server.
     ApolloServerPluginDrainHttpServer({ httpServer }),
     // Proper shutdown for the WebSocket server.
