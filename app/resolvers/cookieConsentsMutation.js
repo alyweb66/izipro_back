@@ -14,7 +14,6 @@ function debugInDevelopment(message = '', value = '') {
  *
  * @param {number} args.id - The ID of the user creating the cookie consents.
  * @param {{id: number,
- * cookies_necessary: boolean,
  * cookies_analytics: boolean,
  * cookies_marketing: boolean}} args.input -
  * The input object containing the cookie consents details.
@@ -52,7 +51,6 @@ async function createCookieConsents(_, { id, input }, { dataSources }) {
  *
  * @param {number} args.id - The ID of the user updating the cookie consents.
  * @param {{id: number,
- * cookies_necessary: boolean,
 * cookies_analytics: boolean,
 * cookies_marketing: boolean}} args.input -
 * The input object containing the cookie consents details.
