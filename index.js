@@ -162,7 +162,7 @@ const checkInterval = 12 * 60 * 60 * 1000;
 // minimum interval to update the last login time in the database (1 minute)
 const minUpdateInterval = 60 * 1000;
 
-// Middleware to update the last login time in the database
+//* Middleware to update the last login time in the database
 app.use((req, res, next) => {
   if (req.userData && req.userData.id) {
     const userId = req.userData.id;

@@ -45,11 +45,9 @@ CREATE TABLE "user"(
 CREATE TABLE "cookie_consents" (
     "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     "user_id" INT NOT NULL UNIQUE REFERENCES "user"(id) ON DELETE CASCADE,
-    "consented_at" timestamptz NOT NULL DEFAULT now(),
-    "ip_address" TEXT CHECK (LENGTH("ip_address") <= 50),
-    "cookies_necessary" BOOLEAN NOT NULL DEFAULT FALSE,
     "cookies_analytics" BOOLEAN,
     "cookies_marketing" BOOLEAN,
+    "created_at" timestamptz NOT NULL DEFAULT now(),
     "updated_at" timestamptz
 );
 
@@ -161,7 +159,6 @@ CREATE TABLE "media"(
 CREATE TABLE "rules"(
    "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    "CGU" TEXT NULL,
-   "cookies" TEXT NULL,
    "created_at" timestamptz NOT NULL DEFAULT now(),
    "updated_at" timestamptz
 );
