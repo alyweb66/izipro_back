@@ -14,7 +14,7 @@ const Subscription = {
 
   messageAdded: {
     subscribe: withFilter(
-      () => pubsub.asyncIterator('MESSAGE_CREATED'),
+      () => pubsub.asyncIterableIterator('MESSAGE_CREATED'),
       (payload, variables) => payload.messageAdded.some(
         (message) => {
           debugInDevelopment('variables', variables);
@@ -43,7 +43,7 @@ const Subscription = {
 
   requestAdded: {
     subscribe: withFilter(
-      () => pubsub.asyncIterator('REQUEST_CREATED'),
+      () => pubsub.asyncIterableIterator('REQUEST_CREATED'),
       (payload, variables) => {
         debugInDevelopment('requestAdded subscription: payload', payload, 'variables', variables);
         return (
@@ -58,7 +58,7 @@ const Subscription = {
 
   logout: {
     subscribe: withFilter(
-      () => pubsub.asyncIterator('LOGOUT'),
+      () => pubsub.asyncIterableIterator('LOGOUT'),
       (payload, variables) => {
         debugInDevelopment('logout subscription: payload', payload, 'variables', variables);
         return parseInt(variables.user_id, 10) === parseInt(payload.logout.id, 10);
