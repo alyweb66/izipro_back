@@ -87,7 +87,7 @@ input UpdateUserInput {
     postal_code: validatePostalCode
     city: String @length(max: 100)
     siret: validateSiret @length(max: 14)
-    denomination: String @length(max: 50)
+    denomination: String @length(max: 100)
     lat: Float
     lng: Float
     CGU: Boolean
