@@ -32,7 +32,7 @@ CREATE TABLE "user"(
    "remember_token" TEXT,
    "refresh_token" TEXT[] DEFAULT '{}',
    "siret" BIGINT UNIQUE CHECK (LENGTH("siret"::TEXT) = 14),
-   "denomination" TEXT CHECK (LENGTH("denomination") <= 50),
+   "denomination" TEXT CHECK (LENGTH("denomination") <= 100),
    "image" TEXT,
    "description" TEXT CHECK (LENGTH("description") <= 200),
    "role" TEXT NOT NULL,
