@@ -1,12 +1,12 @@
 {
-  "name": "izipro_back",
+  "name": "toupro_back",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "DEBUG=izi:* npx nodemon --exec \"node --trace-deprecation\" --env-file=.env index.js",
+    "dev": "DEBUG=toupro:* npx nodemon --exec \"node --trace-deprecation\" --env-file=.env index.js",
     "resetdb": "sqitch revert -y && sqitch deploy"
   },
   "keywords": [],

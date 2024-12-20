@@ -52,14 +52,23 @@ async function checkObsoleteMedia(dataSources) {
     allMediaNames.push(...profilePictureNames);
 
     // verify if the file is in the database
-    files.forEach((file) => {
+    files.forEach(async (file) => {
       const filePath = path.join(mediaDirectory, file);
+      const destinationPath = path.join(process.env.OBSOLETE_MEDIA_PATH, file);
       // if the file is not in the database, delete it
       if (!allMediaNames.includes(file)) {
+        // copy the file to the obsolete media folder
+        // don't copy the file ending with _thumb
+        if (!file.endsWith('_thumb.webp')) {
+          fs.copyFileSync(filePath, destinationPath);
+        }
         // delete the file
         fs.unlinkSync(filePath);
       }
     });
+
+    // send the obsolete media folder to the cloud
+
     debug('Obsolete media check complete.');
   } catch (error) {
     debug('Error while checking obsolete media:', error);
@@ -102,6 +111,36 @@ async function checkObsoleteUsers(dataSources) {
 }
 
 /**
+ * Copies obsolete user data from the data source and saves it to a JSON file.
+ * If no obsolete data is found, the function returns immediately.
+ *
+ * @param {Object} dataSources - The data sources object containing the dataDB.
+ * @param {Object} dataSources.dataDB - The database object.
+ * @param {Object} dataSources.dataDB.request - The request object for database operations.
+ * @param {Function} dataSources.dataDB.request.copyObsoleteUser -
+ * The function to copy obsolete user data.
+ *
+ * @returns {Promise<void>} - A promise that resolves when the operation is complete.
+ */
+async function copyObsoleteUser(dataSources) {
+  debug('Copying obsolete users...');
+  const result = await dataSources.dataDB.request.copyObsoleteUser();
+
+  if (result.rows[0].data !== null) {
+    const filePath = `${process.env.SAVE_OBSOLETE_DATA_PATH}request_${new Date()
+      .toISOString()
+      .replace(/[:.]/g, '-')}.json`;
+    fs.writeFileSync(
+      filePath,
+      JSON.stringify(result.rows[0].data, null, 2),
+    );
+    debug('File written to', filePath);
+  }
+
+  checkObsoleteUsers(dataSources);
+}
+
+/**
  * Checks and deletes obsolete requests from the database.
  *
  * @async
@@ -118,31 +157,32 @@ async function checkObsoleteRequests(dataSources) {
   debug('Checking for obsolete requests...');
   try {
     // get all conversation id from the requests deleted
-    const conversationIds = await dataSources.dataDB.conversation
-      .getConversationIdsByDeletedRequest();
+    const conversationIds = await
+    dataSources.dataDB.conversation.getConversationIdsByDeletedRequest();
 
     // remove all the request.id and conversation id from all subscription
     const subscriptions = await dataSources.dataDB.subscription.findAll();
 
+    if (conversationIds.length > 0) {
     // check if the conversation id is in the subscription and remove it
-    subscriptions.forEach(async (subscription) => {
-      if (subscription.subscriber === 'clientConversation') {
-        const subscriberIds = subscription.subscriber_id;
+      subscriptions.forEach(async (subscription) => {
+        if (subscription.subscriber === 'clientConversation') {
+          const subscriberIds = subscription.subscriber_id;
 
-        const newConversationIds = subscriberIds.filter(
-          (id) => !conversationIds.includes(id),
-        );
+          const newConversationIds = subscriberIds.filter(
+            (id) => !conversationIds.includes(id),
+          );
 
-        dataSources.dataDB.subscription.createSubscription(
-          subscription.user_id,
-          'clientConversation',
-          newConversationIds,
-        );
-      }
-    });
+          dataSources.dataDB.subscription.createSubscription(
+            subscription.user_id,
+            'clientConversation',
+            newConversationIds,
+          );
+        }
+      });
 
-    await dataSources.dataDB.request.deleteObsoleteRequests();
-
+      await dataSources.dataDB.request.deleteObsoleteRequests();
+    }
     debug('Obsolete requests check complete.');
   } catch (error) {
     debug('Error while checking obsolete users:', error);
@@ -153,7 +193,7 @@ async function checkObsoleteRequests(dataSources) {
     });
   }
 
-  checkObsoleteUsers(dataSources);
+  copyObsoleteUser(dataSources);
 }
 
 /**
@@ -192,8 +232,10 @@ async function checkEndpointsNotificaitonPush(dataSources) {
 
         if (!result.success) {
           // If the notification fails, remove the endpoint from the database
-          await dataSources.dataDB.notificationPush
-            .deleteNotification(notificationPush.user_id, notificationPush.endpoint);
+          await dataSources.dataDB.notificationPush.deleteNotification(
+            notificationPush.user_id,
+            notificationPush.endpoint,
+          );
         }
       } catch (error) {
         debug('Error while sending notification:', error);
@@ -210,12 +252,53 @@ async function checkEndpointsNotificaitonPush(dataSources) {
   }
 }
 
+/**
+ * Copies obsolete requests from the database, writes them to a JSON file,
+ * and then deletes the obsolete requests from the database.
+ *
+ * @param {Object} dataSources - The data sources object containing the database connections.
+ * @param {Object} dataSources.dataDB - The database connection object.
+ * @param {Function} dataSources.dataDB.request.copyObsoleteRequests -
+ * The function to copy obsolete requests from the database.
+ * @returns {Promise<void>} - A promise that resolves when the operation is complete.
+ */
+async function copyObsoleteRequests(dataSources) {
+  debug('Copying obsolete requests...');
+  const result = await dataSources.dataDB.request.copyObsoleteRequests();
+
+  if (result.rows[0].data !== null) {
+    const filePath = `${process.env.SAVE_OBSOLETE_DATA_PATH}request_${new Date()
+      .toISOString()
+      .replace(/[:.]/g, '-')}.json`;
+    fs.writeFileSync(
+      filePath,
+      JSON.stringify(result.rows[0].data, null, 2),
+    );
+    debug('File written to', filePath);
+  }
+
+  // delete obsolete requests
+  checkObsoleteRequests(dataSources);
+}
+
+/**
+ * Schedules tasks to clean and check obsolete data from the provided data sources.
+ *
+ * @param {Object} dataSources -
+ * The data sources to be used for cleaning and checking obsolete data.
+ *
+ * The following tasks are scheduled:
+ * - `copyObsoleteRequests`: Executes every day at 00:00.
+ * - `checkEndpointsNotificaitonPush`: Executes every day at 01:00.
+ *
+ */
 function sheduleCleanData(dataSources) {
   // minute, hour, day, month, day of the week
   // Execute every day at 00h00
   cron.schedule('0 0 * * *', () => {
-    checkObsoleteRequests(dataSources);
+    copyObsoleteRequests(dataSources);
   });
+
   // Execute every day at 01h00
   cron.schedule('0 1 * * *', () => {
     checkEndpointsNotificaitonPush(dataSources);

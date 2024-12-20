@@ -33,18 +33,19 @@ const logoAttachment = {
  */
 export async function sendPasswordResetEmail(email, resetToken) {
   const mailOptions = {
-    from: process.env.EMAIL_SERVER,
+    from: `"toupro" <${process.env.EMAIL_SERVER}>`,
     to: `${email}`,
     subject: 'Réinitialisation de mot de passe',
     html: `
     <img src="cid:logoEmail" alt="logo" style="width: 60px; height: 60px;"/>
-      <h1 style="fontSize: 1.2rem; margin: 0">Réinitialisation de mot de passe</h1>
+      <h1 style="fontSize: 1.2rem; marginTop: 0.3rem;">Réinitialisation de mot de passe</h1>
 
       <p>Bonjour,</p>
       <p>Vous avez demandé une réinitialisation de mot de passe. Cliquez sur le bouton ci-dessous pour réinitialiser votre mot de passe. :</p>
       <a href="${process.env.CORS_ORIGIN}/forgot-password?token=${resetToken}" style="background-color: #F79323; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Réinitialiser le mot de passe</a>
       <p>Si vous n'avez pas demandé de réinitialisation de mot de passe, ignorez simplement cet e-mail.</p>
 
+      <p style="color:#8b8b8b;">Ceci est un mail automatique, veuillez ne pas répondre. </p>
       ${process.env.CORS_ORIGIN}
     `,
     attachments: [logoAttachment],
@@ -63,18 +64,19 @@ export async function sendPasswordResetEmail(email, resetToken) {
  */
 export async function confirmEmail(email, confirmToken) {
   const mailOptions = {
-    from: process.env.EMAIL_SERVER,
+    from: `"toupro" <${process.env.EMAIL_SERVER}>`,
     to: `${email}`,
     subject: 'Confirmation de compte',
     html: `
     <img src="cid:logoEmail" alt="logo" style="width: 60px; height: 60px;"/>
-      <h1 style="fontSize: 1.2rem; margin: 0">Confirmation de compte</h1>
+      <h1 style="fontSize: 1.2rem; marginTop: 0.3rem;">Confirmation de compte</h1>
 
       <p>Bonjour,</p>
       <p>Votre inscription sur notre plateforme a été effectuée avec succès. Veuillez cliquer sur le bouton ci-dessous pour confirmer votre compte :</p>
       <a href="${process.env.CORS_ORIGIN}/confirm-email?token=${confirmToken}" style="background-color: #F79323; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Confirmer le compte</a>
       <p>Si vous n'avez pas demandé de confirmation de compte, ignorez simplement cet e-mail.</p>
 
+      <p style="color:#8b8b8b;">Ceci est un mail automatique, veuillez ne pas répondre. </p>
       ${process.env.CORS_ORIGIN}
     `,
     attachments: [logoAttachment],
@@ -92,18 +94,20 @@ export async function confirmEmail(email, confirmToken) {
  */
 export async function changePasswordEmail(email) {
   const mailOptions = {
-    from: process.env.EMAIL_SERVER,
+    from: `"toupro" <${process.env.EMAIL_SERVER}>`,
     to: `${email}`,
     subject: 'Changement de mot de passe',
     html: `
     <img src="cid:logoEmail" alt="logo" style="width: 60px; height: 60px;"/>
-      <h1 style="fontSize: 1.2rem; margin: 0">Confirmation de changement de mot de passe</h1>
+      <h1 style="fontSize: 1.2rem; marginTop: 0.3rem;">Confirmation de changement de mot de passe</h1>
 
       <p>Bonjour,</p>
       <p>Votre mot de passe a bien été changé :</p>
       
       <p>Si vous n'êtes pas l'auteur de cette action, veuillez nous contacter: ${process.env.CORS_ORIGIN}</p>
-    `,
+    
+    <p style="color:#8b8b8b;">Ceci est un mail automatique, veuillez ne pas répondre. </p>
+      `,
     attachments: [logoAttachment],
   };
 
@@ -134,22 +138,45 @@ export async function changePasswordEmail(email) {
  * The last name of the message owner (if role is not 'pro').
  * @returns {Promise<void>} - A promise that resolves when the email is sent.
  */
-export async function newMessageEmail(user, request, message, ownerMessageData) {
+export async function newMessageEmail(
+  user,
+  request,
+  message,
+  ownerMessageData,
+) {
   const mailOptions = {
-    from: process.env.EMAIL_SERVER,
+    from: `"toupro" <${process.env.EMAIL_SERVER}>`,
     to: `${user.email}`,
     subject: 'Nouveau message',
     html: `
       <img src="cid:logoEmail" alt="logo" style="width: 60px; height: 60px; margin-bottom: 20px;"/>
-      <h1 style="fontSize: 1.2rem; margin: 0">Nouveau message</h1>
-      <h2 style="fontSize: 1rem"> Demande concernée : <span style="color: #028eef">${request.title}</span></h2>
+      <h1 style="fontSize: 1.2rem; marginTop: 0.3rem;">Nouveau message</h1>
+      <h2 style="fontSize: 1rem"> Demande concernée : <span style="color: #028eef">${
+  request.title
+}</span></h2>
 
-      <p>Bonjour ${user.role === 'pro' ? user.denomination : user.first_name},</p>
-      <p>Vous avez reçu un nouveau message le ${new Date(Number(message.created_at)).toLocaleDateString('fr-FR')} à ${new Date(Number(message.created_at)).toLocaleTimeString('fr-FR', {
-  timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit', hour12: false,
-}).replace(':', 'h')} de <span style="color: #f37c04;">${ownerMessageData.role === 'pro' ? ownerMessageData.denomination : `${ownerMessageData.first_name} ${ownerMessageData.last_name}`} </span></p>
-      <a href="${process.env.CORS_ORIGIN}" style="background-color: #F79323; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Consulter le message</a>
+      <p>Bonjour ${
+  user.role === 'pro' ? user.denomination : user.first_name
+},</p>
+      <p>Vous avez reçu un nouveau message le ${new Date(
+    Number(message.created_at),
+  ).toLocaleDateString('fr-FR')} à ${new Date(Number(message.created_at))
+  .toLocaleTimeString('fr-FR', {
+    timeZone: 'Europe/Paris',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+  .replace(':', 'h')} de <span style="color: #f37c04;">${
+  ownerMessageData.role === 'pro'
+    ? ownerMessageData.denomination
+    : `${ownerMessageData.first_name} ${ownerMessageData.last_name}`
+} </span></p>
+      <a href="${
+  process.env.CORS_ORIGIN
+}" style="background-color: #F79323; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Consulter le message</a>
       
+      <p style="color:#8b8b8b;">Ceci est un mail automatique, veuillez ne pas répondre. </p>
     `,
     attachments: [logoAttachment],
   };
@@ -181,20 +208,39 @@ export async function newMessageEmail(user, request, message, ownerMessageData) 
  */
 export async function newRequestEmail(user, request, ownerRequestData) {
   const mailOptions = {
-    from: process.env.EMAIL_SERVER,
+    from: `"toupro" <${process.env.EMAIL_SERVER}>`,
     to: `${user.email}`,
     subject: 'Nouvelle demande',
     html: `
       <img src="cid:logoEmail" alt="logo" style="width: 60px; height: 60px;"/>
-      <h1 style="fontSize: 1.2rem; margin: 0">Nouvelle demande</h1>
-      <h2 style="fontSize: 1rem"> Demande : <span style="color: #028eef">${request.title}</span></h2>
+      <h1 style="fontSize: 1.2rem; marginTop: 0.3rem;">Nouvelle demande</h1>
+      <h2 style="fontSize: 1rem"> Demande : <span style="color: #028eef">${
+  request.title
+}</span></h2>
 
-      <p>Bonjour ${user.role === 'pro' ? user.denomination : user.first_name},</p>
-      <p>Vous avez reçu une nouvelle demande le ${new Date(Number(request.created_at)).toLocaleDateString('fr-FR')} à ${new Date(Number(request.created_at)).toLocaleTimeString('fr-FR', {
-  timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit', hour12: false,
-}).replace(':', 'h')} de <span style="color: #f37c04;">${ownerRequestData.role === 'pro' ? ownerRequestData.denomination : `${ownerRequestData.first_name} ${ownerRequestData.last_name}`} </span></p>
-      <a href="${process.env.CORS_ORIGIN}" style="background-color: #F79323; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Consulter la demande</a>
-    `,
+      <p>Bonjour ${
+  user.role === 'pro' ? user.denomination : user.first_name
+},</p>
+      <p>Vous avez reçu une nouvelle demande le ${new Date(
+    Number(request.created_at),
+  ).toLocaleDateString('fr-FR')} à ${new Date(Number(request.created_at))
+  .toLocaleTimeString('fr-FR', {
+    timeZone: 'Europe/Paris',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+  .replace(':', 'h')} de <span style="color: #f37c04;">${
+  ownerRequestData.role === 'pro'
+    ? ownerRequestData.denomination
+    : `${ownerRequestData.first_name} ${ownerRequestData.last_name}`
+} </span></p>
+      <a href="${
+  process.env.CORS_ORIGIN
+}" style="background-color: #F79323; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Consulter la demande</a>
+    
+      <p style="color:#8b8b8b;">Ceci est un mail automatique, veuillez ne pas répondre. </p>
+      `,
     attachments: [logoAttachment],
   };
   /*  <p>Description:</p>
@@ -217,18 +263,21 @@ export async function newRequestEmail(user, request, ownerRequestData) {
  */
 export async function contactSendEmail(data) {
   const mailOptions = {
-    from: process.env.EMAIL_SERVER,
+    from: `"toupro" <${process.env.EMAIL_SERVER}>`,
     to: process.env.EMAIL_CONTACT,
     subject: 'Nouveau message de contact',
     html: `
       <img src="cid:logoEmail" alt="logo" style="width: 60px; height: 60px;"/>
-      <h1 style="margin: 0">Nouveau message de contact</h1>
+      <h1 style="marginTop: 0.3rem;">Nouveau message de contact</h1>
 
-      ${data.enterprise ? `<p>Société: ${data.enterprise}</p>`
+      ${
+  data.enterprise
+    ? `<p>Société: ${data.enterprise}</p>`
     : `<p>Nom: ${data.last_name}</p>
-      <p>Prénom: ${data.first_name}</p>`}
+      <p>Prénom: ${data.first_name}</p>`
+}
 
-      <p>Email: ${data.email}</p>
+      <p>Email: <a href="mailto:${data.email}">${data.email}</a></p>
 
       <p>Message:</p>
       <p>${data.description}</p>
@@ -236,7 +285,31 @@ export async function contactSendEmail(data) {
     attachments: [logoAttachment],
   };
 
-  await transporter.sendMail(mailOptions);
+  const result = await transporter.sendMail(mailOptions);
+
+  if (result.rejected.length > 0) {
+    throw new Error('The email could not be sent.');
+  } else {
+    const returnMailOptions = {
+      from: `"toupro" <${process.env.EMAIL_SERVER}>`,
+      to: data.email,
+      subject: 'Confirmation de réception',
+      html: `
+        <img src="cid:logoEmail" alt="logo" style="width: 60px; height: 60px;"/>
+        <h1>Confirmation de réception</h1>
+  
+        <p>Votre message a bien été reçu. Nous vous répondrons dans les plus brefs délais.</p>
+  
+        <p style="margin: 0;">Cordialement,</p>
+        <p style="margin: 0;">L'équipe toupro.</p>
+
+        <p style="color:#8b8b8b;">Ceci est un mail automatique, veuillez ne pas répondre. </p>
+      `,
+      attachments: [logoAttachment],
+    };
+
+    await transporter.sendMail(returnMailOptions);
+  }
 }
 
 export default { sendPasswordResetEmail, confirmEmail, changePasswordEmail };
