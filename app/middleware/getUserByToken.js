@@ -30,44 +30,15 @@ function debugInDevelopment(message = '', value = '') {
 function subscribeToLogout(userId, sessionId, multipleSession = false) {
   debugInDevelopment('subscribeToLogout', userId);
   const subValue = {
-    id: userId, value: true, multiple: multipleSession, session: String(sessionId),
+    id: userId,
+    value: true,
+    multiple: multipleSession,
+    session: String(sessionId),
   };
   pubsub.publish('LOGOUT', {
     logout: subValue,
   });
 }
-
-/* function changeCookieDomain(userDataDecoded, res, token, refreshToken) {
-  // change cookie for subdomain
-  const TokenCookie = cookie.serialize(
-    'auth_token',
-    token,
-    {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'Lax',
-      domain: `user${userDataDecoded.id}.${process.env.DOMAIN}`,
-      path: '/',
-      ...(userDataDecoded.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
-    },
-  );
-
-  if (userDataDecoded.activeSession) {
-    const refreshTokenCookie = cookie.serialize(
-      'refresh_token',
-      refreshToken,
-      {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'Lax',
-        domain: `user${userDataDecoded.id}.${process.env.DOMAIN}`,
-        maxAge: 60 * 60 * 24 * 365 * 5,
-      },
-    );
-
-    res.setHeader('set-cookie', [TokenCookie, refreshTokenCookie]);
-  }
-} */
 
 let cookieOptions;
 
@@ -93,7 +64,10 @@ export default async function getUserByToken(req, res, dataSources) {
     if (token) {
       userDataDecoded = jwt.decode(token, process.env.JWT_SECRET);
 
-      if (req.headers.userid && parseInt(req.headers.userid, 10) !== userDataDecoded.id) {
+      if (
+        req.headers.userid
+        && parseInt(req.headers.userid, 10) !== userDataDecoded.id
+      ) {
         debug('Wrong session');
         subscribeToLogout(userDataDecoded.id, sessionId, true);
         subscribeToLogout(parseInt(req.headers.userid, 10), sessionId, true);
@@ -130,14 +104,21 @@ export default async function getUserByToken(req, res, dataSources) {
         decodeToken = jwt.decode(refreshToken);
         // clear user cache
         dataSources.dataDB.user.cache.clear();
-        const user = await refreshTokenInstance.getRefreshTokenByUserId(decodeToken.id);
+        const user = await refreshTokenInstance.getRefreshTokenByUserId(
+          decodeToken.id,
+        );
 
-        const verifyRefreshToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+        const verifyRefreshToken = jwt.verify(
+          refreshToken,
+          process.env.REFRESH_TOKEN_SECRET,
+        );
 
         // If the refresh token is not valid, go to logout
         if (!verifyRefreshToken) {
           debugInDevelopment('refreshToken: verifyRefreshToken failed');
-          throw new GraphQLError('Error token', { extensions: { code: 'UNAUTHENTICATED', httpStatus: 401 } });
+          throw new GraphQLError('Error token', {
+            extensions: { code: 'UNAUTHENTICATED', httpStatus: 401 },
+          });
         }
 
         // If the user is not found, go to logout
@@ -148,16 +129,29 @@ export default async function getUserByToken(req, res, dataSources) {
         }
 
         // find the refresh token in the database
-        const findRefreshToken = user.refresh_token.find((element) => element === refreshToken);
+        const findRefreshToken = user.refresh_token.find(
+          (element) => element === refreshToken,
+        );
 
         // If the refresh token is not the same as the one in the database, go to logout
         if (!findRefreshToken || findRefreshToken !== refreshToken) {
-          debugInDevelopment('refreshToken: refresh_token failed', verifyRefreshToken);
+          debugInDevelopment(
+            'refreshToken: refresh_token failed',
+            verifyRefreshToken,
+          );
           subscribeToLogout(user.id, sessionId);
           return null;
         }
 
-        const newToken = jwt.sign({ id: user.id, role: user.role, activeSession: userDataDecoded.activeSession }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const newToken = jwt.sign(
+          {
+            id: user.id,
+            role: user.role,
+            activeSession: userDataDecoded.activeSession,
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: '1h' },
+        );
 
         cookieOptions = {
           httpOnly: true,
@@ -165,16 +159,14 @@ export default async function getUserByToken(req, res, dataSources) {
           sameSite: 'Strict',
           domain: process.env.DOMAIN,
           path: '/',
-          ...(decodeToken.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
+          ...(decodeToken.activeSession
+            ? { maxAge: 60 * 60 * 24 * 365 * 5 }
+            : {}),
         };
 
-        const TokenCookie = cookie.serialize(
-          'auth-token',
-          newToken,
-          {
-            ...cookieOptions,
-          },
-        );
+        const TokenCookie = cookie.serialize('auth-token', newToken, {
+          ...cookieOptions,
+        });
         const refreshTokenCookie = cookie.serialize(
           'refresh-token',
           refreshToken,
@@ -189,11 +181,30 @@ export default async function getUserByToken(req, res, dataSources) {
       } catch (refreshTokenError) {
         // If the error is refresh token expired, make a new refresh token
         try {
-          if (refreshTokenError instanceof jwt.TokenExpiredError && decodeToken.activeSession) {
+          if (
+            refreshTokenError instanceof jwt.TokenExpiredError
+            && decodeToken.activeSession
+          ) {
             debug('refreshToken is expired, new refresh token is starting');
             // make a new refreshtoken
-            const newToken = jwt.sign({ id: decodeToken.id, role: decodeToken.role, activeSession: decodeToken.activeSession }, process.env.JWT_SECRET, { expiresIn: '1h' });
-            const newRefreshToken = jwt.sign({ id: decodeToken.id, role: decodeToken.role, activeSession: decodeToken.activeSession }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
+            const newToken = jwt.sign(
+              {
+                id: decodeToken.id,
+                role: decodeToken.role,
+                activeSession: decodeToken.activeSession,
+              },
+              process.env.JWT_SECRET,
+              { expiresIn: '1h' },
+            );
+            const newRefreshToken = jwt.sign(
+              {
+                id: decodeToken.id,
+                role: decodeToken.role,
+                activeSession: decodeToken.activeSession,
+              },
+              process.env.REFRESH_TOKEN_SECRET,
+              { expiresIn: '1d' },
+            );
             // update the refresh token in the database
             await dataSources.dataDB.user.modifyRefreshToken(
               decodeToken.id,
@@ -202,13 +213,9 @@ export default async function getUserByToken(req, res, dataSources) {
               refreshToken,
             );
 
-            const TokenCookie = cookie.serialize(
-              'auth-token',
-              newToken,
-              {
-                ...cookieOptions,
-              },
-            );
+            const TokenCookie = cookie.serialize('auth-token', newToken, {
+              ...cookieOptions,
+            });
             const refreshTokenCookie = cookie.serialize(
               'refresh-token',
               newRefreshToken,

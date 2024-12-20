@@ -1,7 +1,7 @@
 {
   "apps": [
     {
-      "name": "POP",
+      "name": "Toupro",
       "script": "./index.js",
       "interpreter": "node",
       "instances": 1,

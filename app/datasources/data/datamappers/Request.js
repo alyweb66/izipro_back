@@ -125,7 +125,13 @@ class Request extends CoreDatamapper {
    * @returns {Promise<Array>} A promise that resolves to an object of request.
    * @throws {Error} If there is an issue with the database query.
    */
-  async getSubscritpionRequest(jobId, userId, requestId, offset = 0, limit = 1) {
+  async getSubscritpionRequest(
+    jobId,
+    userId,
+    requestId,
+    offset = 0,
+    limit = 1,
+  ) {
     debug('Finding subscription request by job id');
     debug(`SQL function ${this.QuerySubFunc} called`);
 
@@ -176,12 +182,192 @@ class Request extends CoreDatamapper {
   async deleteObsoleteRequests() {
     debug('Deleting obsolete requests');
     const query = {
-      text: `DELETE FROM "${this.tableName}" WHERE "deleted_at" < NOW() - INTERVAL '5 minute' 
+      text: `DELETE FROM "${this.tableName}" WHERE "deleted_at" < NOW() - INTERVAL '1 month' 
       RETURNING*`,
     };
     const result = await this.client.query(query);
 
     return result.rowCount;
+  }
+
+  /**
+   * Copy requests with deleted_at older than 1 month.
+   *
+   * @returns {Promise<void>}
+   */
+  async copyObsoleteRequests() {
+    debug('Copy obsolete requests');
+    const query = {
+      text: `
+          SELECT json_agg(t) AS data
+FROM (
+    SELECT
+        r.id AS request_id,
+        r.title,
+        r.message AS request_message,
+        r.city,
+        r.urgent,
+        r.user_id AS request_user_id,
+        r.job_id,
+        r.range,
+        r.created_at AS request_created_at,
+        r.deleted_at AS request_deleted_at,
+
+        -- Conversations
+        (
+            SELECT json_agg(
+                json_build_object(
+                    'conversation_id', c.id,
+                    'user_1', c.user_1,
+                    'user_2', c.user_2,
+                    'created_at', c.created_at,
+                    'updated_at', c.updated_at,
+                    'messages', (
+                        SELECT json_agg(
+                            json_build_object(
+                                'message_id', m.id,
+                                'content', m.content,
+                                'created_at', m.created_at,
+                                'user_id', m.user_id,
+                                'media', (
+                                    SELECT json_agg(
+                                        json_build_object(
+                                            'media_id', mm.id,
+                                            'url', mm.url
+                                        )
+                                    )
+                                    FROM message_has_media mhm
+                                    LEFT JOIN media mm ON mm.id = mhm.media_id
+                                    WHERE mhm.message_id = m.id
+                                )
+                            )
+                        )
+                        FROM message m
+                        WHERE m.conversation_id = c.id
+                    )
+                )
+            )
+            FROM conversation c
+            WHERE c.request_id = r.id
+        ) AS conversations,
+
+        -- Request media
+        (
+            SELECT json_agg(
+                json_build_object(
+                    'media_id', rm.id,
+                    'url', rm.url
+                )
+            )
+            FROM request_has_media rhm
+            LEFT JOIN media rm ON rm.id = rhm.media_id
+            WHERE rhm.request_id = r.id
+        ) AS request_media
+    FROM request r
+    WHERE r.deleted_at < NOW() - INTERVAL '1 month'
+) t;
+
+      `,
+    };
+
+    const result = await this.client.query(query);
+    return result;
+  }
+
+  /**
+   * Copy user with deleted_at older than 1 month.
+   *
+   * @returns {Promise<void>}
+   */
+  async copyObsoleteUser() {
+    debug('Copy obsolete user');
+    const query = {
+      text: `
+          SELECT json_agg(u) AS data
+FROM (
+    SELECT
+        u.id AS user_id,
+        u.role,
+        u.created_at AS user_created_at,
+        u.updated_at AS user_updated_at,
+
+        -- User request
+        (
+            SELECT json_agg(
+                json_build_object(
+                    'request_id', r.id,
+                    'title', r.title,
+                    'message', r.message,
+                    'city', r.city,
+                    'urgent', r.urgent,
+                    'job_id', r.job_id,
+                    'range', r.range,
+                    'created_at', r.created_at,
+                    'deleted_at', r.deleted_at,
+
+                    -- Conversations 
+                    'conversations', (
+                        SELECT json_agg(
+                            json_build_object(
+                                'conversation_id', c.id,
+                                'user_1', c.user_1,
+                                'user_2', c.user_2,
+                                'created_at', c.created_at,
+                                'updated_at', c.updated_at,
+                                'messages', (
+                                    SELECT json_agg(
+                                        json_build_object(
+                                            'message_id', m.id,
+                                            'content', m.content,
+                                            'created_at', m.created_at,
+                                            'user_id', m.user_id,
+                                            'media', (
+                                                    SELECT json_agg(
+                                                        json_build_object(
+                                                            'media_id', mm.id,
+                                                            'url', mm.url
+                                                        )
+                                                    )
+                                                    FROM message_has_media mhm
+                                                    LEFT JOIN media mm ON mm.id = mhm.media_id
+                                                    WHERE mhm.message_id = m.id
+                                                )
+                                        )
+                                    )
+                                    FROM message m
+                                    WHERE m.conversation_id = c.id
+                                )
+                            )
+                        )
+                        FROM conversation c
+                        WHERE c.request_id = r.id
+                    ),
+
+                    -- Request media
+                    'request_media', (
+                        SELECT json_agg(
+                            json_build_object(
+                                'media_id', rm.id,
+                                'url', rm.url
+                            )
+                        )
+                        FROM request_has_media rhm
+                        LEFT JOIN media rm ON rm.id = rhm.media_id
+                        WHERE rhm.request_id = r.id
+                    )
+                )
+            )
+            FROM request r
+            WHERE r.user_id = u.id
+        ) AS requests
+              FROM "user" u
+              WHERE u.deleted_at < NOW() - INTERVAL '1 month'
+          ) u;
+      `,
+    };
+
+    const result = await this.client.query(query);
+    return result;
   }
 }
 export default Request;
