@@ -60,7 +60,9 @@ async function deleteFile(file) {
     debugInDevelopment(`File ${file} deleted successfully`);
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error deleting file', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+    throw new GraphQLError('Error deleting file', {
+      extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+    });
   }
 }
 /**
@@ -81,12 +83,18 @@ async function createUserFunction(_, { input }, { dataSources }) {
   debugInDevelopment(input);
   try {
     // Check if user exists
-    const existingUser = await dataSources.dataDB.user.findUserByEmail(input.email);
+    const existingUser = await dataSources.dataDB.user.findUserByEmail(
+      input.email,
+    );
     if (existingUser) {
       if (input.siret) {
-        throw new GraphQLError('incorrect email or password Pro', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+        throw new GraphQLError('incorrect email or password Pro', {
+          extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+        });
       } else {
-        throw new GraphQLError('incorrect email or password', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+        throw new GraphQLError('incorrect email or password', {
+          extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+        });
       }
     }
 
@@ -95,11 +103,16 @@ async function createUserFunction(_, { input }, { dataSources }) {
 
     // Check if siret is already in the database
     if (input.siret) {
-      const existingSiret = await dataSources.dataDB.user.findBySiret(input.siret);
+      const existingSiret = await dataSources.dataDB.user.findBySiret(
+        input.siret,
+      );
 
       if (existingSiret) {
         debugInDevelopment('Siret already exists in the database');
-        return { __typename: 'ExistingSiret', error: 'Siret already exists in the database' };
+        return {
+          __typename: 'ExistingSiret',
+          error: 'Siret already exists in the database',
+        };
       }
     }
 
@@ -110,13 +123,22 @@ async function createUserFunction(_, { input }, { dataSources }) {
       const sirenAPI = new SirenAPI();
       siretData = await sirenAPI.getSiretData(siret);
       if (!siretData.siret) {
-        throw new GraphQLError('Siret not found', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+        throw new GraphQLError('Siret not found', {
+          extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+        });
       }
       if (Number(siretData.siret) !== input.siret) {
-        throw new GraphQLError('Siret not found', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+        throw new GraphQLError('Siret not found', {
+          extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+        });
       }
-      if (siretData?.periodesEtablissement?.[0]?.etatAdministratifEtablissement === 'F') {
-        throw new GraphQLError('Siret not found', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      if (
+        siretData?.periodesEtablissement?.[0]
+          ?.etatAdministratifEtablissement === 'F'
+      ) {
+        throw new GraphQLError('Siret not found', {
+          extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+        });
       }
     }
 
@@ -124,7 +146,9 @@ async function createUserFunction(_, { input }, { dataSources }) {
     const addRole = input.siret ? 'pro' : 'user';
 
     // Create a token and send an email to confirm the email address
-    const token = jwt.sign({ email: input.email }, process.env.JWT_SECRET, { expiresIn: '24h' });
+    const token = jwt.sign({ email: input.email }, process.env.JWT_SECRET, {
+      expiresIn: '24h',
+    });
     debugInDevelopment('Token is generated', token);
     await sendEmail.confirmEmail(input.email, token);
     debug('confirmEmail sent');
@@ -133,14 +157,20 @@ async function createUserFunction(_, { input }, { dataSources }) {
     const userInputWithHashedPassword = {
       ...input,
       password: hashedPassword,
-      denomination: siretData ? siretData.uniteLegale.denominationUniteLegale : null,
+      denomination: siretData
+        ? siretData.uniteLegale.denominationUniteLegale
+        : null,
       role: addRole,
       remember_token: token,
     };
 
-    const createdUser = await dataSources.dataDB.user.create(userInputWithHashedPassword);
+    const createdUser = await dataSources.dataDB.user.create(
+      userInputWithHashedPassword,
+    );
     if (!createdUser.id) {
-      throw new GraphQLError('Error creating user', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      throw new GraphQLError('Error creating user', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
     }
 
     // Create a default notification setting in the notification table
@@ -149,14 +179,20 @@ async function createUserFunction(_, { input }, { dataSources }) {
     });
 
     if (!createNotification.id) {
-      throw new GraphQLError('Error creating notification', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      throw new GraphQLError('Error creating notification', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
     }
 
     // Create a default user setting in the user_setting table
-    const createSetting = await dataSources.dataDB.userSetting.create({ user_id: createdUser.id });
+    const createSetting = await dataSources.dataDB.userSetting.create({
+      user_id: createdUser.id,
+    });
 
     if (!createSetting.id) {
-      throw new GraphQLError('Error creating user setting', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      throw new GraphQLError('Error creating user setting', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
     }
 
     return { __typename: 'User', ...createdUser };
@@ -200,10 +236,14 @@ async function confirmRegisterEmail(_, { input }, { dataSources }) {
     }
 
     if (!user) {
-      throw new GraphQLError('User not found', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      throw new GraphQLError('User not found', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
     }
     if (user.remember_token !== token) {
-      throw new GraphQLError('Error token', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      throw new GraphQLError('Error token', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
     }
     await dataSources.dataDB.user.update(user.id, {
       email: decodedToken.email,
@@ -213,7 +253,9 @@ async function confirmRegisterEmail(_, { input }, { dataSources }) {
     return true;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error confirm register mail', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+    throw new GraphQLError('Error confirm register mail', {
+      extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+    });
   }
 }
 /**
@@ -241,22 +283,32 @@ async function login(_, { input }, { dataSources, res }) {
 
     if (!user) {
       debugInDevelopment('login:user failed', user);
-      throw new GraphQLError('Incorrect email or password', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      throw new GraphQLError('Incorrect email or password', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
     }
     if (user.verified_email === false) {
       debugInDevelopment('login:verified_email false');
-      throw new GraphQLError('Unverified email', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      throw new GraphQLError('Unverified email', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
     }
 
     const validPassword = await bcrypt.compare(input.password, user.password);
 
     if (!validPassword) {
       debugInDevelopment('login:validPassword failed', validPassword);
-      throw new GraphQLError('EIncorrect email or password', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      throw new GraphQLError('EIncorrect email or password', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
     }
 
     // Create a token
-    const token = jwt.sign({ id: user.id, role: user.role, activeSession: input.activeSession }, process.env.JWT_SECRET, { expiresIn: input.activeSession ? '1h' : '1h' });
+    const token = jwt.sign(
+      { id: user.id, role: user.role, activeSession: input.activeSession },
+      process.env.JWT_SECRET,
+      { expiresIn: input.activeSession ? '1h' : '1h' },
+    );
 
     // Remove the old refresh token if it's expired
     checkRefreshTokenValidity(user.id, dataSources);
@@ -266,7 +318,11 @@ async function login(_, { input }, { dataSources, res }) {
     let saveRefreshToken;
     debugInDevelopment('input.activeSession', input.activeSession);
     if (input.activeSession) {
-      refreshToken = jwt.sign({ id: user.id, role: user.role, activeSession: true }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
+      refreshToken = jwt.sign(
+        { id: user.id, role: user.role, activeSession: true },
+        process.env.REFRESH_TOKEN_SECRET,
+        { expiresIn: '1d' },
+      );
       saveRefreshToken = await dataSources.dataDB.user.modifyRefreshToken(
         user.id,
         refreshToken,
@@ -276,48 +332,36 @@ async function login(_, { input }, { dataSources, res }) {
 
     debugInDevelopment('saveRefreshToken', saveRefreshToken);
 
-    const TokenCookie = cookie.serialize(
-      'auth-token',
-      token,
-      {
+    const TokenCookie = cookie.serialize('auth-token', token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'Strict',
+      domain: process.env.DOMAIN,
+      path: '/',
+      ...(input.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
+    });
+
+    // Create a unique id for browser session
+    const uniqueId = Date.now();
+    const sessionId = cookie.serialize('session-id', uniqueId, {
+      httpOnly: false,
+      secure: true,
+      sameSite: 'Strict',
+      domain: process.env.DOMAIN,
+      path: '/',
+      ...(input.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
+    });
+
+    let refreshTokenCookie;
+    if (input.activeSession) {
+      refreshTokenCookie = cookie.serialize('refresh-token', refreshToken, {
         httpOnly: true,
         secure: true,
         sameSite: 'Strict',
         domain: process.env.DOMAIN,
         path: '/',
-        ...(input.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
-      },
-    );
-
-    // Create a unique id for browser session
-    const uniqueId = Date.now();
-    const sessionId = cookie.serialize(
-      'session-id',
-      uniqueId,
-      {
-        httpOnly: false,
-        secure: true,
-        sameSite: 'Strict',
-        domain: process.env.DOMAIN,
-        path: '/',
-        ...(input.activeSession ? { maxAge: 60 * 60 * 24 * 365 * 5 } : {}),
-      },
-    );
-
-    let refreshTokenCookie;
-    if (input.activeSession) {
-      refreshTokenCookie = cookie.serialize(
-        'refresh-token',
-        refreshToken,
-        {
-          httpOnly: true,
-          secure: true,
-          sameSite: 'Strict',
-          domain: process.env.DOMAIN,
-          path: '/',
-          maxAge: 60 * 60 * 24 * 365 * 5,
-        },
-      );
+        maxAge: 60 * 60 * 24 * 365 * 5,
+      });
     }
 
     const cookiesToSet = [TokenCookie, sessionId];
@@ -330,7 +374,9 @@ async function login(_, { input }, { dataSources, res }) {
     return user.id;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error login', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+    throw new GraphQLError('Error login', {
+      extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+    });
   }
 }
 /**
@@ -364,7 +410,9 @@ async function logout(_, { id }, { dataSources, res, req }) {
         );
 
         if (!tokenRemoved) {
-          throw new GraphQLError('Error removing refresh token', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+          throw new GraphQLError('Error removing refresh token', {
+            extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+          });
         }
       }
     }
@@ -376,17 +424,23 @@ async function logout(_, { id }, { dataSources, res, req }) {
     res.clearCookie('auth-token', {
       httpOnly: true,
       domain: process.env.DOMAIN,
-      ...(process.env.NODE_ENV === 'development' ? { secure: true } : { sameSite: 'Lax' }),
+      ...(process.env.NODE_ENV === 'development'
+        ? { secure: true }
+        : { sameSite: 'Lax' }),
     });
     res.clearCookie('refresh-token', {
       httpOnly: true,
       domain: process.env.DOMAIN,
-      ...(process.env.NODE_ENV === 'development' ? { secure: true } : { sameSite: 'Lax' }),
+      ...(process.env.NODE_ENV === 'development'
+        ? { secure: true }
+        : { sameSite: 'Lax' }),
     });
     return true;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error logout', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+    throw new GraphQLError('Error logout', {
+      extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+    });
   }
 }
 /**
@@ -407,13 +461,17 @@ async function deleteUser(_, { id }, { dataSources, res }) {
   try {
     // Check if the user is logged in
     if (dataSources.userData === null || dataSources.userData.id !== id) {
-      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
+      throw new GraphQLError('Unauthorized', {
+        extensions: { code: 'UNAUTHORIZED', httpStatus: 401 },
+      });
     }
 
     const user = await dataSources.dataDB.user.findByPk(id);
 
     if (!user) {
-      throw new GraphQLError('User not found', { extensions: { code: 'NOT_FOUND', httpStatus: 404 } });
+      throw new GraphQLError('User not found', {
+        extensions: { code: 'NOT_FOUND', httpStatus: 404 },
+      });
     }
 
     // delete the old profile picture in folder
@@ -456,7 +514,9 @@ async function deleteUser(_, { id }, { dataSources, res }) {
     return true;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error delete user', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+    throw new GraphQLError('Error delete user', {
+      extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+    });
   }
 }
 /**
@@ -474,18 +534,28 @@ async function forgotPassword(_, { input }, { dataSources }) {
   try {
     const user = await dataSources.dataDB.user.findUserByEmail(input.email);
     if (!user) {
-      throw new GraphQLError('User not found', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      throw new GraphQLError('User not found', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
     }
     debug('Token is generated');
-    const resetToken = jwt.sign({ id: user.id, email: input.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    await dataSources.dataDB.user.update(user.id, { remember_token: resetToken });
+    const resetToken = jwt.sign(
+      { id: user.id, email: input.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' },
+    );
+    await dataSources.dataDB.user.update(user.id, {
+      remember_token: resetToken,
+    });
 
     await sendEmail.sendPasswordResetEmail(input.email, resetToken);
     debug('Email sent');
     return true;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error forgot password', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+    throw new GraphQLError('Error forgot password', {
+      extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+    });
   }
 }
 /**
@@ -506,17 +576,28 @@ async function validateForgotPassword(_, { input }, { dataSources }) {
     const { token } = input;
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
     if (!decodedToken.id) {
-      throw new GraphQLError('Token is invalid', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      throw new GraphQLError('Token is invalid', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
     }
 
     // Check if user exists
-    const existingUser = await dataSources.dataDB.user.findUserByEmail(decodedToken.email);
+    const existingUser = await dataSources.dataDB.user.findUserByEmail(
+      decodedToken.email,
+    );
     if (!existingUser) {
-      throw new GraphQLError('Email ou mot de passe incorrect', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      throw new GraphQLError('Email ou mot de passe incorrect', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
     }
     // Check if the token is the same as the one in the database
-    if (existingUser.remember_token !== token && decodedToken.id !== existingUser.id) {
-      throw new GraphQLError('Error token', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+    if (
+      existingUser.remember_token !== token
+      && decodedToken.id !== existingUser.id
+    ) {
+      throw new GraphQLError('Error token', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
     }
 
     // Hash the password using bcrypt
@@ -531,11 +612,16 @@ async function validateForgotPassword(_, { input }, { dataSources }) {
 
     delete userInputWithHashedPassword.token;
 
-    dataSources.dataDB.user.update(existingUser.id, userInputWithHashedPassword);
+    dataSources.dataDB.user.update(
+      existingUser.id,
+      userInputWithHashedPassword,
+    );
     return true;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error validate forgot password', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+    throw new GraphQLError('Error validate forgot password', {
+      extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+    });
   }
 }
 /**
@@ -575,7 +661,9 @@ async function updateUser(_, { id, input }, { dataSources }) {
     dataSources.dataDB.user.findByPkLoader.clear(dataSources.userData.id);
 
     if (dataSources.userData === null || userDataSources.id !== id) {
-      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
+      throw new GraphQLError('Unauthorized', {
+        extensions: { code: 'UNAUTHORIZED', httpStatus: 401 },
+      });
     }
     // Remove siret and company_name if the user is not a pro
     const updateInput = { ...input };
@@ -590,7 +678,11 @@ async function updateUser(_, { id, input }, { dataSources }) {
     // Check if the email has changed to send a new confirmation email
     if (input.email) {
       if (input.email !== user.email) {
-        const token = jwt.sign({ email: input.email, userId: id }, process.env.JWT_SECRET, { expiresIn: '4h' });
+        const token = jwt.sign(
+          { email: input.email, userId: id },
+          process.env.JWT_SECRET,
+          { expiresIn: '4h' },
+        );
         await dataSources.dataDB.user.update(id, { remember_token: token });
         await sendEmail.confirmEmail(input.email, token);
         debug('Email has changed');
@@ -599,44 +691,56 @@ async function updateUser(_, { id, input }, { dataSources }) {
     }
 
     if (!user) {
-      throw new GraphQLError('User not found', { extensions: { code: 'NOT_FOUND', httpStatus: 404 } });
+      throw new GraphQLError('User not found', {
+        extensions: { code: 'NOT_FOUND', httpStatus: 404 },
+      });
     }
 
     const validExtensions = ['.jpg', '.jpeg', '.png'];
 
     // mapping the media array to createReadStream
     let imageInput;
-    if (input.image
+    if (
+      input.image
       && input.image.length > 0
       && input.image[0].file
-      && validExtensions.some((ext) => input.image[0].file.filename.endsWith(ext))) {
-      const ReadStreamArray = await Promise.all(input.image.map(async (upload) => {
-        const fileUpload = upload.file;
-        if (!fileUpload) {
-          throw new GraphQLError('File upload not complete', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
-        }
-        const { createReadStream, filename, mimetype } = await fileUpload;
-        const readStream = createReadStream();
-        const file = {
-          filename,
-          mimetype,
-          buffer: readStream,
-        };
-        return file;
-      }));
+      && validExtensions.some((ext) => input.image[0].file.filename.endsWith(ext))
+    ) {
+      const ReadStreamArray = await Promise.all(
+        input.image.map(async (upload) => {
+          const fileUpload = upload.file;
+          if (!fileUpload) {
+            throw new GraphQLError('File upload not complete', {
+              extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+            });
+          }
+          const { createReadStream, filename, mimetype } = await fileUpload;
+          const readStream = createReadStream();
+          const file = {
+            filename,
+            mimetype,
+            buffer: readStream,
+          };
+          return file;
+        }),
+      );
 
       // calling the handleUploadedFiles function to compress the images and save them
       const media = await handleUploadedFiles(ReadStreamArray);
 
       if (!media || media.length === 0 || !media[0].url) {
-        throw new GraphQLError('Error creating media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+        throw new GraphQLError('Error creating media', {
+          extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+        });
       }
       // replace input.image with the media url
       // Check if the image is a webp
       if (media[0].url && media[0].url.endsWith('.webp')) {
         imageInput = media[0].url;
       } else {
-        throw new GraphQLError('Invalid file extension', { extensions: { code: 'INTERNAT_SERVER_ERROR', httpStatus: 500 } });
+        throw new GraphQLError('Invalid file extension', {
+          extensions: { code: 'INTERNAT_SERVER_ERROR', httpStatus: 500 },
+        });
       }
       // delete the old profile picture in folder
       if (user.image) {
@@ -655,7 +759,9 @@ async function updateUser(_, { id, input }, { dataSources }) {
     if (imageInput) {
       updateInput.image = imageInput;
     } else if (!imageInput && input.image && input.image.length > 0) {
-      throw new GraphQLError('Error updating image', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      throw new GraphQLError('Error updating image', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
     }
 
     return dataSources.dataDB.user.update(id, updateInput);
@@ -664,7 +770,9 @@ async function updateUser(_, { id, input }, { dataSources }) {
       throw error;
     }
     debug('error', error);
-    throw new GraphQLError('Error updating image user', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+    throw new GraphQLError('Error updating image user', {
+      extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+    });
   }
 }
 /**
@@ -687,22 +795,27 @@ async function changePassword(_, { id, input }, { dataSources }) {
   try {
     // Check if the user is logged in
     if (dataSources.userData === null || dataSources.userData.id !== id) {
-      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
+      throw new GraphQLError('Unauthorized', {
+        extensions: { code: 'UNAUTHORIZED', httpStatus: 401 },
+      });
     }
     const user = await dataSources.dataDB.user.findByPk(id);
     if (!user) {
-      throw new GraphQLError('User not found', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      throw new GraphQLError('User not found', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
     }
     const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
     if (!isOldPasswordValid) {
-      throw new GraphQLError('Incorrect password', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      throw new GraphQLError('Incorrect password', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
     }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-    await dataSources.dataDB.user.update(
-      dataSources.userData.id,
-      { password: hashedNewPassword },
-    );
+    await dataSources.dataDB.user.update(dataSources.userData.id, {
+      password: hashedNewPassword,
+    });
     await sendEmail.changePasswordEmail(user.email);
     return true;
   } catch (error) {
@@ -710,7 +823,9 @@ async function changePassword(_, { id, input }, { dataSources }) {
     if (error instanceof GraphQLError) {
       throw error;
     }
-    throw new GraphQLError('Error', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+    throw new GraphQLError('Error', {
+      extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+    });
   }
 }
 /**
@@ -730,12 +845,16 @@ async function deleteProfilePicture(_, { id }, { dataSources }) {
   try {
     // Check if the user is logged in
     if (dataSources.userData === null || dataSources.userData.id !== id) {
-      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
+      throw new GraphQLError('Unauthorized', {
+        extensions: { code: 'UNAUTHORIZED', httpStatus: 401 },
+      });
     }
     dataSources.dataDB.user.findByPkLoader.clear(id);
     const user = await dataSources.dataDB.user.findByPk(id);
     if (!user) {
-      throw new GraphQLError('User not found', { extensions: { code: 'NOT_FOUND', httpStatus: 404 } });
+      throw new GraphQLError('User not found', {
+        extensions: { code: 'NOT_FOUND', httpStatus: 404 },
+      });
     }
 
     // delete the old profile picture in folder
@@ -754,7 +873,9 @@ async function deleteProfilePicture(_, { id }, { dataSources }) {
     if (error instanceof GraphQLError) {
       throw error;
     }
-    throw new GraphQLError('Error delete profile picture', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+    throw new GraphQLError('Error delete profile picture', {
+      extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+    });
   }
 }
 

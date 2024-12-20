@@ -18,7 +18,7 @@ class SirenAPI extends RESTDataSource {
     // eslint-disable-next-line dot-notation
     request.headers['Accept'] = 'application/json';
     // eslint-disable-next-line dot-notation
-    request.headers['Authorization'] = `Bearer ${this.token}`;
+    request.headers['X-INSEE-Api-Key-Integration'] = this.token;
   }
 
   async getSiretData(siret) {
