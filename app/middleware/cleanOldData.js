@@ -127,7 +127,7 @@ async function copyObsoleteUser(dataSources) {
   const result = await dataSources.dataDB.request.copyObsoleteUser();
 
   if (result.rows[0].data !== null) {
-    const filePath = `${process.env.SAVE_OBSOLETE_DATA_PATH}request_${new Date()
+    const filePath = `${process.env.SAVE_OBSOLETE_DATA_PATH}user_${new Date()
       .toISOString()
       .replace(/[:.]/g, '-')}.json`;
     fs.writeFileSync(
