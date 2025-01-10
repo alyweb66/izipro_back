@@ -323,25 +323,31 @@ const server = new ApolloServer({
 
 await server.start();
 
-//* add s to http://localhost:5173 if https enabled
-app.use(
-  '/',
-  cors({
-    origin: (origin, callback) => {
-      const allowedOrigins = ['http://localhost:5173', 'http://localhost:4173'];
-      if (process.env.NODE_ENV !== 'development') {
-        allowedOrigins.push(process.env.CORS_ORIGIN);
-      }
-      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true,
-    exposedHeaders: ['X-Session-ID'],
-  }),
+//* add s to http://localhost:5173 if https enabled in local
+app.use((req, res, next) => {
+  if (req.path.startsWith('/.well-known/acme-challenge')) {
+    next(); // Ignore ignore restrictions for Let's Encrypt
+  } else {
+    cors({
+      origin: (origin, callback) => {
+        const allowedOrigins = ['http://localhost:5173', 'http://localhost:4173'];
+        if (process.env.NODE_ENV !== 'development') {
+          allowedOrigins.push(process.env.CORS_ORIGIN);
+        }
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
+      credentials: true,
+      exposedHeaders: ['X-Session-ID'],
+    })(req, res, next);
+  }
+});
 
+// use the applyMiddleware method to connect ApolloServer to Express
+app.use(
   // bodyParser.json({ limit: '50mb' }),
   expressMiddleware(server, {
     context: async ({ req, res }) => {
