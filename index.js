@@ -105,7 +105,7 @@ app.use(async (req, res, next) => {
   // req.authenticateError = false;
   // check if the request is an OPTIONS request to limit the number of database calls
   // OPTIONS is the first request made by the browser to check if the server accepts the request
-  if (req.method === 'OPTIONS') {
+  if (req.method === 'OPTIONS' || req.path.startsWith('/.well-known/acme-challenge')) {
     dataSources.userData = null;
     return next();
   }
