@@ -85,27 +85,6 @@ async function handleUploadedFiles(media, itemId, dataSources, message = false) 
 
       // Compression of images with Sharp
       if (mimetype.startsWith('image/') && fileBuffer.length < 1.5e+7) {
-        // const imageBuffer = await getBuffer(buffer);
-        /* else if ((extension === '.heic') || (extension === '.heif')) {
-          try {
-            const bufferData = await getBuffer(buffer);
-            // Convertir HEIC en JPEG
-            imageBuffer = await convert({
-              buffer: bufferData,
-              format: 'JPEG',
-            });
-          } catch (error) {
-            debug('Error converting HEIC to JPEG');
-            if (message) {
-              dataSources.dataDB.message.delete(itemId);
-            } else {
-              dataSources.dataDB.request.delete(itemId);
-            }
-            throw new GraphQLError('Invalid file type', { e
-            xtensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
-          }
-        } */
-
         // Create and save the compressed file
         await sharp(fileBuffer)
           .rotate() // correct orientation
