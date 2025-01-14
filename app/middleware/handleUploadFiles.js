@@ -6,9 +6,11 @@ import sharp from 'sharp';
 import crypto from 'node:crypto';
 import { GraphQLError } from 'graphql';
 import fs from 'fs';
+import url from 'url';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:middleware:sharp`);
-
+const fileName = url.fileURLToPath(import.meta.url);
+const dirname = path.dirname(fileName);
 function debugInDevelopment(message = '', value = '') {
   if (process.env.NODE_ENV === 'development') {
     debug('⚠️', message, value);
@@ -40,6 +42,11 @@ async function handleUploadedFiles(media, itemId, dataSources, message = false) 
   debugInDevelopment(media);
 
   try {
+    // Verify if /public/media exists and create it if it doesn't
+    const mediaPath = path.join(dirname, '../../public/media');
+    if (!fs.existsSync(mediaPath)) {
+      fs.mkdirSync(mediaPath, { recursive: true });
+    }
     const compressedFiles = await Promise.all(media.map(async (file) => {
       const { mimetype, filename, buffer } = file;
       const fileNameWithoutExtension = path.parse(filename).name;
@@ -78,27 +85,6 @@ async function handleUploadedFiles(media, itemId, dataSources, message = false) 
 
       // Compression of images with Sharp
       if (mimetype.startsWith('image/') && fileBuffer.length < 1.5e+7) {
-        // const imageBuffer = await getBuffer(buffer);
-        /* else if ((extension === '.heic') || (extension === '.heif')) {
-          try {
-            const bufferData = await getBuffer(buffer);
-            // Convertir HEIC en JPEG
-            imageBuffer = await convert({
-              buffer: bufferData,
-              format: 'JPEG',
-            });
-          } catch (error) {
-            debug('Error converting HEIC to JPEG');
-            if (message) {
-              dataSources.dataDB.message.delete(itemId);
-            } else {
-              dataSources.dataDB.request.delete(itemId);
-            }
-            throw new GraphQLError('Invalid file type', { e
-            xtensions: { code: 'INTERNAL_SERVER_ERROR', httpStatus: 500 } });
-          }
-        } */
-
         // Create and save the compressed file
         await sharp(fileBuffer)
           .rotate() // correct orientation
