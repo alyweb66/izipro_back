@@ -65,6 +65,7 @@ async function createRequest(_, { input }, { dataSources }) {
   if (dataSources.userData.id !== input.user_id) {
     throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
   }
+  let isCreatedRequest;
   try {
     // stock the user data in a variable to not loose data in dataSource by clearing the cache
     const userDataSources = dataSources.userData;
@@ -73,7 +74,7 @@ async function createRequest(_, { input }, { dataSources }) {
     delete requestInput.media;
 
     // create request
-    const isCreatedRequest = await dataSources.dataDB.request.create(requestInput);
+    isCreatedRequest = await dataSources.dataDB.request.create(requestInput);
     if (!isCreatedRequest) {
       throw new GraphQLError('Error creating request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
     }
@@ -178,6 +179,8 @@ async function createRequest(_, { input }, { dataSources }) {
     return subscriptionResult[0];
   } catch (error) {
     debug('error', error);
+    // delete request ifcreation failed
+    dataSources.dataDB.request.delete(isCreatedRequest.id);
     throw new GraphQLError('Error create request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
   }
 }
