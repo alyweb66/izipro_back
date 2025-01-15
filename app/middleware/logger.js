@@ -21,7 +21,7 @@ const logger = winston.createLogger({
     timestamp({ commonTimestampFormat }),
     json(),
   ),
-  defaultMeta: { service: 'Toupro' },
+  defaultMeta: { service: 'Izipro' },
   transports: [
     new DailyRotateFile({
       filename: 'logs/error-%DATE%.log',
