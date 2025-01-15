@@ -33,7 +33,7 @@ const logoAttachment = {
  */
 export async function sendPasswordResetEmail(email, resetToken) {
   const mailOptions = {
-    from: `"toupro" <${process.env.EMAIL_SERVER}>`,
+    from: `"izipro" <${process.env.EMAIL_SERVER}>`,
     to: `${email}`,
     subject: 'Réinitialisation de mot de passe',
     html: `
@@ -64,7 +64,7 @@ export async function sendPasswordResetEmail(email, resetToken) {
  */
 export async function confirmEmail(email, confirmToken) {
   const mailOptions = {
-    from: `"toupro" <${process.env.EMAIL_SERVER}>`,
+    from: `"izipro" <${process.env.EMAIL_SERVER}>`,
     to: `${email}`,
     subject: 'Confirmation de compte',
     html: `
@@ -94,7 +94,7 @@ export async function confirmEmail(email, confirmToken) {
  */
 export async function changePasswordEmail(email) {
   const mailOptions = {
-    from: `"toupro" <${process.env.EMAIL_SERVER}>`,
+    from: `"izipro" <${process.env.EMAIL_SERVER}>`,
     to: `${email}`,
     subject: 'Changement de mot de passe',
     html: `
@@ -145,7 +145,7 @@ export async function newMessageEmail(
   ownerMessageData,
 ) {
   const mailOptions = {
-    from: `"toupro" <${process.env.EMAIL_SERVER}>`,
+    from: `"izipro" <${process.env.EMAIL_SERVER}>`,
     to: `${user.email}`,
     subject: 'Nouveau message',
     html: `
@@ -208,7 +208,7 @@ export async function newMessageEmail(
  */
 export async function newRequestEmail(user, request, ownerRequestData) {
   const mailOptions = {
-    from: `"toupro" <${process.env.EMAIL_SERVER}>`,
+    from: `"izipro" <${process.env.EMAIL_SERVER}>`,
     to: `${user.email}`,
     subject: 'Nouvelle demande',
     html: `
@@ -263,7 +263,7 @@ export async function newRequestEmail(user, request, ownerRequestData) {
  */
 export async function contactSendEmail(data) {
   const mailOptions = {
-    from: `"toupro" <${process.env.EMAIL_SERVER}>`,
+    from: `"izipro" <${process.env.EMAIL_SERVER}>`,
     to: process.env.EMAIL_CONTACT,
     subject: 'Nouveau message de contact',
     html: `
@@ -291,7 +291,7 @@ export async function contactSendEmail(data) {
     throw new Error('The email could not be sent.');
   } else {
     const returnMailOptions = {
-      from: `"toupro" <${process.env.EMAIL_SERVER}>`,
+      from: `"izipro" <${process.env.EMAIL_SERVER}>`,
       to: data.email,
       subject: 'Confirmation de réception',
       html: `
@@ -301,7 +301,7 @@ export async function contactSendEmail(data) {
         <p>Votre message a bien été reçu. Nous vous répondrons dans les plus brefs délais.</p>
   
         <p style="margin: 0;">Cordialement,</p>
-        <p style="margin: 0;">L'équipe toupro.</p>
+        <p style="margin: 0;">L'équipe izipro.</p>
 
         <p style="color:#8b8b8b;">Ceci est un mail automatique, veuillez ne pas répondre. </p>
       `,
