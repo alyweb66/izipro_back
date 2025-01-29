@@ -209,12 +209,8 @@ const authenticate = (req, res, next) => {
 
 // Protect static files route with authentication
 app.use('/public', authenticate, express.static(path.join(dirname, 'public')));
-// cache-control for static files and notitication access
-/* app.use('/logo', express.static(path.join(dirname, 'logo'), {
-  setHeaders: (res) => {
-    res.set('Cache-Control', 'public, max-age=31536000'); // Cache de 1 an
-  },
-})); */
+// Access to letsencrypt challenge folder for SSL certificate
+app.use('/.well-known/acme-challenge', express.static(path.join(dirname, '.well-known/acme-challenge')));
 // The `listen` method launches a web server.
 //* HTTPS server
 // const httpServer = https.createServer({ key, cert }, app);
@@ -330,7 +326,7 @@ app.use((req, res, next) => {
   } else {
     cors({
       origin: (origin, callback) => {
-        const allowedOrigins = ['http://localhost:5173', 'http://localhost:4173'];
+        const allowedOrigins = ['http://localhost:5173', 'http://localhost:5174'];
         if (process.env.NODE_ENV !== 'development') {
           allowedOrigins.push(process.env.CORS_ORIGIN);
         }
