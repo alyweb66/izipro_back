@@ -734,8 +734,12 @@ async function updateUser(_, { id, input }, { dataSources }) {
         });
       }
       // replace input.image with the media url
-      // Check if the image is a webp
-      if (media[0].url && media[0].url.endsWith('.webp')) {
+      // Check if the image is a webp and starts with http
+      if (
+        media[0].url
+        && media[0].url.endsWith('.webp')
+        && (media[0].url.startsWith('http') || media[0].url.startsWith('https'))
+      ) {
         imageInput = media[0].url;
       } else {
         throw new GraphQLError('Invalid file extension', {
