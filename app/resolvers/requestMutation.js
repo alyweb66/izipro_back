@@ -1,9 +1,5 @@
 import Debug from 'debug';
 import { GraphQLError } from 'graphql';
-/* import fs from 'fs';
-import path from 'path';
-import url from 'url'; */
-// import { request } from 'express';
 import pubsub from '../middleware/pubSub.js';
 import handleUploadedFiles from '../middleware/handleUploadFiles.js';
 import checkViewedBeforeSendRequestEmail from '../middleware/processNewClientRequestMail.js';
@@ -21,18 +17,6 @@ function debugInDevelopment(message = '', value = '') {
     debug('⚠️', message, value);
   }
 }
-// function to delete the files from the public folder
-/* function deleteFile(file) {
-  const filePath = path.join(directoryPath, file);
-
-  fs.unlink(filePath, (err) => {
-    if (err) {
-      debugInDevelopment(`Error deleting file: ${err}`);
-    } else {
-      debugInDevelopment(`File ${file} deleted successfully`);
-    }
-  });
-} */
 
 // function to create the request
 /**
@@ -63,7 +47,9 @@ async function createRequest(_, { input }, { dataSources }) {
   debugInDevelopment('input', input);
 
   if (dataSources.userData.id !== input.user_id) {
-    throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
+    throw new GraphQLError('Unauthorized', {
+      extensions: { code: 'UNAUTHORIZED', httpStatus: 401 },
+    });
   }
   let isCreatedRequest;
   try {
@@ -76,39 +62,70 @@ async function createRequest(_, { input }, { dataSources }) {
     // create request
     isCreatedRequest = await dataSources.dataDB.request.create(requestInput);
     if (!isCreatedRequest) {
-      throw new GraphQLError('Error creating request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      throw new GraphQLError('Error creating request', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
     }
 
     let requestId;
     let isCreatedRequestMedia;
     // mapping the media array to createReadStream
     if (input.media && input.media.length > 0) {
-      const ReadStreamArray = await Promise.all(input.media.map(async (upload, index) => {
-        if (!upload.file.promise) {
-          throw new GraphQLError(`File upload not complete for media at index ${index}`, { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
-        }
-        const fileUpload = await upload.file.promise;
+      const ReadStreamArray = await Promise.all(
+        input.media.map(async (upload, index) => {
+          if (!upload.file.promise) {
+            throw new GraphQLError(
+              `File upload not complete for media at index ${index}`,
+              { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } },
+            );
+          }
+          const fileUpload = await upload.file.promise;
 
-        if (!fileUpload) {
-          throw new GraphQLError('File upload not complete', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
-        }
-        const { createReadStream, filename, mimetype } = await fileUpload;
-        const readStream = createReadStream();
-        const file = {
-          filename,
-          mimetype,
-          buffer: readStream,
-        };
-        return file;
-      }));
+          if (!fileUpload) {
+            throw new GraphQLError('File upload not complete', {
+              extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+            });
+          }
+          const { createReadStream, filename, mimetype } = await fileUpload;
+          const readStream = createReadStream();
+          const file = {
+            filename,
+            mimetype,
+            buffer: readStream,
+          };
+          return file;
+        }),
+      );
 
       // calling the handleUploadedFiles function to compress the images and save them
-      const media = await handleUploadedFiles(ReadStreamArray, isCreatedRequest.id, dataSources);
+      const media = await handleUploadedFiles(
+        ReadStreamArray,
+        isCreatedRequest.id,
+        dataSources,
+      );
 
+      // check if media url is good
+      if (media.length > 0) {
+        media.forEach((element) => {
+          if (
+            !(
+              element.url.startsWith('http://')
+              || element.url.startsWith('https://')
+            )
+            || !(element.url.endsWith('.webp') || element.url.endsWith('.pdf'))
+          ) {
+            throw new GraphQLError(element.url, {
+              extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+            });
+          }
+        });
+      }
       // create media
       const createMedia = await dataSources.dataDB.media.createMedia(media);
       if (!createMedia) {
-        throw new GraphQLError('Error creating media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+        throw new GraphQLError('Error creating media', {
+          extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+        });
       }
 
       // get the media ids from the createMedia array
@@ -121,9 +138,13 @@ async function createRequest(_, { input }, { dataSources }) {
         mediaIds,
       );
 
-      if (!isCreatedRequestMedia
-        || (isCreatedRequestMedia.insert_request_has_media === false)) {
-        throw new GraphQLError('Error creating request_has_media', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      if (
+        !isCreatedRequestMedia
+        || isCreatedRequestMedia.insert_request_has_media === false
+      ) {
+        throw new GraphQLError('Error creating request_has_media', {
+          extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+        });
       }
     }
 
@@ -134,9 +155,13 @@ async function createRequest(_, { input }, { dataSources }) {
       isCreatedRequest.id,
     );
 
-    dataSources.dataDB.subscription.findByUserIdsLoader.clear(dataSources.userData.id);
+    dataSources.dataDB.subscription.findByUserIdsLoader.clear(
+      dataSources.userData.id,
+    );
     // get subscription for request
-    const subscription = await dataSources.dataDB.subscription.findByUser(userDataSources.id);
+    const subscription = await dataSources.dataDB.subscription.findByUser(
+      userDataSources.id,
+    );
 
     // get the subscriber_id for request
     const subscriberIds = subscription
@@ -154,8 +179,10 @@ async function createRequest(_, { input }, { dataSources }) {
     );
 
     // send notification to users that have not viewed the request
-    const { notifications } = await
-    sendNotificationsPush(isCreatedRequest.id, dataSources);
+    const { notifications } = await sendNotificationsPush(
+      isCreatedRequest.id,
+      dataSources,
+    );
 
     // send email to users that have not viewed the request after 5 min
     setTimeout(() => {
@@ -181,7 +208,9 @@ async function createRequest(_, { input }, { dataSources }) {
     debug('error', error);
     // delete request ifcreation failed
     dataSources.dataDB.request.delete(isCreatedRequest.id);
-    throw new GraphQLError('Error create request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+    throw new GraphQLError('Error create request', {
+      extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+    });
   }
 }
 
@@ -207,20 +236,29 @@ async function deleteRequest(_, { input }, { dataSources }) {
   debug('delete request');
   try {
     if (dataSources.userData.id !== input.user_id) {
-      throw new GraphQLError('Unauthorized', { extensions: { code: 'UNAUTHORIZED', httpStatus: 401 } });
+      throw new GraphQLError('Unauthorized', {
+        extensions: { code: 'UNAUTHORIZED', httpStatus: 401 },
+      });
     }
 
     const newInput = { deleted_at: new Date() };
 
-    const isDeletedRequest = await dataSources.dataDB.request.update(input.id, newInput);
+    const isDeletedRequest = await dataSources.dataDB.request.update(
+      input.id,
+      newInput,
+    );
 
     if (!isDeletedRequest) {
-      throw new GraphQLError('Error deleting request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+      throw new GraphQLError('Error deleting request', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
     }
 
     // get all subscription for the user
     dataSources.dataDB.subscription.findByUserIdsLoader.clear(input.user_id);
-    const subscription = await dataSources.dataDB.subscription.findByUser(input.user_id);
+    const subscription = await dataSources.dataDB.subscription.findByUser(
+      input.user_id,
+    );
 
     // remove request_id in the array of subscriber_id
     // for subscriber request and subscriber conversation
@@ -247,25 +285,41 @@ async function deleteRequest(_, { input }, { dataSources }) {
     const newSubscriberConversationIds = subscriberConversationIds?.filter(
       (id) => !requestConversationids?.includes(id),
     );
-    const newSubscriberRequestIds = subscriberRequestIds?.filter((id) => id !== input.id);
+    const newSubscriberRequestIds = subscriberRequestIds?.filter(
+      (id) => id !== input.id,
+    );
 
     // Update subscription for request and conversation
     await Promise.all([
-      dataSources.dataDB.subscription.createSubscription(input.user_id, 'request', newSubscriberRequestIds),
-      dataSources.dataDB.subscription.createSubscription(input.user_id, 'conversation', newSubscriberConversationIds),
-      dataSources.dataDB.userHasNotViewedConversation.deleteNotViewedConversation({
-        user_id: input.user_id,
-        conversation_id: requestConversationids, // Convert Set back to Array
-      }),
+      dataSources.dataDB.subscription.createSubscription(
+        input.user_id,
+        'request',
+        newSubscriberRequestIds,
+      ),
+      dataSources.dataDB.subscription.createSubscription(
+        input.user_id,
+        'conversation',
+        newSubscriberConversationIds,
+      ),
+      dataSources.dataDB.userHasNotViewedConversation.deleteNotViewedConversation(
+        {
+          user_id: input.user_id,
+          conversation_id: requestConversationids, // Convert Set back to Array
+        },
+      ),
       // dataSources.dataDB.userHasHiddingClientRequest.deleteUserHiddingClientRequest(input.id),
-      dataSources.dataDB.userHasNotViewedRequest.deleteNotViewedRequestById(input.id),
+      dataSources.dataDB.userHasNotViewedRequest.deleteNotViewedRequestById(
+        input.id,
+      ),
     ]);
     // remove request
 
     return true;
   } catch (error) {
     debug('error', error);
-    throw new GraphQLError('Error delete request', { extensions: { code: 'BAD_REQUEST', httpStatus: 400 } });
+    throw new GraphQLError('Error delete request', {
+      extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+    });
   }
 }
 
