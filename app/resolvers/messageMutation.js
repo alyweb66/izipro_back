@@ -151,6 +151,22 @@ async function createMessage(_, { id, input }, { dataSources }) {
       const media = await
       handleUploadedFiles(ReadStreamArray, isCreatedMessage.id, dataSources, true);
 
+      // check if media is not empty and if the url is valid
+      if (media.length > 0) {
+        media.forEach((element) => {
+          if (
+            !(
+              element.url.startsWith('http://')
+              || element.url.startsWith('https://')
+            )
+            || !(element.url.endsWith('.webp') || element.url.endsWith('.pdf'))
+          ) {
+            throw new GraphQLError(element.url, {
+              extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+            });
+          }
+        });
+      }
       // create media
       const createMedia = await dataSources.dataDB.media.createMedia(media);
       if (!createMedia) {
