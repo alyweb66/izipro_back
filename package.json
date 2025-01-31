@@ -18,6 +18,7 @@
     "@apollo/utils.keyvaluecache": "^3.1.0",
     "@graphql-tools/schema": "^10.0.3",
     "@turf/turf": "^7.0.0",
+    "altcha-lib": "^1.2.0",
     "apollo-server-core": "^3.13.0",
     "bcrypt": "^5.1.1",
     "cookie": "^1.0.1",
