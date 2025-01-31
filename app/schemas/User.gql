@@ -59,12 +59,14 @@ input loginInput {
     email: validateEmail! 
     password: validatePassword! @length(max: 60)
     activeSession: Boolean!
+    payload: String!
 }
 
 
 input CreateUserInput {
     email: validateEmail!
     password: validatePassword! @length(max: 60)
+    payload: String!
 }
 
 input ConfirmRegisterEmailInput {
@@ -75,6 +77,7 @@ input CreateProUserInput {
     email: validateEmail!
     password: validatePassword!
     siret: validateSiret!
+    payload: String!
 }
 
 input UpdateUserInput {
@@ -91,10 +94,12 @@ input UpdateUserInput {
     lat: Float
     lng: Float
     CGU: Boolean
+    payload: String!
 }
 
 input ForgotPasswordInput {
     email: validateEmail!
+    payload: String!
 }
 
 input ValidateForgotPasswordInput {
@@ -105,5 +110,6 @@ input ValidateForgotPasswordInput {
 input ChangePasswordInput {
     oldPassword: validatePassword! @length(max: 60)
     newPassword: validatePassword! @length(max: 60)
+    payload: String!
 }
 

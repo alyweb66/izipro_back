@@ -11,6 +11,7 @@ import * as sendEmail from '../middleware/sendEmail.js';
 import SirenAPI from '../datasources/SirenAPI/index.js';
 import logger from '../middleware/logger.js';
 import checkRefreshTokenValidity from '../middleware/refreshTokenCleaner.js';
+import { verifyAltchaSolution } from '../middleware/altcha.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:resolver:userMutation`);
 
@@ -71,7 +72,8 @@ async function deleteFile(file) {
  * @async
  * @function createUserFunction
  * @param {Object} _ - The parent object, which is not used in this resolver.
- * @param {{email: string, password: string}} input - The input object containing user details.
+ * @param {{email: string, password: string, payload: string}} input
+ * - The input object containing user details.
  * @param {Object} context - The context object,
  * which contains dataSources and other contextual information.
  * @param {Object} context.dataSources - The data sources available in the context.
@@ -82,6 +84,20 @@ async function createUserFunction(_, { input }, { dataSources }) {
   debug('createUser is starting');
   debugInDevelopment(input);
   try {
+    // Check if the altcha solution is valid
+    if (input.payload) {
+      const isAltchaValid = await verifyAltchaSolution(input.payload);
+      if (!isAltchaValid) {
+        throw new GraphQLError('Error altcha', {
+          extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+        });
+      }
+    } else {
+      throw new GraphQLError('Error altcha', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
+    }
+
     // Check if user exists
     const existingUser = await dataSources.dataDB.user.findUserByEmail(
       input.email,
@@ -153,9 +169,12 @@ async function createUserFunction(_, { input }, { dataSources }) {
     await sendEmail.confirmEmail(input.email, token);
     debug('confirmEmail sent');
 
+    // Remove the payload from the input object
+    const { payload, ...restInput } = input;
+
     // Update the input object with the hashed password
     const userInputWithHashedPassword = {
-      ...input,
+      ...restInput,
       password: hashedPassword,
       denomination: siretData
         ? siretData.uniteLegale.denominationUniteLegale
@@ -266,6 +285,7 @@ async function confirmRegisterEmail(_, { input }, { dataSources }) {
  * @param {Object} _ - The parent object, which is not used in this resolver.
  * @param {{email: string,
  * password: string,
+ * payload: string,
  * activeSession: boolean}} input - The input object containing login details.
  * @param {Object} context - The context object,
  * which contains dataSources, res, and other contextual information.
@@ -278,6 +298,19 @@ async function login(_, { input }, { dataSources, res }) {
   debug('login is starting');
   debugInDevelopment(input);
   try {
+    // Check if the altcha solution is valid
+    if (input.payload) {
+      const isAltchaValid = await verifyAltchaSolution(input.payload);
+      if (!isAltchaValid) {
+        throw new GraphQLError('Error altcha', {
+          extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+        });
+      }
+    } else {
+      throw new GraphQLError('Error altcha', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
+    }
     // dataSources.dataDB.user.cache.clear();
     const user = await dataSources.dataDB.user.findUserByEmail(input.email);
 
@@ -524,7 +557,7 @@ async function deleteUser(_, { id }, { dataSources, res }) {
  *
  * @param {Object} _ - Unused parameter.
  * @param {Object} args - The arguments object.
- * @param {{email: string}} args.input - The input object.
+ * @param {{email: string, payload: string}} args.input - The input object.
  * @param {Object} context - The context object.
  * @param {Object} context.dataSources - The data sources object.
  * @returns {Promise<boolean>} - Returns true if the password reset email is sent successfully.
@@ -532,6 +565,20 @@ async function deleteUser(_, { id }, { dataSources, res }) {
  */
 async function forgotPassword(_, { input }, { dataSources }) {
   try {
+    // Check if the altcha solution is valid
+    if (input.payload) {
+      const isAltchaValid = await verifyAltchaSolution(input.payload);
+      if (!isAltchaValid) {
+        throw new GraphQLError('Error altcha', {
+          extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+        });
+      }
+    } else {
+      throw new GraphQLError('Error altcha', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
+    }
+
     const user = await dataSources.dataDB.user.findUserByEmail(input.email);
     if (!user) {
       throw new GraphQLError('User not found', {
@@ -642,6 +689,7 @@ async function validateForgotPassword(_, { input }, { dataSources }) {
  * denomination: string,
  * lat: number,
  * lng: number,
+ * payload: string,
  * CGU: boolean}} args.input - The input object containing updated user information.
  * @param {Object} context - The context object.
  * @param {Object} context.dataSources - The data sources object.
@@ -654,6 +702,19 @@ async function updateUser(_, { id, input }, { dataSources }) {
   debugInDevelopment('input', input);
 
   try {
+    // Check if the altcha solution is valid
+    if (input.payload) {
+      const isAltchaValid = await verifyAltchaSolution(input.payload);
+      if (!isAltchaValid) {
+        throw new GraphQLError('Error altcha', {
+          extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+        });
+      }
+    } else {
+      throw new GraphQLError('Error altcha', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
+    }
     // stock the user data in a variable to not loose data in dataSource by clearing the cache
     const userDataSources = dataSources.userData;
     // clear the cache
@@ -768,7 +829,10 @@ async function updateUser(_, { id, input }, { dataSources }) {
       });
     }
 
-    return dataSources.dataDB.user.update(id, updateInput);
+    // remove payload of the input object
+    const { payload, ...restInput } = updateInput;
+
+    return dataSources.dataDB.user.update(id, restInput);
   } catch (error) {
     if (error instanceof GraphQLError) {
       throw error;
@@ -786,7 +850,8 @@ async function updateUser(_, { id, input }, { dataSources }) {
  * @param {Object} args - The arguments object.
  * @param {number} args.id - The ID of the user to change the password for.
  * @param {{oldPassword: string,
- * newPassword: string}} args.input - The input object containing old and new passwords.
+ * newPassword: string, payload: string}} args.input -
+ * The input object containing old and new passwords.
  * @param {Object} context - The context object.
  * @param {Object} context.dataSources - The data sources object.
  * @returns {Promise<boolean>} - Returns true if password change is successful.
@@ -797,6 +862,19 @@ async function changePassword(_, { id, input }, { dataSources }) {
   debug('changePassword is starting');
   const { oldPassword, newPassword } = input;
   try {
+    // Check if the altcha solution is valid
+    if (input.payload) {
+      const isAltchaValid = await verifyAltchaSolution(input.payload);
+      if (!isAltchaValid) {
+        throw new GraphQLError('Error altcha', {
+          extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+        });
+      }
+    } else {
+      throw new GraphQLError('Error altcha', {
+        extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
+      });
+    }
     // Check if the user is logged in
     if (dataSources.userData === null || dataSources.userData.id !== id) {
       throw new GraphQLError('Unauthorized', {

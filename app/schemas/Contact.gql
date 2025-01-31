@@ -13,6 +13,7 @@ input ContactInput {
     first_name: String @length(max: 50)
     last_name: String @length(max: 50)
     email: validateEmail! @length(max: 50)
-    enterprise: String @length(max: 50)
+    enterprise: String @length(max: 100)
     description: String! @length(max: 1000)
+    payload: String!
 }
