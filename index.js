@@ -40,6 +40,7 @@ import sheduleCleanData from './app/middleware/cleanOldData.js';
 import DataDB from './app/datasources/data/index.js';
 import logger from './app/middleware/logger.js';
 import updateLastLoginInDatabase from './app/middleware/lastLogin.js';
+import { generateAltchaChallenge } from './app/middleware/altcha.js';
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:httpserver`);
 
@@ -99,6 +100,7 @@ const allowedOperations = [
   'ProRegister',
   'ContactEmail',
 ];
+
 // Middleware to get user data from token
 app.use(async (req, res, next) => {
   // create and initialize req.authenticateError to false
@@ -341,7 +343,15 @@ app.use((req, res, next) => {
     })(req, res, next);
   }
 });
-
+// Route pour récupérer un challenge ALTCHA
+app.get('/altcha-challenge', async (req, res) => {
+  try {
+    const challenge = await generateAltchaChallenge();
+    res.json(challenge);
+  } catch (error) {
+    res.status(500).json({ error: 'Error during generate challenge' });
+  }
+});
 // use the applyMiddleware method to connect ApolloServer to Express
 app.use(
   // bodyParser.json({ limit: '50mb' }),
