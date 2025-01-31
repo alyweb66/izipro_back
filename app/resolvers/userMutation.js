@@ -302,6 +302,7 @@ async function login(_, { input }, { dataSources, res }) {
     if (input.payload) {
       const isAltchaValid = await verifyAltchaSolution(input.payload);
       if (!isAltchaValid) {
+        console.log('isAltchaValid', isAltchaValid);
         throw new GraphQLError('Error altcha', {
           extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
         });
@@ -407,6 +408,9 @@ async function login(_, { input }, { dataSources, res }) {
     return user.id;
   } catch (error) {
     debug('error', error);
+    if (error instanceof GraphQLError) {
+      throw error; // keep the error message
+    }
     throw new GraphQLError('Error login', {
       extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
     });
@@ -710,7 +714,7 @@ async function updateUser(_, { id, input }, { dataSources }) {
           extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
         });
       }
-    } else {
+    } else if (!input.image) {
       throw new GraphQLError('Error altcha', {
         extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
       });
