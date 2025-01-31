@@ -25,7 +25,7 @@ import { makeExecutableSchema } from '@graphql-tools/schema';
 import { WebSocketServer } from 'ws';
 
 // eslint-disable-next-line import/extensions
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 
 // module to use cache
 import { InMemoryLRUCache } from '@apollo/utils.keyvaluecache';

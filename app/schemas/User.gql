@@ -94,7 +94,7 @@ input UpdateUserInput {
     lat: Float
     lng: Float
     CGU: Boolean
-    payload: String!
+    payload: String
 }
 
 input ForgotPasswordInput {
