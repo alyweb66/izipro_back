@@ -599,7 +599,7 @@ async function forgotPassword(_, { input }, { dataSources }) {
       remember_token: resetToken,
     });
 
-    await sendEmail.sendPasswordResetEmail(input.email, resetToken);
+    await sendEmail.sendPasswordResetEmail(input.email, user, resetToken);
     debug('Email sent');
     return true;
   } catch (error) {
@@ -902,7 +902,7 @@ async function changePassword(_, { id, input }, { dataSources }) {
     await dataSources.dataDB.user.update(dataSources.userData.id, {
       password: hashedNewPassword,
     });
-    await sendEmail.changePasswordEmail(user.email);
+    await sendEmail.changePasswordEmail(user);
     return true;
   } catch (error) {
     debug(error);

@@ -28,10 +28,16 @@ const logoAttachment = {
  * Sends a password reset email to the specified email address.
  *
  * @param {string} email - The email address to send the password reset email to.
+ * @param {Object} user - The user who will receive the email.
+ * @param {string} user.email - The email address of the user.
+ * @param {string} user.first_name - The first_name of the user.
+ * @param {string} user.last_name - The last_name of the user.
+ * @param {string} user.role - The role of the user.
+ * @param {string} user.denomination - The denomination of the user (if role is 'pro').
  * @param {string} resetToken - The token to be included in the password reset link.
  * @returns {Promise<void>} A promise that resolves when the email has been sent.
  */
-export async function sendPasswordResetEmail(email, resetToken) {
+export async function sendPasswordResetEmail(email, user, resetToken) {
   const mailOptions = {
     from: `"izipro" <${process.env.EMAIL_SERVER}>`,
     to: `${email}`,
@@ -42,7 +48,9 @@ export async function sendPasswordResetEmail(email, resetToken) {
           <img src="cid:logoEmail" alt="logo" style="width: 80px; height: 80px; margin-bottom: 10px;"/>
           <h1 style="color: #F79323; font-size: 1.5rem; margin-top: 0.3rem;">Réinitialisation de mot de passe</h1>
           
-          <p style="font-size: 1rem; color: #333;">Bonjour,</p>
+          <p style="font-size: 1rem; color: #333;">Bonjour ${
+            user.role === "pro" ? user.denomination : (user.first_name ? user.first_name : '')
+          },</p>
           <p style="font-size: 1rem; color: #333;">Vous avez demandé une réinitialisation de mot de passe. Cliquez sur le bouton ci-dessous pour réinitialiser votre mot de passe :</p>
           
           <a href="${process.env.CORS_ORIGIN}/forgot-password?token=${resetToken}" style="background-color: #F79323; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; display: inline-block; font-size: 1.1rem; font-weight: bold;">Réinitialiser le mot de passe</a>
@@ -99,10 +107,15 @@ export async function confirmEmail(email, confirmToken) {
 /**
  * Sends an email to notify the user about a password change.
  *
- * @param {string} email - The email address of the recipient.
+  * @param {Object} user - The user who will receive the email.
+ * @param {string} user.email - The email address of the user.
+ * @param {string} user.first_name - The first_name of the user.
+ * @param {string} user.last_name - The last_name of the user.
+ * @param {string} user.role - The role of the user.
+ * @param {string} user.denomination - The denomination of the user (if role is 'pro').
  * @returns {Promise<void>} - A promise that resolves when the email has been sent.
  */
-export async function changePasswordEmail(email) {
+export async function changePasswordEmail(user) {
   const mailOptions = {
     from: `"izipro" <${process.env.EMAIL_SERVER}>`,
     to: `${email}`,
@@ -113,7 +126,9 @@ export async function changePasswordEmail(email) {
           <img src="cid:logoEmail" alt="logo" style="width: 80px; height: 80px; margin-bottom: 10px;"/>
           <h1 style="color: #F79323; font-size: 1.5rem; margin-top: 0.3rem;">Confirmation de changement de mot de passe</h1>
           
-          <p style="font-size: 1rem; color: #333;">Bonjour,</p>
+          <p style="font-size: 1rem; color: #333;">Bonjour ${
+            user.role === "pro" ? user.denomination : (user.first_name ? user.first_name : '')
+          },</p>
           <p style="font-size: 1rem; color: #333;">Votre mot de passe a bien été changé.</p>
           
           <p style="font-size: 1rem; color: #333;">Si vous n'êtes pas l'auteur de cette action, veuillez nous contacter depuis l'onglet "contact" : <a href="${process.env.CORS_ORIGIN}" style="color: #F79323; font-weight: bold;">izipro</a></p>
@@ -323,16 +338,20 @@ export async function contactSendEmail(data) {
       to: data.email,
       subject: "Confirmation de réception",
       html: `
-        <img src="cid:logoEmail" alt="logo" style="width: 60px; height: 60px;"/>
-        <h1>Confirmation de réception</h1>
-  
-        <p>Votre message a bien été reçu. Nous vous répondrons dans les plus brefs délais.</p>
-  
-        <p style="margin: 0;">Cordialement,</p>
-        <p style="margin: 0;">L'équipe izipro.</p>
-
-        <p style="color:#8b8b8b;">Ceci est un mail automatique, veuillez ne pas répondre. </p>
-      `,
+      <div style="background-color: #f4f4f4; padding: 20px; text-align: center; font-family: Arial, sans-serif;">
+        <div style="background-color: white; padding: 20px; border-radius: 10px; display: inline-block; max-width: 600px;">
+          <img src="cid:logoEmail" alt="logo" style="width: 80px; height: 80px; margin-bottom: 10px;"/>
+          <h1 style="color: #F79323; font-size: 1.5rem; margin-top: 0.3rem;">Confirmation de réception</h1>
+          
+          <p style="font-size: 1rem; color: #333;">Votre message a bien été reçu. Nous vous répondrons dans les plus brefs délais.</p>
+          
+          <p style="font-size: 1rem; color: #333; margin: 0;">Cordialement,</p>
+          <p style="font-size: 1rem; color: #333; margin: 0;">L'équipe izipro.</p>
+          
+          <p style="color:#8b8b8b; font-size: 0.9rem; margin-top: 20px;">Ceci est un mail automatique, veuillez ne pas répondre.</p>
+        </div>
+      </div>
+    `,
       attachments: [logoAttachment],
     };
 
