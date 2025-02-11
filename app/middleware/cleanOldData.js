@@ -309,9 +309,9 @@ async function copyObsoleteRequests(dataSources) {
 function sheduleCleanData(dataSources) {
   // minute, hour, day, month, day of the week
   // Execute every day at 00h00
-  //cron.schedule("0 0 * * *", () => {
+  cron.schedule("0 0 * * *", () => {
     copyObsoleteRequests(dataSources);
-  //});
+  });
 
   // Execute every day at 01h00
   cron.schedule("0 1 * * *", () => {

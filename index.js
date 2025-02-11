@@ -1,46 +1,46 @@
 /* eslint-disable import/extensions */
 // server creating
 // Environment
-import Debug from 'debug';
+import Debug from "debug";
 // Modules import
-import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
-import { ApolloServer } from '@apollo/server';
-import { GraphQLError } from 'graphql';
+import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
+import { ApolloServer } from "@apollo/server";
+import { GraphQLError } from "graphql";
 // eslint-disable-next-line import/extensions
-import { expressMiddleware } from '@apollo/server/express4';
-import { rateLimit } from 'express-rate-limit';
-import cors from 'cors';
-import express from 'express';
+import { expressMiddleware } from "@apollo/server/express4";
+import { rateLimit } from "express-rate-limit";
+import cors from "cors";
+import express from "express";
 //* import fs, https for HTTPS server
-// import fs from 'fs';
+import fs from "fs";
 // import https from 'https';
-import http from 'http';
-import path from 'path';
-import url from 'url';
+import http from "http";
+import path from "path";
+import url from "url";
 
 // eslint-disable-next-line import/extensions
-import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
-import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled';
-import { makeExecutableSchema } from '@graphql-tools/schema';
-import { WebSocketServer } from 'ws';
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import { ApolloServerPluginLandingPageDisabled } from "@apollo/server/plugin/disabled";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+import { WebSocketServer } from "ws";
 
 // eslint-disable-next-line import/extensions
-import { useServer } from 'graphql-ws/use/ws';
+import { useServer } from "graphql-ws/use/ws";
 
 // module to use cache
-import { InMemoryLRUCache } from '@apollo/utils.keyvaluecache';
+import { InMemoryLRUCache } from "@apollo/utils.keyvaluecache";
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
 // your data.
-import cookie from 'cookie';
-import typeDefs from './app/schemas/index.js';
-import resolvers from './app/resolvers/index.js';
-import getUserByToken from './app/middleware/getUserByToken.js';
-import sheduleCleanData from './app/middleware/cleanOldData.js';
-import DataDB from './app/datasources/data/index.js';
-import logger from './app/middleware/logger.js';
-import updateLastLoginInDatabase from './app/middleware/lastLogin.js';
-import { generateAltchaChallenge } from './app/middleware/altcha.js';
+import cookie from "cookie";
+import typeDefs from "./app/schemas/index.js";
+import resolvers from "./app/resolvers/index.js";
+import getUserByToken from "./app/middleware/getUserByToken.js";
+import sheduleCleanData from "./app/middleware/cleanOldData.js";
+import DataDB from "./app/datasources/data/index.js";
+import logger from "./app/middleware/logger.js";
+import updateLastLoginInDatabase from "./app/middleware/lastLogin.js";
+import { generateAltchaChallenge } from "./app/middleware/altcha.js";
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:httpserver`);
 
@@ -54,7 +54,7 @@ console.log('Private Key:', vapidKeys.privateKey); */
 
 // Trust the first proxy for the IP address and the X-Forwarded-Proto header
 // to use express rate limit
-app.set('trust proxy', 'loopback');
+app.set("trust proxy", "loopback");
 
 //* HTTPS server
 // Chemins vers les fichiers de certificat et de clé
@@ -67,6 +67,16 @@ app.use(express.json());
 // __dirname not on module, this is the way to use it.
 const filename = url.fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
+
+// Verify if /public/media exists and create it if it doesn't
+const mediaPath = path.join(dirname, "public/media");
+
+fs.promises
+  .mkdir(mediaPath, { recursive: true })
+  .then(() => debug(" public/media folder id ready"))
+  .catch((err) =>
+    console.error("Error to create directoy:", err)
+  );
 
 // Initialize cache and dataSources once
 const cache = new InMemoryLRUCache({
@@ -82,7 +92,7 @@ app.use(graphqlUploadExpress({ maxFileSize: 15000000, maxFiles: 10 }));
 const limiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 10 minutes
   max: 1000, // limit each IP to 1000 requests per windows
-  message: 'Too many requests from this IP, please try again after 5 minutes',
+  message: "Too many requests from this IP, please try again after 5 minutes",
   headers: true,
 });
 
@@ -90,15 +100,15 @@ app.use(limiter);
 
 // List of operations that do not require a token
 const allowedOperations = [
-  'Login',
-  'Rules',
-  'ForgotPassword',
-  'ResetPassword',
-  'ValidateForgotPassword',
-  'ConfirmRegisterEmail',
-  'Register',
-  'ProRegister',
-  'ContactEmail',
+  "Login",
+  "Rules",
+  "ForgotPassword",
+  "ResetPassword",
+  "ValidateForgotPassword",
+  "ConfirmRegisterEmail",
+  "Register",
+  "ProRegister",
+  "ContactEmail",
 ];
 
 // Middleware to get user data from token
@@ -107,7 +117,10 @@ app.use(async (req, res, next) => {
   // req.authenticateError = false;
   // check if the request is an OPTIONS request to limit the number of database calls
   // OPTIONS is the first request made by the browser to check if the server accepts the request
-  if (req.method === 'OPTIONS' || req.path.startsWith('/.well-known/acme-challenge')) {
+  if (
+    req.method === "OPTIONS" ||
+    req.path.startsWith("/.well-known/acme-challenge")
+  ) {
     dataSources.userData = null;
     return next();
   }
@@ -116,7 +129,7 @@ app.use(async (req, res, next) => {
     try {
       if (req.headers.cookie) {
         const cookies = cookie.parse(req.headers.cookie);
-        if (cookies['auth-token'] && req.body.operationName !== 'Login') {
+        if (cookies["auth-token"] && req.body.operationName !== "Login") {
           req.userData = await getUserByToken(req, res, dataSources);
 
           if (!req.userData) {
@@ -139,7 +152,7 @@ app.use(async (req, res, next) => {
 
       // next();
     } catch (error) {
-      debug('error', error);
+      debug("error", error);
       logger.error({
         message: error.message,
         stack: error.stack,
@@ -169,7 +182,10 @@ app.use((req, res, next) => {
   if (req.userData && req.userData.id) {
     const userId = req.userData.id;
     const now = Date.now();
-    if (!activeUsers.has(userId) || (now - activeUsers.get(userId)) > minUpdateInterval) {
+    if (
+      !activeUsers.has(userId) ||
+      now - activeUsers.get(userId) > minUpdateInterval
+    ) {
       activeUsers.set(userId, now);
     }
   }
@@ -184,14 +200,14 @@ setInterval(() => {
   const now = Date.now();
   try {
     activeUsers.forEach((lastActiveTime, userId) => {
-      if ((now - lastActiveTime) <= checkInterval) {
+      if (now - lastActiveTime <= checkInterval) {
         updateLastLoginInDatabase(userId, new Date(lastActiveTime));
       }
     });
     // Clear the map after updating the database
     activeUsers.clear();
   } catch (error) {
-    debug('error', error);
+    debug("error", error);
     logger.error({
       message: error.message,
       stack: error.stack,
@@ -204,15 +220,18 @@ setInterval(() => {
 // Authentication Middleware
 const authenticate = (req, res, next) => {
   if (!req.userData) {
-    return res.status(403).send('Access denied');
+    return res.status(403).send("Access denied");
   }
   return next();
 };
 
 // Protect static files route with authentication
-app.use('/public', authenticate, express.static(path.join(dirname, 'public')));
+app.use("/public", authenticate, express.static(path.join(dirname, "public")));
 // Access to letsencrypt challenge folder for SSL certificate
-app.use('/.well-known/acme-challenge', express.static(path.join(dirname, '.well-known/acme-challenge')));
+app.use(
+  "/.well-known/acme-challenge",
+  express.static(path.join(dirname, ".well-known/acme-challenge"))
+);
 // The `listen` method launches a web server.
 //* HTTPS server
 // const httpServer = https.createServer({ key, cert }, app);
@@ -231,7 +250,7 @@ const wsServer = new WebSocketServer({
   // This is the `httpServer` we created in a previous step.
   server: httpServer,
   // serves expressMiddleware at a different path
-  path: '/subscriptions',
+  path: "/subscriptions",
 });
 
 //* Log incoming connections subscribers
@@ -323,33 +342,36 @@ await server.start();
 
 //* add s to http://localhost:5173 if https enabled in local
 app.use((req, res, next) => {
-  if (req.path.startsWith('/.well-known/acme-challenge')) {
+  if (req.path.startsWith("/.well-known/acme-challenge")) {
     next(); // Ignore ignore restrictions for Let's Encrypt
   } else {
     cors({
       origin: (origin, callback) => {
-        const allowedOrigins = ['http://localhost:5173', 'http://localhost:5174'];
-        if (process.env.NODE_ENV !== 'development') {
+        const allowedOrigins = [
+          "http://localhost:5173",
+          "http://localhost:5174",
+        ];
+        if (process.env.NODE_ENV !== "development") {
           allowedOrigins.push(process.env.CORS_ORIGIN);
         }
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
           callback(null, true);
         } else {
-          callback(new Error('Not allowed by CORS'));
+          callback(new Error("Not allowed by CORS"));
         }
       },
       credentials: true,
-      exposedHeaders: ['X-Session-ID'],
+      exposedHeaders: ["X-Session-ID"],
     })(req, res, next);
   }
 });
 // Route pour récupérer un challenge ALTCHA
-app.get('/altcha-challenge', async (req, res) => {
+app.get("/altcha-challenge", async (req, res) => {
   try {
     const challenge = await generateAltchaChallenge();
     res.json(challenge);
   } catch (error) {
-    res.status(500).json({ error: 'Error during generate challenge' });
+    res.status(500).json({ error: "Error during generate challenge" });
   }
 });
 // use the applyMiddleware method to connect ApolloServer to Express
@@ -359,15 +381,15 @@ app.use(
     context: async ({ req, res }) => {
       // if error from cookie control
       if (req.authError) {
-        const error = new GraphQLError('No token provided', {
+        const error = new GraphQLError("No token provided", {
           extensions: {
-            code: 'UNAUTHENTICATED',
+            code: "UNAUTHENTICATED",
             http: {
               status: 401,
             },
           },
         });
-        debug('error', error);
+        debug("error", error);
         // Log the error
         logger.error({
           message: error.message,
@@ -379,28 +401,36 @@ app.use(
       }
 
       // put sessionId of browser in headers
-      const cookies = cookie.parse(req.headers.cookie || '');
-      const sessionId = cookies['session-id'] || '';
+      const cookies = cookie.parse(req.headers.cookie || "");
+      const sessionId = cookies["session-id"] || "";
 
       // Add the session ID to the response header if it exists
       if (sessionId && !allowedOperations.includes(req.body.operationName)) {
-        res.setHeader('X-Session-ID', sessionId);
+        res.setHeader("X-Session-ID", sessionId);
       } else {
-        debug('No sessionId found in cookies');
+        debug("No sessionId found in cookies");
       }
 
       // input authentifield user data in context
       return {
-        req, res, dataSources,
+        req,
+        res,
+        dataSources,
       };
     },
-  }),
+  })
 );
 
 await new Promise((resolve) => {
   httpServer.listen({ port: process.env.PORT || 4000 }, resolve);
   logger.info(`Server running on port ${process.env.PORT || 4000}`);
 });
-logger.info('⚠️   Warning:  DEVELOPMENT MODE ON');
-logger.info(`🚀  Server ready at: http://localhost:${httpServer.address().port}`);
-logger.info(`🚀  Subscription ready at: ws//localhost:${httpServer.address().port}/subscriptions`);
+logger.info("⚠️   Warning:  DEVELOPMENT MODE ON");
+logger.info(
+  `🚀  Server ready at: http://localhost:${httpServer.address().port}`
+);
+logger.info(
+  `🚀  Subscription ready at: ws//localhost:${
+    httpServer.address().port
+  }/subscriptions`
+);
