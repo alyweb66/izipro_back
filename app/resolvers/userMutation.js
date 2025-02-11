@@ -302,7 +302,6 @@ async function login(_, { input }, { dataSources, res }) {
     if (input.payload) {
       const isAltchaValid = await verifyAltchaSolution(input.payload);
       if (!isAltchaValid) {
-        console.log('isAltchaValid', isAltchaValid);
         throw new GraphQLError('Error altcha', {
           extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
         });
