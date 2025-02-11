@@ -713,11 +713,11 @@ async function updateUser(_, { id, input }, { dataSources }) {
           extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
         });
       }
-    } else if (!input.image) {
+    } else if (!input.image && !input.CGU ) {
       throw new GraphQLError('Error altcha', {
         extensions: { code: 'BAD_REQUEST', httpStatus: 400 },
       });
-    }
+    } 
     // stock the user data in a variable to not loose data in dataSource by clearing the cache
     const userDataSources = dataSources.userData;
     // clear the cache
