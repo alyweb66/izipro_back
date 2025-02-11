@@ -118,7 +118,7 @@ export async function confirmEmail(email, confirmToken) {
 export async function changePasswordEmail(user) {
   const mailOptions = {
     from: `"izipro" <${process.env.EMAIL_SERVER}>`,
-    to: `${email}`,
+    to: `${user.email}`,
     subject: "Changement de mot de passe",
     html: `
       <div style="background-color: #f4f4f4; padding: 20px; text-align: center; font-family: Arial, sans-serif;">
