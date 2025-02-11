@@ -1,13 +1,15 @@
-import Debug from 'debug';
-import fs from 'fs';
-import path from 'path';
-import cron from 'node-cron';
-import logger from './logger.js';
-import sendPushNotification from './webPush.js';
+import Debug from "debug";
+import fs from "fs";
+import path from "path";
+import cron from "node-cron";
+import logger from "./logger.js";
+import sendPushNotification from "./webPush.js";
 
 const debug = Debug(`${process.env.DEBUG_MODULE}:middleware:cleanOldData`);
 
-const mediaDirectory = './public/media';
+const mediaDirectory = "./public/media";
+const saveDataPath = process.env.SAVE_OBSOLETE_DATA_PATH;
+const saveMediaPath = process.env.OBSOLETE_MEDIA_PATH;
 /**
  * Checks and deletes obsolete media files from the media directory.
  *
@@ -23,7 +25,7 @@ const mediaDirectory = './public/media';
  */
 async function checkObsoleteMedia(dataSources) {
   try {
-    debug('Checking for obsolete media...');
+    debug("Checking for obsolete media...");
 
     // read all files in the media directory
     const files = fs.readdirSync(mediaDirectory);
@@ -33,7 +35,7 @@ async function checkObsoleteMedia(dataSources) {
 
     // Create thumb media names, remove the extension and add _thumb before the extension
     const thumbMediaNames = mediaNames.map((name) => {
-      const extIndex = name.lastIndexOf('.');
+      const extIndex = name.lastIndexOf(".");
       const baseName = name.substring(0, extIndex);
       const extension = name.substring(extIndex);
       return `${baseName}_thumb${extension}`;
@@ -51,15 +53,21 @@ async function checkObsoleteMedia(dataSources) {
 
     allMediaNames.push(...profilePictureNames);
 
+    if (files.length > 0) {
+      // Create the directory if it does not exist
+      if (!fs.existsSync(saveMediaPath)) {
+        fs.mkdirSync(saveMediaPath, { recursive: true });
+      }
+    }
+
     // verify if the file is in the database
     files.forEach(async (file) => {
       const filePath = path.join(mediaDirectory, file);
-      const destinationPath = path.join(process.env.OBSOLETE_MEDIA_PATH, file);
-      // if the file is not in the database, delete it
+      const destinationPath = path.join(saveMediaPath, file);
+      // if the file is not in the database, save and delete it
       if (!allMediaNames.includes(file)) {
-        // copy the file to the obsolete media folder
-        // don't copy the file ending with _thumb
-        if (!file.endsWith('_thumb.webp')) {
+        // copy the file to the obsolete media folder except the thumb file
+        if (!file.endsWith("_thumb.webp")) {
           fs.copyFileSync(filePath, destinationPath);
         }
         // delete the file
@@ -69,9 +77,9 @@ async function checkObsoleteMedia(dataSources) {
 
     // send the obsolete media folder to the cloud
 
-    debug('Obsolete media check complete.');
+    debug("Obsolete media check complete.");
   } catch (error) {
-    debug('Error while checking obsolete media:', error);
+    debug("Error while checking obsolete media:", error);
     logger.error({
       message: error.message,
       stack: error.stack,
@@ -94,12 +102,12 @@ async function checkObsoleteMedia(dataSources) {
  * @throws {Error} If an error occurs during the check.
  */
 async function checkObsoleteUsers(dataSources) {
-  debug('Checking for obsolete users...');
+  debug("Checking for obsolete users...");
   try {
     await dataSources.dataDB.user.deleteObsoleteUsers();
-    debug('Obsolete users check complete.');
+    debug("Obsolete users check complete.");
   } catch (error) {
-    debug('Error while checking obsolete users:', error);
+    debug("Error while checking obsolete users:", error);
     logger.error({
       message: error.message,
       stack: error.stack,
@@ -123,18 +131,20 @@ async function checkObsoleteUsers(dataSources) {
  * @returns {Promise<void>} - A promise that resolves when the operation is complete.
  */
 async function copyObsoleteUser(dataSources) {
-  debug('Copying obsolete users...');
+  debug("Copying obsolete users...");
   const result = await dataSources.dataDB.request.copyObsoleteUser();
 
   if (result.rows[0].data !== null) {
-    const filePath = `${process.env.SAVE_OBSOLETE_DATA_PATH}user_${new Date()
+    // Create the directory if it does not exist
+    if (!fs.existsSync(saveDataPath)) {
+      fs.mkdirSync(saveDataPath, { recursive: true });
+    }
+
+    const filePath = `${saveDataPath}user_${new Date()
       .toISOString()
-      .replace(/[:.]/g, '-')}.json`;
-    fs.writeFileSync(
-      filePath,
-      JSON.stringify(result.rows[0].data, null, 2),
-    );
-    debug('File written to', filePath);
+      .replace(/[:.]/g, "-")}.json`;
+    fs.writeFileSync(filePath, JSON.stringify(result.rows[0].data, null, 2));
+    debug("File written to", filePath);
   }
 
   checkObsoleteUsers(dataSources);
@@ -154,38 +164,38 @@ async function copyObsoleteUser(dataSources) {
  * @throws {Error} If an error occurs during the check.
  */
 async function checkObsoleteRequests(dataSources) {
-  debug('Checking for obsolete requests...');
+  debug("Checking for obsolete requests...");
   try {
     // get all conversation id from the requests deleted
-    const conversationIds = await
-    dataSources.dataDB.conversation.getConversationIdsByDeletedRequest();
+    const conversationIds =
+      await dataSources.dataDB.conversation.getConversationIdsByDeletedRequest();
 
     // remove all the request.id and conversation id from all subscription
     const subscriptions = await dataSources.dataDB.subscription.findAll();
 
     if (conversationIds.length > 0) {
-    // check if the conversation id is in the subscription and remove it
+      // check if the conversation id is in the subscription and remove it
       subscriptions.forEach(async (subscription) => {
-        if (subscription.subscriber === 'clientConversation') {
+        if (subscription.subscriber === "clientConversation") {
           const subscriberIds = subscription.subscriber_id;
 
           const newConversationIds = subscriberIds.filter(
-            (id) => !conversationIds.includes(id),
+            (id) => !conversationIds.includes(id)
           );
 
           dataSources.dataDB.subscription.createSubscription(
             subscription.user_id,
-            'clientConversation',
-            newConversationIds,
+            "clientConversation",
+            newConversationIds
           );
         }
       });
 
       await dataSources.dataDB.request.deleteObsoleteRequests();
     }
-    debug('Obsolete requests check complete.');
+    debug("Obsolete requests check complete.");
   } catch (error) {
-    debug('Error while checking obsolete users:', error);
+    debug("Error while checking obsolete users:", error);
     logger.error({
       message: error.message,
       stack: error.stack,
@@ -209,9 +219,10 @@ async function checkObsoleteRequests(dataSources) {
  * @returns {Promise<void>} - A promise that resolves when the check is complete.
  */
 async function checkEndpointsNotificaitonPush(dataSources) {
-  debug('Checking for obsolete endpoints...');
+  debug("Checking for obsolete endpoints...");
   try {
-    const allNotificationPush = await dataSources.dataDB.notificationPush.findAll();
+    const allNotificationPush =
+      await dataSources.dataDB.notificationPush.findAll();
     // send notification to all endpoint and remove the endpoint that are not valid
     allNotificationPush.forEach(async (notificationPush) => {
       const subscription = {
@@ -234,16 +245,16 @@ async function checkEndpointsNotificaitonPush(dataSources) {
           // If the notification fails, remove the endpoint from the database
           await dataSources.dataDB.notificationPush.deleteNotification(
             notificationPush.user_id,
-            notificationPush.endpoint,
+            notificationPush.endpoint
           );
         }
       } catch (error) {
-        debug('Error while sending notification:', error);
+        debug("Error while sending notification:", error);
       }
     });
-    debug('Obsolete endpoints check complete.');
+    debug("Obsolete endpoints check complete.");
   } catch (error) {
-    debug('Error while checking obsolete endpoints:', error);
+    debug("Error while checking obsolete endpoints:", error);
     logger.error({
       message: error.message,
       stack: error.stack,
@@ -263,18 +274,21 @@ async function checkEndpointsNotificaitonPush(dataSources) {
  * @returns {Promise<void>} - A promise that resolves when the operation is complete.
  */
 async function copyObsoleteRequests(dataSources) {
-  debug('Copying obsolete requests...');
+  debug("Copying obsolete requests...");
   const result = await dataSources.dataDB.request.copyObsoleteRequests();
 
   if (result.rows[0].data !== null) {
-    const filePath = `${process.env.SAVE_OBSOLETE_DATA_PATH}request_${new Date()
+    // Create the directory if it does not exist
+    if (!fs.existsSync(saveDataPath)) {
+      fs.mkdirSync(saveDataPath, { recursive: true });
+    }
+
+    // Write the data to a JSON file
+    const filePath = `${saveDataPath}request_${new Date()
       .toISOString()
-      .replace(/[:.]/g, '-')}.json`;
-    fs.writeFileSync(
-      filePath,
-      JSON.stringify(result.rows[0].data, null, 2),
-    );
-    debug('File written to', filePath);
+      .replace(/[:.]/g, "-")}.json`;
+    fs.writeFileSync(filePath, JSON.stringify(result.rows[0].data, null, 2));
+    debug("File written to", filePath);
   }
 
   // delete obsolete requests
@@ -295,12 +309,12 @@ async function copyObsoleteRequests(dataSources) {
 function sheduleCleanData(dataSources) {
   // minute, hour, day, month, day of the week
   // Execute every day at 00h00
-  cron.schedule('0 0 * * *', () => {
+  //cron.schedule("0 0 * * *", () => {
     copyObsoleteRequests(dataSources);
-  });
+  //});
 
   // Execute every day at 01h00
-  cron.schedule('0 1 * * *', () => {
+  cron.schedule("0 1 * * *", () => {
     checkEndpointsNotificaitonPush(dataSources);
   });
 }
