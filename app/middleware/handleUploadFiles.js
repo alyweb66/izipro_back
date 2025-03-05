@@ -68,15 +68,18 @@ async function handleUploadedFiles(
           });
         }
 
+        // Normalize the file name remove spaces and special characters
+        const normalizedFileName = fileNameWithoutExtension.replace(/\s+/g, "-");
+
         const uniqueId = crypto.randomBytes(16).toString("hex");
         let uniqueFileName;
         let thumbnailFileName;
         // Create a unique file name
         if (mimetype.startsWith("image/")) {
-          uniqueFileName = `${fileNameWithoutExtension}_${uniqueId}.webp`;
-          thumbnailFileName = `${fileNameWithoutExtension}_${uniqueId}_thumb.webp`;
+          uniqueFileName = `${normalizedFileName}_${uniqueId}.webp`;
+          thumbnailFileName = `${normalizedFileName}_${uniqueId}_thumb.webp`;
         } else if (mimetype === "application/pdf") {
-          uniqueFileName = `${fileNameWithoutExtension}_${uniqueId}${path.extname(
+          uniqueFileName = `${normalizedFileName}_${uniqueId}${path.extname(
             filename
           )}`;
         }
