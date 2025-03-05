@@ -147,7 +147,7 @@ class User extends CoreDatamapper {
   async deleteObsoleteUsers() {
     debug('Deleting obsolete users');
     const query = {
-      text: `DELETE FROM "${this.tableName}" WHERE "deleted_at" < NOW() - INTERVAL '5 minute' 
+      text: `DELETE FROM "${this.tableName}" WHERE "deleted_at" < NOW() - INTERVAL '1 month' 
       OR verified_email = false`,
     };
     await this.client.query(query);
