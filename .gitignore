@@ -6,6 +6,10 @@
 public/media/*
 !public/media/
 
+# certificates
+server.key
+server.crt
+
 # Sqitch
 sqitch.conf
 
