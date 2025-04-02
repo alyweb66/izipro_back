@@ -8,7 +8,7 @@ public/media/*
 
 # certificates
 server.key
-server.crt
+server.cert
 
 # Sqitch
 sqitch.conf

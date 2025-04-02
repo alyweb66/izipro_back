@@ -92,7 +92,7 @@ mutation ProRegister($input: CreateProUserInput!) {
   "input": {
     "email": "",
     "password": "",
-    "siret": 30613890001294
+    "siret": 12345678912345,
   }
 }
 
@@ -124,7 +124,7 @@ mutation Mutation($input: ConfirmRegisterEmailInput!) {
 
 {
   "input": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFsZW1hbnkucGllcnJpY2tAZ21haWwuY29tIiwiaWF0IjoxNzA5MzAwODQxLCJleHAiOjE3MDkzMDQ0NDF9.e_ElEasfSoEjlQknoHB-4l_Nvj6flfoLgc6vl3wUKRI"
+    "token": ""
   }
 }
 
@@ -165,7 +165,6 @@ mutation Mutation($id: Int!, $input: UpdateUserInput!) {
     "first_name": "",
     "last_name": "",
     "postal_code": "75000",
-    //"email": "alemany.pierrick@gmail.com",
     "city": "Paris",
     "company_name": "",
     "siret": 12345678912345
