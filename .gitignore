@@ -9,7 +9,7 @@ public/media/*
 # certificates
 server.key
 server.cert
-
+test.http
 # Sqitch
 sqitch.conf
 
